@@ -22,4 +22,9 @@ $selected = $binary[strtolower(PHP_OS)];
 $path_exec = pm_Context::getVarDir() . '/' . $selected;
 $path_conf = pm_Context::getVarDir() . '/agent.conf';
 
-system($path_exec . ' -config ' . $path_conf);
+$cmd = sprintf("%s -config %s", $path_exec, $path_conf);
+if (pm_Settings::get("agentYara") == "1") {
+	$cmd .= " -yara";
+}
+
+system($cmd);

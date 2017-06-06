@@ -1,0 +1,33 @@
+<?php echo $this->renderTabs($this->tabs); ?>
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    Agent Configuration
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?php echo $this->configInfo; ?>
+            <br><br>
+            <?php echo $this->configForm; ?>
+        </div>
+    </div>
+</div>
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    Run Settings
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?php echo $this->info; ?>
+            <br><br>
+            <?php echo $this->form; ?>
+        </div>
+    </div>
+</div>

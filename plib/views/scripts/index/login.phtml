@@ -1,0 +1,38 @@
+<?php echo $this->renderTabs($this->tabs); ?>
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    Login
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?php echo $this->login; ?>
+            <form method="post" onsubmit="return generateSSOLink(this);">
+                <div class="btns-box">
+                    <div class="box-area">
+                        <div class="form-row">
+                            <div class="field-name">
+                                <button class="btn action" name="login" value="Login to portal">Login to portal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    function generateSSOLink(form) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function(){ 
+            var response = JSON.parse(xhr.responseText);
+            window.open(response.link, "_blank"); 
+        }
+        xhr.open (form.method, form.action, false);
+        xhr.send (new FormData (form));
+        return false;
+    }
+</script>

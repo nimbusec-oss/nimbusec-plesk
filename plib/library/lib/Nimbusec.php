@@ -89,8 +89,33 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 
 			return $api->createAgentToken($token);
 		}
-		
-		
+	}
+
+	/**
+	 * Upserts a given user and set the signature key for him which enables SSO functionality
+	 * @param string $mail The mail of the user
+	 * @return void
+	 */
+	public function upsertUserWithSSO($mail, $signatureKey) {
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$users = $api->findUsers("mail=\"{$mail}\"");
+		if (count($users) > 0) {
+			$user = $users[0];
+			$user["signatureKey"] = $signatureKey;
+
+			$api->updateUser($user["id"], $user);
+			return;
+		}
+
+		$user = array(
+			"login" => $mail,
+			"mail" => $mail,
+			"role" => "admin",
+			"signatureKey" => $signatureKey
+		);
+		$api->createUser($user);
 	}
 	
 	/**
@@ -108,28 +133,51 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 			$os = 'windows';
 		}
 		
-		$arch = (string)8*PHP_INT_SIZE;
-		$arch.='bit';
+		$arch = (string)8 * PHP_INT_SIZE;
+		$arch .= 'bit';
+		$format = 'bin';
 		
+		$agents = $api->findServerAgents();
+		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
+			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
+		});
+		$filtered = array_values($filtered);
 		
-		$agents = $api->findServerAgents("os=\"$os\" and arch=\"$arch\"");
-		
-		if (count($agents) > 0) {
-			$agentBin = $api->findSpecificServerAgent($agents[0]['os'], $agents[0]['arch'], $agents[0]['version'], 'bin');
-
+		if (count($filtered) > 0) {
+			$agent = $filtered[0];
+			$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
 			
 			$name = 'agent';
 			if ($os == 'windows') {
-				$name=$name.'.exe';
+				$name = $name . '.exe';
 			}
-			file_put_contents($path.$name, $agentBin);
+			file_put_contents($path . $name, $agentBin);
 			
-			if ($os!='windows') {
-				chmod($path.$name, 0755);
+			if ($os != 'windows') {
+				chmod($path . $name, 0755);
 			}
+
+			pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 			
 			return true;
 		}
 		return false;
+	}
+
+	public function getNewestAgentVersion($os, $arch, $format = "bin") {
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$agents = $api->findServerAgents();
+		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
+			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
+		});
+		$filtered = array_values($filtered);
+
+		if (count($filtered) > 0) {
+			return $filtered[0]["version"];
+		} 
+
+		return "0";
 	}
 }

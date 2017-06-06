@@ -48,6 +48,7 @@ class IndexController extends pm_Controller_Action {
 	}
 
 	public function indexAction() {
+		$setupTabs = pm_Settings::get("setupTabs");
 		if ($setupTabs == "0") {
 			$this->_forward('login');
 		} else {
@@ -175,7 +176,7 @@ class IndexController extends pm_Controller_Action {
 
 			if (!$err) {
 				$config['apiserver'] = rtrim($form->getValue('apiserver'),"/");
-				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES));				
+				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
 				$this->_status->addMessage('info', $msg);
 			} else {
 				$this->_status->addMessage('error', $msg);
@@ -188,37 +189,12 @@ class IndexController extends pm_Controller_Action {
 
 	//get all domains on the host from plesk api
 	private function getDomainData() {
-		$api = pm_ApiRpc::getService();
-		$request = <<<DATA
-<webspace>
-	<get>
-		<filter/>
-		<dataset>
-			<gen_info/>
-			<hosting-basic/>
-		</dataset>
-	</get>
-</webspace>
-DATA;
-
-		$resp = $api->call($request);
-
-		$data = array();
-		foreach ($resp->webspace->get->result as $host) {
-			$dom = rtrim((string) $host->data->gen_info->name,"/");
-			foreach ($host->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					$dir = (string) $prop->value;
-					array_push($data, [$dom => $dir]);
-				}
-			}
-		}
+		
+		$domains = Helpers::getHostDomains();
 		$string = file_get_contents(pm_Settings::get("agentConfig"));
 		$config = json_decode($string, true);
 
-
-
-		if (isset($_POST['submitted'])) {
+		/*if (isset($_POST['submitted'])) {
 
 			//todo: check domain
 			//if returns true add to config
@@ -263,12 +239,24 @@ DATA;
 				$this->view->submitted = true;
 				$this->view->infomsg = pm_Locale::lmsg('savedMessage');
 			}
-		}
-		$d = $this->getListData($data, $config);
+		}*/
+		$listData = array();
+		foreach ($domains as $domain => $directory) {
+			$box = "<input type='checkbox' name='active[]' value='{$domain}'";
+			if (in_array($domain, array_keys($config["domains"]))) {
+				$box .= " checked ";
+			}
+			$box .= '/>';
 
+			$listData[] = array(
+				'column1' => $box,
+				'column2' => $domain,
+				'column3' => $directory,
+			);
+		}
 
 		$list = new pm_View_List_Simple($this->view, $this->_request);
-		$list->setData($d);
+		$list->setData($listData);
 		$list->setColumns(array(
 			'column1' => array(
 				'title' => '<input type="checkbox" name="act" onclick="updateState()" id="act"> Add/Remove Domain',
@@ -285,22 +273,33 @@ DATA;
 				'noEscape' => true,
 			),
 		));
-
 		$list->setDataUrl(array('action' => 'list-data'));
 
 		return $list;
 	}
 
+	public function listDataAction() {
+		$list = $this->getDomainData();
+		$this->_helper->json($list->fetchData());
+	}
+
 	public function domainsAction() {
 		$this->view->tabs = $this->newTabs();
-		$list = $this->getDomainData();
+		$this->view->list = $this->getDomainData();
+		
+		$form = new pm_Form_Simple();
+		$form->setAttrib("name", "domainForm");
 
-		$this->view->list = $list;
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 		try {
-			$this->view->bundles = $nimbusec->getBundles();
-			
-			
+			$bundles = $nimbusec->getBundles();
+
+			$bundleForm = array();
+			foreach($bundles as $bundle) {
+				$bundleForm[$bundle["id"]] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
+			}
+			$this->view->bundles = $bundleForm;
+
 		} catch (NimbusecException $e) {
 			$this->_status->addError($e->getMessage());
 		} catch (CUrlException $e) {
@@ -312,42 +311,54 @@ DATA;
 				$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
 			}
 		}
-		
-	}
 
-	public function listDataAction() {
-		$list = $this->getDomainData();
+		if ($this->getRequest()->isPost()) {
+			$bundle = $_POST["bundle"];
+			$domains = Helpers::buildDomainArray($_POST['active']);
+			foreach($domains as $domain => $directory) {
+				$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+				$err = false;
+				foreach ($domains as $do => $di) {
+						try {
+							if ($nimbusec->checkDomain($do, $_POST['bundle'])) {
+								$domainsAdd[$do] = $di;
+							}
+						} catch (NimbusecException $e) {
+							if (!strpos($e->getMessage(), '409')) {
+								$err = true;
+								$this->_status->addError($e->getMessage());
+							}
+						} catch (CUrlException $e) {
+							
+							if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+								$err = true;
+								$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
+								
+							}
+							if (strpos($e->getMessage(), '404')) {
+								$err = true;
+								$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
+							}
+							if (strpos($e->getMessage(), '409')) {
+								$this->_status->addError('Domain '.$do.' is known on your account but seems to be disabled. Please add it to a bundle in order to allow enabling it for the agent');
+							}
+						} catch (Exception $e) {
+							$this->_status->addError($e->getMessage());
+						}
+						
+					}
+					
+					if (!$err) {
+						$config['domains'] = $domainsAdd;
 
-		$this->_helper->json($list->fetchData());
-	}
-
-	private function getListData($data, $config) {
-		$ret = array();
-		foreach ($data as $var) {
-			foreach ($var as $key => $val) {
-				$box = '<input type="checkbox" name="active[]" value="' . $key . '"';
-				$box.= $this->isActive($key, $config);
-				$box.='/>';
-				$ret[] = array(
-					'column1' => $box,
-					'column2' => $key,
-					'column3' => $val,
-				);
+						file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES));
+						$this->view->submitted = true;
+						$this->view->infomsg = pm_Locale::lmsg('savedMessage');
+					}
 			}
+
+			return;
 		}
-
-		return $ret;
-	}
-
-	//check if domain is already in agent config file if so add 'checked' to checkbox
-	private function isActive($domain, $config) {
-		foreach ($config['domains'] as $dom => $dir) {
-			if ($dom == $domain) {
-				return ' checked ';
-			}
-		}
-
-		return '';
 	}
 
 	public function settingsAction() {

@@ -14,7 +14,7 @@ $messages = array(
 						"<br>Please note that the nimbusec Agent will not start until a schedule is set.",
 	"apiInfo" => "Enter your nimbusec API credentials in order to download the nimbusec Server Agent. " .
 	  			 "Leave the API Server field unchanged for preserving the stability of the extension. " . 
-				 "<br>For more information about getting API credentials, please contact us at <a href=\"mailto:office@nimbusec.com\">office@nimbusec.com</a>.",
+				 "<br>For more information about getting API credentials, please contact us at <a href=\"mailto:plesk@nimbusec.com\">plesk@nimbusec.com</a>.",
 	"login" => "Access the nimbusec portal directly and conveniently through Single Sign On.",
 	"updateAgent" => "Keep the nimbusec Agent up-to-date by downloading the newest version every now and then. This will guarantee a reliable and flawless malware detection.",
 	"agentUpdated" => "Successfully updated nimbusec Agent to the newest version",

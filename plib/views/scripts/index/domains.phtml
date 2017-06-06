@@ -14,18 +14,37 @@ if ($this->submitted == true) {
             </div>
         </div>
         <div class="content">
-            <form method="POST" action="">
-                <input type="hidden" name="submitted" value="submitted"/>
-                <span>Select nimbusec Bundle: </span>
-                <select name="bundle">
-                    <?php
-                        foreach ($this->bundles as $bundle) {
-                            echo '<option value="'.$bundle['id'].'">'.$bundle['name'].' ('.$bundle['active'].'/'.$bundle['contingent'].')'.'</option>';
-                        }
-                    ?>
-                </select>
-                <?php echo $this->renderList($this->list); ?>
-                <span id="btn-send" class="btn action"><button type="submit" name="submit" value="Update">Update</button></span>
+            <form method="post">
+                <div class="form-row">
+                    <input type="hidden" name="submitted" value="submitted"/>
+                    <div class="field-name">
+                        <span>Select a nimbusec Bundle:</span>
+                    </div>
+                    <div class="field-value">
+                        <select name="bundle">
+                            <?php
+                                foreach ($this->bundles as $id => $bundle) {
+                                    echo "<option value='{$id}'>{$bundle}</option>";
+                                }
+                            ?>
+                        </select>
+                    </div>
+                    <?php echo $this->renderList($this->list); ?>
+                    <div class="btns-box">
+                        <div class="box-area">
+                            <div class="form-row">
+                                <div class="field-name">
+                                    Update the selected domains
+                                </div>
+                                <div class="field-value">
+                                    <span id="btn-send" class="btn action">
+                                        <button type="submit" name="submit" value="updateDomains">Update</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
     </div>

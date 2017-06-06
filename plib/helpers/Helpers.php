@@ -46,6 +46,36 @@ DATA;
 		return $resp->server->get->result->gen_info->server_name;
 	}
 
+	public static function getHostDomains() {
+		$api = pm_ApiRpc::getService();
+		$request = <<<DATA
+<webspace>
+	<get>
+		<filter/>
+		<dataset>
+			<gen_info/>
+			<hosting-basic/>
+		</dataset>
+	</get>
+</webspace>
+DATA;
+
+		$resp = $api->call($request);
+
+		$domains = array();
+		foreach ($resp->webspace->get->result as $host) {
+			$domain = rtrim((string) $host->data->gen_info->name, "/");
+			foreach ($host->data->hosting->vrt_hst->property as $prop) {
+				if ($prop->name == 'www_root') {
+					$directory = (string) $prop->value;
+					$domains[$domain] = $directory;
+				}
+			}
+		}
+
+		return $domains;
+	}
+
     public static function buildDomainArray($domains) {
 		$domainObj = array();
 

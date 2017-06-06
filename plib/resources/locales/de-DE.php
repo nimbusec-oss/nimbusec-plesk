@@ -14,7 +14,7 @@ $messages = array(
 						"<br>Bitte beachten Sie, dass der Server Agent erst ausgeführt wird nachdem einen Zeitplan ausgewählt haben.",
 	"apiInfo" => "Geben Sie ihre nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .
 	  			 "Das API Server Feld sollte nicht verändert werden, um das korrekte Funktionieren des Plugins zu gewährleisten. " .
-				 "<br>Für weitere Information über den Erhalten und den Einsatz der API Zugangsdaten kontaktieren Sie uns bitte über office@nimbusec.com.",
+				 "<br>Für weitere Information über den Erhalten und den Einsatz der API Zugangsdaten kontaktieren Sie uns bitte über plesk@nimbusec.com.",
 	"login" => "Loggen Sie sich einfache und bequem ins nimbusec Portal via Single Sign On ein.",
 	"updateAgent" => "Halten Sie den nimbusec Agent up-to-date indem Sie regelmäßig die neueste Version runterladen. Dies sorgt für eine zuverlässige und fehlerfreie Malwareerkennung.",
 	"agentUpdated" => "Der nimbusec Agent wurde erfolgreich heruntergeladen und mit der neuesten Version aktualisiert.",

@@ -76,19 +76,6 @@ DATA;
 		return $domains;
 	}
 
-    public static function buildDomainArray($domains) {
-		$domainObj = array();
-
-		foreach ($domains as $domain) {
-			$dir = (string) self::getDomainDir($domain);
-			if ($dir != FALSE) {
-				$domainObj[$domain] = $dir;
-			}
-		}
-
-		return $domainObj;
-	}
-
 	//get htdocs dir for given domain from plesk api
 	public static function getDomainDir($domain) {
 		$request = <<<DATA
@@ -112,6 +99,23 @@ DATA;
 			}
 		}
 		return false;
+	}
+
+	public static function createMessage($msg, $level) {
+		$title = $level;
+		if ($level == "info") {
+			$title = "information";
+		}
+
+		$title = ucfirst($title);
+		return "<div class='msg-box msg-{$level}'>
+					<div class='msg-content'>
+						<span class='title'>
+							{$title}:
+						</span>
+						{$msg}
+					</div>
+				</div>";
 	}
 }
 

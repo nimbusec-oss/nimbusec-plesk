@@ -176,6 +176,7 @@ class IndexController extends pm_Controller_Action {
 
 			if (!$err) {
 				$config['apiserver'] = rtrim($form->getValue('apiserver'),"/");
+				$config["domains"] = new ArrayObject();
 				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
 				$this->_status->addMessage('info', $msg);
 			} else {
@@ -187,177 +188,128 @@ class IndexController extends pm_Controller_Action {
 		$this->view->form = $form;
 	}
 
-	//get all domains on the host from plesk api
-	private function getDomainData() {
-		
-		$domains = Helpers::getHostDomains();
+	public function domainsAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->responses = array();
+
 		$string = file_get_contents(pm_Settings::get("agentConfig"));
 		$config = json_decode($string, true);
 
-		/*if (isset($_POST['submitted'])) {
-
-			//todo: check domain
-			//if returns true add to config
-			$domainsAdd = array();
-			$domains = Helpers::buildDomainArray($_POST['active']);
-			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-			$err = false;
-			foreach ($domains as $do => $di) {
-				try {
-					if ($nimbusec->checkDomain($do, $_POST['bundle'])) {
-						$domainsAdd[$do] = $di;
-					}
-				} catch (NimbusecException $e) {
-					if (!strpos($e->getMessage(), '409')) {
-						$err = true;
-						$this->_status->addError($e->getMessage());
-					}
-				} catch (CUrlException $e) {
-					
-					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-						$err = true;
-						$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-						
-					}
-					if (strpos($e->getMessage(), '404')) {
-						$err = true;
-						$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
-					}
-					if (strpos($e->getMessage(), '409')) {
-						$this->_status->addError('Domain '.$do.' is known on your account but seems to be disabled. Please add it to a bundle in order to allow enabling it for the agent');
-					}
-				} catch (Exception $e) {
-					$this->_status->addError($e->getMessage());
-				}
-				
-			}
-			
-			if (!$err) {
-				$config['domains'] = $domainsAdd;
-
-				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES));
-				$this->view->submitted = true;
-				$this->view->infomsg = pm_Locale::lmsg('savedMessage');
-			}
-		}*/
-		$listData = array();
-		foreach ($domains as $domain => $directory) {
-			$box = "<input type='checkbox' name='active[]' value='{$domain}'";
-			if (in_array($domain, array_keys($config["domains"]))) {
-				$box .= " checked ";
-			}
-			$box .= '/>';
-
-			$listData[] = array(
-				'column1' => $box,
-				'column2' => $domain,
-				'column3' => $directory,
-			);
-		}
-
-		$list = new pm_View_List_Simple($this->view, $this->_request);
-		$list->setData($listData);
-		$list->setColumns(array(
-			'column1' => array(
-				'title' => '<input type="checkbox" name="act" onclick="updateState()" id="act"> Add/Remove Domain',
-				'noEscape' => true,
-				'sortable' => false,
-			),
-			'column2' => array(
-				'title' => 'Domain',
-				'noEscape' => true,
-				'searchable' => true,
-			),
-			'column3' => array(
-				'title' => pm_Locale::lmsg('directory'),
-				'noEscape' => true,
-			),
-		));
-		$list->setDataUrl(array('action' => 'list-data'));
-
-		return $list;
-	}
-
-	public function listDataAction() {
-		$list = $this->getDomainData();
-		$this->_helper->json($list->fetchData());
-	}
-
-	public function domainsAction() {
-		$this->view->tabs = $this->newTabs();
-		$this->view->list = $this->getDomainData();
-		
-		$form = new pm_Form_Simple();
-		$form->setAttrib("name", "domainForm");
-
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-		try {
-			$bundles = $nimbusec->getBundles();
+		$this->domainsView($nimbusec);
 
-			$bundleForm = array();
-			foreach($bundles as $bundle) {
-				$bundleForm[$bundle["id"]] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
-			}
-			$this->view->bundles = $bundleForm;
-
-		} catch (NimbusecException $e) {
-			$this->_status->addError($e->getMessage());
-		} catch (CUrlException $e) {
-			$err = true;
-			if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-				$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-			}
-			if (strpos($e->getMessage(), '404')) {
-				$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
-			}
-		}
+		// ===============================================================================================================
 
 		if ($this->getRequest()->isPost()) {
-			$bundle = $_POST["bundle"];
-			$domains = Helpers::buildDomainArray($_POST['active']);
-			foreach($domains as $domain => $directory) {
-				$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-				$err = false;
-				foreach ($domains as $do => $di) {
-						try {
-							if ($nimbusec->checkDomain($do, $_POST['bundle'])) {
-								$domainsAdd[$do] = $di;
-							}
-						} catch (NimbusecException $e) {
-							if (!strpos($e->getMessage(), '409')) {
-								$err = true;
-								$this->_status->addError($e->getMessage());
-							}
-						} catch (CUrlException $e) {
-							
-							if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-								$err = true;
-								$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-								
-							}
-							if (strpos($e->getMessage(), '404')) {
-								$err = true;
-								$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
-							}
-							if (strpos($e->getMessage(), '409')) {
-								$this->_status->addError('Domain '.$do.' is known on your account but seems to be disabled. Please add it to a bundle in order to allow enabling it for the agent');
-							}
-						} catch (Exception $e) {
-							$this->_status->addError($e->getMessage());
-						}
-						
-					}
-					
-					if (!$err) {
-						$config['domains'] = $domainsAdd;
+			$action = $_POST["submit"];
 
-						file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES));
-						$this->view->submitted = true;
-						$this->view->infomsg = pm_Locale::lmsg('savedMessage');
+			try {
+
+				if (strpos($action, "registerSelected") !== false) {
+					if (!isset($_POST["active0"])) {
+						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to register it.", "error"));
+						return;
 					}
+
+					$domains = $_POST["active0"];
+					
+					$bundleString = split("__", $_POST["bundle"]);
+					$bundleId = $bundleString[0];
+					$bundleName = $bundleString[1];
+
+					$success = true;
+					foreach ($domains as $domain) {
+						$success = $success && $nimbusec->registerDomain($domain, $bundleId);
+					}
+
+					if (!$success) {
+						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						return;
+					}
+
+					foreach ($domains as $domain) {
+						$directory = Helpers::getDomainDir($domain);
+						$config["domains"][$domain] = (string) $directory;
+					}
+					array_push($this->view->responses, Helpers::createMessage("Successfully register domains with <b>{$bundleName}</b>", "info"));
+				}
+
+				if (strpos($action, "removeSelected") !== false) {
+					$index = substr($action, -1);
+					if (!isset($_POST["active{$index}"])) {
+						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to unregister it.", "error"));
+						return;
+					}
+
+					$domains = $_POST["active{$index}"];
+					$success = true;
+					foreach ($domains as $domain) {
+						$success = $success && $nimbusec->unregisterDomain($domain);
+					}
+
+					if (!$success) {
+						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						return;
+					}
+
+					foreach ($domains as $domain) {
+						unset($config["domains"][$domain]);
+					}
+
+					if (count($config["domains"]) == 0) {
+						$config["domains"] = new ArrayObject();
+					}
+
+					array_push($this->view->responses, Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
+				}
+
+				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
+
+			} catch (NimbusecException $e) {
+				array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+			} catch (CUrlException $e) {
+				if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+				} else if (strpos($e->getMessage(), '404')) {
+					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+				} else {
+					array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+				}
 			}
 
-			return;
+			$this->domainsView($nimbusec);
+		}
+	}
+
+	public function domainsView($nimbusec) {
+		try {
+			$domains = Helpers::getHostDomains();
+			$keys = array_keys($domains);
+
+			$fetched = $nimbusec->getBundlesWithDomains();
+			foreach ($fetched as $id => $element) {
+				$element["domains"] = array_filter($element["domains"], function($domain) use ($keys) {
+					return in_array($domain["name"], $keys);
+				});
+
+				foreach ($element["domains"] as $domain) {
+					unset($domains[$domain["name"]]);
+				}
+				$fetched[$id]["domains"] = $element["domains"];
+			}
+
+			$this->view->domains = $domains;
+			$this->view->fetched = $fetched;
+
+		} catch (NimbusecException $e) {
+			array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+		} catch (CUrlException $e) {
+			if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+			}
+			if (strpos($e->getMessage(), '404')) {
+				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+			}
 		}
 	}
 
@@ -491,7 +443,7 @@ class IndexController extends pm_Controller_Action {
 					}
 				}
 			}
-			 $this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'exec')));	
+			 $this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'settings')));	
 		}
 
 		$this->view->form = $form;

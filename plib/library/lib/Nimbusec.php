@@ -20,40 +20,37 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$this->server = pm_Settings::get('apiserver');
 	}
 
-	/**
-	 * check if given domain exists. if not create new domain in given bundle
-	 * @param string $domain domain to be checked/created
-	 * @param string $bundle if domain needs to be created add it to this bundle
-	 * @return boolean true if domain already exists or was created. if false an error occured during creation
-	 */
-	public function checkDomain($domain, $bundle) {
-		require_once 'NimbusecAPI.php';
+	public function registerDomain($domain, $bundle) {
+		require_once "NimbusecAPI.php";
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$scheme = "http";
+		$domain = array(
+			"scheme" => $scheme,
+			"name" => $domain,
+			"deepScan" => $scheme . '://' . $domain,
+			"fastScans" => array(
+				$scheme . '://' . $domain
+			),
+			"bundle" => $bundle
+		);
+
+		$api->createDomain($domain);
+		return true;
+	}
+
+	public function unregisterDomain($domain) {
+		require_once "NimbusecAPI.php";
 		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
-		if (count($domains) == 1) {
-			return true;
-		} else if (count($domains) == 0) {
-			//crete domain
-			$scheme = "http";
-
-			$domain = array(
-				"scheme" => $scheme,
-				"name" => $domain,
-				"deepScan" => $scheme . '://' . $domain,
-				"fastScans" => array(
-					$scheme . '://' . $domain
-				),
-				"bundle" => $bundle
-			);
-			//return true if create == success
-
-			$api->createDomain($domain);
-
-			return true;
+		if (count($domains) != 1) {
+			// log the error
+			return false;
 		}
 
-		return false;
+		$api->deleteDomain($domains[0]["id"]);
+		return true;
 	}
 
 	/**
@@ -65,6 +62,22 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
+
+		return $bundles;
+	}
+
+	public function getBundlesWithDomains() {
+		$fetched = $this->getBundles();
+
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$bundles = array();
+		foreach ($fetched as $bundle) {
+			$bundles[$bundle["id"]]["bundle"] = $bundle;
+			$bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
+			$bundles[$bundle["id"]]["domains"] = $api->findDomains("bundle=\"{$bundle['id']}\"");
+		}
 
 		return $bundles;
 	}

@@ -1,4 +1,13 @@
-<?php echo $this->renderTabs($this->tabs); ?>
+<?php
+foreach ($this->responses as $response) {
+    echo $response;
+}
+
+echo $this->renderTabs($this->tabs); 
+?>
+
+<!-- ========================================= [ AGENT CONFIGURATION ] ===================================================================== -->
+
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -15,6 +24,9 @@
         </div>
     </div>
 </div>
+
+<!-- ========================================= [ RUN SETTINGS ] ===================================================================== -->
+
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -26,8 +38,73 @@
         </div>
         <div class="content">
             <?php echo $this->info; ?>
-            <br><br>
-            <?php echo $this->form; ?>
+            <br>
+            <br>
+            <form method="post" id="schedule">
+                <?php
+                    $valueAgentStatus = pm_Settings::get('agentStatus');
+                    $agentCheckbox = "<input name='status' value='1' type='checkbox' style='margin-right: 5px; margin-bottom: 10px;' ";
+                    if ($valueAgentStatus == "1") {
+                        $agentCheckbox .= " checked='checked'";
+                    }
+
+                    $agentCheckbox .= "> ";
+                    $agentCheckbox .= "Status (please check or uncheck to enable or disable the agent execution)";
+                    echo $agentCheckbox;
+                ?>
+                <br>
+                <?php
+                    $agent = json_decode(pm_Settings::get("agent"), true);
+                    $labelYara = "Activate Yara";
+                    if ($agent["arch"] == "32bit") {
+                        $labelYara .= " (not supported with 32bit agent)";
+                    }
+                    
+                    $yaraCheckBox = "<input name='yara' value='1' type='checkbox' style='margin-right: 5px; margin-bottom: 10px;' ";
+                    if ($agent["arch"] != "64bit") {
+                        $yaraCheckBox .= "disabled='disabled'";
+                    }
+                    
+                    $valueYara = pm_Settings::get("agentYara");
+                    if ($valueYara == "1") {
+                        $yaraCheckBox .= " checked='checked'";
+                    }
+
+                    $yaraCheckBox .= "> {$labelYara}";
+                    echo $yaraCheckBox;
+                ?>
+
+                <div class="form-row">
+                    <div class="field-name">
+                        Agent Scan Interval
+                    </div>
+                    <div class="field-value">
+                        <select name="interval"> 
+                            <option value="0" <?php if (pm_Settings::get('schedule-interval') == "0") { ?> selected <?php } ?>>
+                                <?php echo pm_Locale::lmsg('once'); ?>
+                            </option>
+                            <option value="12" <?php if (pm_Settings::get('schedule-interval') == "12") { ?> selected <?php } ?>>
+                                <?php echo pm_Locale::lmsg('twice'); ?>
+                            </option>
+                            <option value="8" <?php if (pm_Settings::get('schedule-interval') == "8") { ?> selected <?php } ?>>
+                                <?php echo pm_Locale::lmsg('threeTimes'); ?>
+                            </option>
+                            <option value="6" <?php if (pm_Settings::get('schedule-interval') == "6") { ?> selected <?php } ?>>
+                                <?php echo pm_Locale::lmsg('fourTimes'); ?>
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btns-box">
+                    <div class="box-area">
+                        <div class="form-row">
+                            <div class="field-name">
+                                <button class="btn action" type="submit" name="submit" value="schedule">Save settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>

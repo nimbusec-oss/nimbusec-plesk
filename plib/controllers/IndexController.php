@@ -311,6 +311,7 @@ class IndexController extends pm_Controller_Action {
 
 	public function settingsAction() {
 		$this->view->tabs = $this->newTabs();
+		$this->view->responses = array();
 
 		// =====================================================================================
 		
@@ -330,8 +331,8 @@ class IndexController extends pm_Controller_Action {
 		// =====================================================================================
 
 		$this->view->info = pm_Locale::lmsg("agentExecution");
-		$agent = json_decode(pm_Settings::get("agent"), true);
 
+		$task = new pm_Scheduler_Task();
 		$id = pm_Settings::get('agent-schedule-id');
 		$cron_default = array(
 			'minute' => '30',
@@ -341,106 +342,76 @@ class IndexController extends pm_Controller_Action {
 			'dow' => '*',
 		);
 
-		$form = new pm_Form_Simple();
+		if ($this->getRequest()->isPost()) {
+			$action = $_POST["submit"];
 
-		$status = 'inactive';
-		if (!empty($id)) {
-			$status = 'active';
-		}
-		$form->addElement('checkbox', 'status', array(
-			'label' => 'Status (please check or uncheck to enable or disable the agent execution)',
-			'value' => pm_Settings::get('agentStatus'),
-			"style" => "margin-right: 5px",
-		));
-						
-		$labelYara = "Activate Yara";
-		$attrib = array("disabled" => "disabled");
-		$value = pm_Settings::get("agentYara");
-		if ($value == null) {
-			$value = "0";
-		}
-		if ($agent["arch"] == "32bit") {
-			$labelYara .= " (not supported with 32bit agent)";
-		}
-		if ($agent["arch"] == "64bit") {
-			$attrib = array();
-		}
-		$form->addElement('checkbox', 'yara', array(
-			'label' => $labelYara,
-			'value' => $value,
-			"style" => "margin-right: 5px",
-			"attribs" => $attrib
-		));
+			if (strpos($action, "schedule") !== false) {
+				$interval = $_POST["interval"];
+				$status = $_POST["status"];
+				$yara = $_POST["yara"]; 
 
-		$form->addElement('select', 'interval', array(
-			'label' => 'Agent Scan Interval',
-			'multiOptions' => array(
-				'0' => pm_Locale::lmsg('once'),
-				'12' => pm_Locale::lmsg('twice'),
-				'8' => pm_Locale::lmsg('threeTimes'),
-				'6' => pm_Locale::lmsg('fourTimes'),
-			),
-			'value' => pm_Settings::get('schedule-interval'),
-			'required' => true,
-		));
-		$form->addControlButtons(array(
-			"sendTitle" => "Save settings",
-			'cancelLink' => pm_Context::getModulesListUrl(),
-		));
-
-		$task = new pm_Scheduler_Task();
-		if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-			$cron = $cron_default;
-			if ($form->getValue('interval') == '12') {
-				$cron['hour'] = '1,13';
-			} else if ($form->getValue('interval') == '8') {
-				$cron['hour'] = '1,9,17';
-			} else if ($form->getValue('interval') == '6') {
-				$cron['hour'] = '1,7,13,19';
-			}
-
-			pm_Settings::set('agentStatus', $form->getValue('status'));
-			pm_Settings::set("agentYara", $form->getValue("yara"));
-
-			if ($form->getValue('status') == '1') {
-				try {
-					if (!empty($id)) {
-						$task = pm_Scheduler::getInstance()->getTaskById($id);
-						pm_Scheduler::getInstance()->removeTask($task);
-					}
-				} catch (pm_Exception $e) {
-				} finally {
-					$task = new pm_Scheduler_Task();
-					$task->setCmd('run.php');
-					$task->setSchedule($cron);
-					pm_Scheduler::getInstance()->putTask($task);
-
-					pm_Settings::set('agent-schedule-id', $task->getId());
-					pm_Settings::set('schedule-interval', $form->getValue('interval'));
-					$this->_status->addMessage('info', 'agent successfully activated');
+				if (!isset($_POST["status"])) {
+					$status = "0";
 				}
-			}
 
-			if ($form->getValue('status') == '0') {
-				if (!empty($id)) {
+				if (!isset($_POST["yara"])) {
+					$yara = "0";
+				}
+
+				$cron = $cron_default;
+				if ($interval == '12') {
+					$cron['hour'] = '1,13';
+				} else if ($interval == '8') {
+					$cron['hour'] = '1,9,17';
+				} else if ($interval == '6') {
+					$cron['hour'] = '1,7,13,19';
+				}
+
+				pm_Settings::set('agentStatus', $status);
+				if ($status == "0") {
+					$yara = "0";	
+				}
+
+				pm_Settings::set("agentYara", $yara);
+
+				if ($status == "1") {
 					try {
-						$task = pm_Scheduler::getInstance()->getTaskById($id);
-						pm_Scheduler::getInstance()->removeTask($task);
-
-						pm_Settings::set('agent-schedule-id', FALSE);
+						if (!empty($id)) {
+							$task = pm_Scheduler::getInstance()->getTaskById($id);
+							pm_Scheduler::getInstance()->removeTask($task);
+						}
 					} catch (pm_Exception $e) {
-						
 					} finally {
+						$task = new pm_Scheduler_Task();
+						$task->setCmd('run.php');
+						$task->setSchedule($cron);
 
-						pm_Settings::set('agent-schedule-id', FALSE);
-						$this->_status->addMessage('info', 'agent successfully deactivated');
+						pm_Scheduler::getInstance()->putTask($task);
+
+						pm_Settings::set('agent-schedule-id', $task->getId());
+						pm_Settings::set('schedule-interval', $interval);
+						array_push($this->view->responses, Helpers::createMessage("Agent successfully activated", "info"));
 					}
+				} else if ($status == "0") {
+					if (!empty($id)) {
+						try {
+							$task = pm_Scheduler::getInstance()->getTaskById($id);
+
+							pm_Scheduler::getInstance()->removeTask($task);
+							pm_Settings::set('agent-schedule-id', FALSE);
+							pm_Settings::set('schedule-interval', "0");
+						} catch (pm_Exception $e) {
+						} finally {
+							pm_Settings::set('agent-schedule-id', FALSE);
+							pm_Settings::set('schedule-interval', "0");
+							array_push($this->view->responses, Helpers::createMessage("Agent successfully deactivated", "info"));
+						}
+					}
+				} else {
+					array_push($this->view->responses, Helpers::createMessage("Invalid agent status chosen", "error"));
 				}
 			}
-			 $this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'settings')));	
 		}
-
-		$this->view->form = $form;
 	}
 
 	public function loginAction() {

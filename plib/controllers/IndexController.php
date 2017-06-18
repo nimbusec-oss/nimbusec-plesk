@@ -192,9 +192,6 @@ class IndexController extends pm_Controller_Action {
 		$this->view->tabs = $this->newTabs();
 		$this->view->responses = array();
 
-		$string = file_get_contents(pm_Settings::get("agentConfig"));
-		$config = json_decode($string, true);
-
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 		$this->domainsView($nimbusec);
 
@@ -226,11 +223,6 @@ class IndexController extends pm_Controller_Action {
 						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
 						return;
 					}
-
-					foreach ($domains as $domain) {
-						$directory = Helpers::getDomainDir($domain);
-						$config["domains"][$domain] = (string) $directory;
-					}
 					array_push($this->view->responses, Helpers::createMessage("Successfully register domains with <b>{$bundleName}</b>", "info"));
 				}
 
@@ -251,19 +243,8 @@ class IndexController extends pm_Controller_Action {
 						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
 						return;
 					}
-
-					foreach ($domains as $domain) {
-						unset($config["domains"][$domain]);
-					}
-
-					if (count($config["domains"]) == 0) {
-						$config["domains"] = new ArrayObject();
-					}
-
 					array_push($this->view->responses, Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
 				}
-
-				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
 
 			} catch (NimbusecException $e) {
 				array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
@@ -286,6 +267,10 @@ class IndexController extends pm_Controller_Action {
 			$domains = Helpers::getHostDomains();
 			$keys = array_keys($domains);
 
+			$string = file_get_contents(pm_Settings::get("agentConfig"));
+			$config = json_decode($string, true);	
+			$config["domains"] = new ArrayObject();
+
 			$fetched = $nimbusec->getBundlesWithDomains();
 			foreach ($fetched as $id => $element) {
 				$element["domains"] = array_filter($element["domains"], function($domain) use ($keys) {
@@ -294,12 +279,17 @@ class IndexController extends pm_Controller_Action {
 
 				foreach ($element["domains"] as $domain) {
 					unset($domains[$domain["name"]]);
+
+					$directory = Helpers::getDomainDir($domain["name"]);
+					$config["domains"][$domain["name"]] = (string) $directory;
 				}
 				$fetched[$id]["domains"] = $element["domains"];
 			}
 
 			$this->view->domains = $domains;
 			$this->view->fetched = $fetched;
+
+			file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
 
 		} catch (NimbusecException $e) {
 			array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));

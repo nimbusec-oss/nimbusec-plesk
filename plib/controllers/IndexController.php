@@ -5,6 +5,16 @@ require_once(pm_Context::getPlibDir() . "/library/lib/Nimbusec.php");
 
 class IndexController extends pm_Controller_Action {
 
+	// Three "===" - lines as comment mean the sepearation of the action methods 
+	// 		e.g (loginAction, settingsAction, ...)
+	//
+	// "=" as comment line means the semantic sepearation within an action 
+	// 		e.g (settingsAction => sepeartion of domain related, POST related and agent config related code)
+	//
+	// "+" as comment line means the sepeartion of form-related code within the POST request processing 
+	// 		e.g (if ($_POST == "registerDomains), if ($_POST == "unregisterDomains), ...)
+
+
 	public function init() {
 		parent::init();
 
@@ -30,10 +40,6 @@ class IndexController extends pm_Controller_Action {
 				'action' => 'login'
 			),
 			array(
-				'title' => 'Domains',
-				'action' => 'domains',
-			),
-			array(
 				'title' => 'Settings',
 				'action' => 'settings',
 			),
@@ -56,6 +62,10 @@ class IndexController extends pm_Controller_Action {
 			$this->_forward('setup');
 		}
 	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
 
 	public function setupAction() {
 		$setupTabs = pm_Settings::get("setupTabs");
@@ -194,19 +204,108 @@ class IndexController extends pm_Controller_Action {
 		$this->view->form = $form;
 	}
 
-	public function domainsAction() {
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function settingsAction() {
 		$this->view->tabs = $this->newTabs();
 		$this->view->responses = array();
+
+		// =====================================================================================
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 		$this->domainsView($nimbusec);
 
-		// ===============================================================================================================
+		// =====================================================================================
+
+		$this->view->info = pm_Locale::lmsg("agentExecution");
+
+		$task = new pm_Scheduler_Task();
+		$id = pm_Settings::get('agent-schedule-id');
+		$cron_default = array(
+			'minute' => '30',
+			'hour' => '13',
+			'dom' => '*',
+			'month' => '*',
+			'dow' => '*',
+		);
 
 		if ($this->getRequest()->isPost()) {
 			$action = $_POST["submit"];
 
 			try {
+
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+				if (strpos($action, "schedule") !== false) {
+					$interval = $_POST["interval"];
+					$status = $_POST["status"];
+					$yara = $_POST["yara"]; 
+
+					if (!isset($_POST["status"])) {
+						$status = "0";
+					}
+
+					if (!isset($_POST["yara"])) {
+						$yara = "0";
+					}
+
+					$cron = $cron_default;
+					if ($interval == '12') {
+						$cron['hour'] = '1,13';
+					} else if ($interval == '8') {
+						$cron['hour'] = '1,9,17';
+					} else if ($interval == '6') {
+						$cron['hour'] = '1,7,13,19';
+					}
+
+					pm_Settings::set('agentStatus', $status);
+					if ($status == "0") {
+						$yara = "0";	
+					}
+
+					pm_Settings::set("agentYara", $yara);
+
+					if ($status == "1") {
+						try {
+							if (!empty($id)) {
+								$task = pm_Scheduler::getInstance()->getTaskById($id);
+								pm_Scheduler::getInstance()->removeTask($task);
+							}
+						} catch (pm_Exception $e) {
+						} finally {
+							$task = new pm_Scheduler_Task();
+							$task->setCmd('run.php');
+							$task->setSchedule($cron);
+
+							pm_Scheduler::getInstance()->putTask($task);
+
+							pm_Settings::set('agent-schedule-id', $task->getId());
+							pm_Settings::set('schedule-interval', $interval);
+							array_push($this->view->responses, Helpers::createMessage("Agent successfully activated", "info"));
+						}
+					} else if ($status == "0") {
+						if (!empty($id)) {
+							try {
+								$task = pm_Scheduler::getInstance()->getTaskById($id);
+
+								pm_Scheduler::getInstance()->removeTask($task);
+								pm_Settings::set('agent-schedule-id', FALSE);
+								pm_Settings::set('schedule-interval', "0");
+							} catch (pm_Exception $e) {
+							} finally {
+								pm_Settings::set('agent-schedule-id', FALSE);
+								pm_Settings::set('schedule-interval', "0");
+								array_push($this->view->responses, Helpers::createMessage("Agent successfully deactivated", "info"));
+							}
+						}
+					} else {
+						array_push($this->view->responses, Helpers::createMessage("Invalid agent status chosen", "error"));
+					}
+				}
+
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 				if (strpos($action, "registerSelected") !== false) {
 					if (!isset($_POST["active0"])) {
@@ -232,6 +331,8 @@ class IndexController extends pm_Controller_Action {
 					array_push($this->view->responses, Helpers::createMessage("Successfully register domains with <b>{$bundleName}</b>", "info"));
 				}
 
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 				if (strpos($action, "removeSelected") !== false) {
 					$index = substr($action, -1);
 					if (!isset($_POST["active{$index}"])) {
@@ -252,6 +353,8 @@ class IndexController extends pm_Controller_Action {
 					array_push($this->view->responses, Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
 				}
 
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 			} catch (NimbusecException $e) {
 				array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
 			} catch (CUrlException $e) {
@@ -266,6 +369,21 @@ class IndexController extends pm_Controller_Action {
 
 			$this->domainsView($nimbusec);
 		}
+
+		// =====================================================================================
+		
+		$config = file_get_contents(pm_Settings::get("agentConfig"));
+		
+		$configForm = new pm_Form_Simple();
+		$configForm->addElement('textarea', 'configuration', array(
+			'label' => "Configuration",
+			'value' => $config,
+			"style" => "margin-right: 5px",
+			"attribs" => array("disabled" => "disabled"),
+		));
+
+		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
+		$this->view->configForm = $configForm;
 	}
 
 	public function domainsView($nimbusec) {
@@ -309,110 +427,9 @@ class IndexController extends pm_Controller_Action {
 		}
 	}
 
-	public function settingsAction() {
-		$this->view->tabs = $this->newTabs();
-		$this->view->responses = array();
-
-		// =====================================================================================
-		
-		$config = file_get_contents(pm_Settings::get("agentConfig"));
-		
-		$configForm = new pm_Form_Simple();
-		$configForm->addElement('textarea', 'configuration', array(
-			'label' => "Configuration",
-			'value' => $config,
-			"style" => "margin-right: 5px",
-			"attribs" => array("disabled" => "disabled"),
-		));
-
-		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
-		$this->view->configForm = $configForm;
-
-		// =====================================================================================
-
-		$this->view->info = pm_Locale::lmsg("agentExecution");
-
-		$task = new pm_Scheduler_Task();
-		$id = pm_Settings::get('agent-schedule-id');
-		$cron_default = array(
-			'minute' => '30',
-			'hour' => '13',
-			'dom' => '*',
-			'month' => '*',
-			'dow' => '*',
-		);
-
-		if ($this->getRequest()->isPost()) {
-			$action = $_POST["submit"];
-
-			if (strpos($action, "schedule") !== false) {
-				$interval = $_POST["interval"];
-				$status = $_POST["status"];
-				$yara = $_POST["yara"]; 
-
-				if (!isset($_POST["status"])) {
-					$status = "0";
-				}
-
-				if (!isset($_POST["yara"])) {
-					$yara = "0";
-				}
-
-				$cron = $cron_default;
-				if ($interval == '12') {
-					$cron['hour'] = '1,13';
-				} else if ($interval == '8') {
-					$cron['hour'] = '1,9,17';
-				} else if ($interval == '6') {
-					$cron['hour'] = '1,7,13,19';
-				}
-
-				pm_Settings::set('agentStatus', $status);
-				if ($status == "0") {
-					$yara = "0";	
-				}
-
-				pm_Settings::set("agentYara", $yara);
-
-				if ($status == "1") {
-					try {
-						if (!empty($id)) {
-							$task = pm_Scheduler::getInstance()->getTaskById($id);
-							pm_Scheduler::getInstance()->removeTask($task);
-						}
-					} catch (pm_Exception $e) {
-					} finally {
-						$task = new pm_Scheduler_Task();
-						$task->setCmd('run.php');
-						$task->setSchedule($cron);
-
-						pm_Scheduler::getInstance()->putTask($task);
-
-						pm_Settings::set('agent-schedule-id', $task->getId());
-						pm_Settings::set('schedule-interval', $interval);
-						array_push($this->view->responses, Helpers::createMessage("Agent successfully activated", "info"));
-					}
-				} else if ($status == "0") {
-					if (!empty($id)) {
-						try {
-							$task = pm_Scheduler::getInstance()->getTaskById($id);
-
-							pm_Scheduler::getInstance()->removeTask($task);
-							pm_Settings::set('agent-schedule-id', FALSE);
-							pm_Settings::set('schedule-interval', "0");
-						} catch (pm_Exception $e) {
-						} finally {
-							pm_Settings::set('agent-schedule-id', FALSE);
-							pm_Settings::set('schedule-interval', "0");
-							array_push($this->view->responses, Helpers::createMessage("Agent successfully deactivated", "info"));
-						}
-					}
-				} else {
-					array_push($this->view->responses, Helpers::createMessage("Invalid agent status chosen", "error"));
-				}
-			}
-		}
-	}
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
 
 	public function loginAction() {
 		$this->view->tabs = $this->newTabs();
@@ -427,6 +444,10 @@ class IndexController extends pm_Controller_Action {
 			)));
 		}
 	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
 
 	public function updateagentAction() {
 		$this->view->tabs = $this->newTabs();

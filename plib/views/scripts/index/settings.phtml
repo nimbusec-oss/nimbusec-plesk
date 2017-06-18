@@ -18,7 +18,7 @@ echo $this->renderTabs($this->tabs);
             </div>
         </div>
         <div class="content">
-            Here you can find your domains inside of plesk which has not been registered into nimbusec. In order to register a domain, select the domain you want to register
+            Below you can find your domains inside of plesk which has not been registered with nimbusec. In order to register a domain, select the domain you want to register
             along with the bundle<br>
             and click on the button "Register the selected domains" to complete the registration.
             <br>
@@ -45,7 +45,7 @@ echo $this->renderTabs($this->tabs);
                     <div class="list">
                         <?php if (count($this->domains) == 0) { ?>
                             <span class="hint">
-                                No unregistered domains found.
+                                No domains found.
                             </span>
                         <?php } else { ?>
                             <table id="pm-list-nimbusec-agent-integration-table" width="100%" cellspacing="0">

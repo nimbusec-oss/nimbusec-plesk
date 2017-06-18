@@ -328,7 +328,7 @@ class IndexController extends pm_Controller_Action {
 						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
 						return;
 					}
-					array_push($this->view->responses, Helpers::createMessage("Successfully register domains with <b>{$bundleName}</b>", "info"));
+					array_push($this->view->responses, Helpers::createMessage("Successfully registered domains with <b>{$bundleName}</b>", "info"));
 				}
 
 				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

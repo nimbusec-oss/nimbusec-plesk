@@ -117,6 +117,15 @@ DATA;
 					</div>
 				</div>";
 	}
+
+	public static function logger($level, $msg, $data = array()) {
+		$message = sprintf("[%s][%s] %s", date("Y-m-d h:m:s"), strtoupper($level), $msg . PHP_EOL);
+		file_put_contents(pm_Settings::get("agentLog"), $message, FILE_APPEND);
+		
+		if ($data != array() && $data != "") {
+			file_put_contents(pm_Settings::get("agentLog"), json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT), FILE_APPEND);
+		}
+	}
 }
 
 ?>

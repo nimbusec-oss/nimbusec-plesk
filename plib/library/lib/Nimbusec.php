@@ -1,5 +1,7 @@
 <?php
 
+require_once(pm_Context::getPlibDir() . "/helpers/Helpers.php");
+
 /**
  * Nimbusec Helper Class
  * 
@@ -45,7 +47,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$domains = $api->findDomains("name=\"$domain\"");
 
 		if (count($domains) != 1) {
-			// log the error
+			Helpers::logger("error", "found more or less than 1 domain for {$domain}");
 			return false;
 		}
 

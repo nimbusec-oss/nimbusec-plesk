@@ -9,8 +9,9 @@ class IndexController extends pm_Controller_Action {
 		parent::init();
 
 		// Init title for all actions
-		$this->view->pageTitle = 'nimbusec Agent';
+		$this->view->pageTitle = 'nimbusec Webshell Detection';
 		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
+		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent-plesk-plugin.log");
 	}
 
 	public function oldTabs() {
@@ -107,10 +108,15 @@ class IndexController extends pm_Controller_Action {
 			),
 		));
 
-		$form->addControlButtons(array(
-			"sendTitle" => "Download Server Agent",
-			'cancelLink' => pm_Context::getModulesListUrl(),
-		));
+		$buttons = array(
+			"cancelLink" => pm_Context::getModulesListUrl(),
+			"sendTitle" => "Download Server Agent"
+		);
+		
+		if (pm_Settings::get("setupTabs") == "0") {
+			$buttons["sendHidden"] = true;
+		}
+		$form->addControlButtons($buttons);
 
 		$err = false;
 		$msg = pm_Locale::lmsg('savedMessage');
@@ -403,9 +409,7 @@ class IndexController extends pm_Controller_Action {
 						pm_Scheduler::getInstance()->removeTask($task);
 					}
 				} catch (pm_Exception $e) {
-					
 				} finally {
-
 					$task = new pm_Scheduler_Task();
 					$task->setCmd('run.php');
 					$task->setSchedule($cron);
@@ -497,9 +501,8 @@ class IndexController extends pm_Controller_Action {
 		
 			//if agent key and secret not present query from api
 			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-
+			
 			try {
-				//get agent binary from api
 				if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
 					$err = true;
 					$msg = pm_Locale::lmsg('downloadError');

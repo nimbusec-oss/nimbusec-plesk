@@ -27,4 +27,6 @@ if (pm_Settings::get("agentYara") == "1") {
 	$cmd .= " -yara";
 }
 
+$cmd .= " > " . pm_Context::getVarDir() . "agent-out.log 2> " . pm_Context::getVarDir() . "agent-err.log";
+
 system($cmd);

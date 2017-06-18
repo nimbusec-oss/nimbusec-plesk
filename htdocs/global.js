@@ -1,8 +1,8 @@
-function updateState() {
-	var elems = document.getElementsByName("active[]");
-	var target = document.getElementById("act").checked;
+function updateState(id) {
+	var elements = document.getElementsByName("active" + id + "[]");
+	var target = document.getElementById("act" + id).checked;
 
-	for (var i = 0; i<elems.length; i++) {
-		elems[i].checked = target;
+	for (var i = 0; i < elements.length; i++) {
+		elements[i].checked = target;
 	}
 }

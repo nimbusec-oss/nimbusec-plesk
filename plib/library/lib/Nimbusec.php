@@ -1,5 +1,7 @@
 <?php
 
+require_once(pm_Context::getPlibDir() . "/helpers/Helpers.php");
+
 /**
  * Nimbusec Helper Class
  * 
@@ -20,40 +22,37 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$this->server = pm_Settings::get('apiserver');
 	}
 
-	/**
-	 * check if given domain exists. if not create new domain in given bundle
-	 * @param string $domain domain to be checked/created
-	 * @param string $bundle if domain needs to be created add it to this bundle
-	 * @return boolean true if domain already exists or was created. if false an error occured during creation
-	 */
-	public function checkDomain($domain, $bundle) {
-		require_once 'NimbusecAPI.php';
+	public function registerDomain($domain, $bundle) {
+		require_once "NimbusecAPI.php";
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$scheme = "http";
+		$domain = array(
+			"scheme" => $scheme,
+			"name" => $domain,
+			"deepScan" => $scheme . '://' . $domain,
+			"fastScans" => array(
+				$scheme . '://' . $domain
+			),
+			"bundle" => $bundle
+		);
+
+		$api->createDomain($domain);
+		return true;
+	}
+
+	public function unregisterDomain($domain) {
+		require_once "NimbusecAPI.php";
 		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
-		if (count($domains) == 1) {
-			return true;
-		} else if (count($domains) == 0) {
-			//crete domain
-			$scheme = "http";
-
-			$domain = array(
-				"scheme" => $scheme,
-				"name" => $domain,
-				"deepScan" => $scheme . '://' . $domain,
-				"fastScans" => array(
-					$scheme . '://' . $domain
-				),
-				"bundle" => $bundle
-			);
-			//return true if create == success
-
-			$api->createDomain($domain);
-
-			return true;
+		if (count($domains) != 1) {
+			Helpers::logger("error", "found more or less than 1 domain for {$domain}");
+			return false;
 		}
 
-		return false;
+		$api->deleteDomain($domains[0]["id"]);
+		return true;
 	}
 
 	/**
@@ -65,6 +64,22 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
+
+		return $bundles;
+	}
+
+	public function getBundlesWithDomains() {
+		$fetched = $this->getBundles();
+
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$bundles = array();
+		foreach ($fetched as $bundle) {
+			$bundles[$bundle["id"]]["bundle"] = $bundle;
+			$bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
+			$bundles[$bundle["id"]]["domains"] = $api->findDomains("bundle=\"{$bundle['id']}\"");
+		}
 
 		return $bundles;
 	}
@@ -89,8 +104,33 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 
 			return $api->createAgentToken($token);
 		}
-		
-		
+	}
+
+	/**
+	 * Upserts a given user and set the signature key for him which enables SSO functionality
+	 * @param string $mail The mail of the user
+	 * @return void
+	 */
+	public function upsertUserWithSSO($mail, $signatureKey) {
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$users = $api->findUsers("mail=\"{$mail}\"");
+		if (count($users) > 0) {
+			$user = $users[0];
+			$user["signatureKey"] = $signatureKey;
+
+			$api->updateUser($user["id"], $user);
+			return;
+		}
+
+		$user = array(
+			"login" => $mail,
+			"mail" => $mail,
+			"role" => "admin",
+			"signatureKey" => $signatureKey
+		);
+		$api->createUser($user);
 	}
 	
 	/**
@@ -108,28 +148,51 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 			$os = 'windows';
 		}
 		
-		$arch = (string)8*PHP_INT_SIZE;
-		$arch.='bit';
+		$arch = (string)8 * PHP_INT_SIZE;
+		$arch .= 'bit';
+		$format = 'bin';
 		
+		$agents = $api->findServerAgents();
+		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
+			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
+		});
+		$filtered = array_values($filtered);
 		
-		$agents = $api->findServerAgents("os=\"$os\" and arch=\"$arch\"");
-		
-		if (count($agents) > 0) {
-			$agentBin = $api->findSpecificServerAgent($agents[0]['os'], $agents[0]['arch'], $agents[0]['version'], 'bin');
-
+		if (count($filtered) > 0) {
+			$agent = $filtered[0];
+			$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
 			
 			$name = 'agent';
 			if ($os == 'windows') {
-				$name=$name.'.exe';
+				$name = $name . '.exe';
 			}
-			file_put_contents($path.$name, $agentBin);
+			file_put_contents($path . $name, $agentBin);
 			
-			if ($os!='windows') {
-				chmod($path.$name, 0755);
+			if ($os != 'windows') {
+				chmod($path . $name, 0755);
 			}
+
+			pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 			
 			return true;
 		}
 		return false;
+	}
+
+	public function getNewestAgentVersion($os, $arch, $format = "bin") {
+		require_once 'NimbusecAPI.php';
+		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$agents = $api->findServerAgents();
+		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
+			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
+		});
+		$filtered = array_values($filtered);
+
+		if (count($filtered) > 0) {
+			return $filtered[0]["version"];
+		} 
+
+		return "0";
 	}
 }

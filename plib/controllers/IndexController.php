@@ -1,37 +1,84 @@
 <?php
 
+require_once(pm_Context::getPlibDir() . "/helpers/Helpers.php");
+require_once(pm_Context::getPlibDir() . "/library/lib/Nimbusec.php");
+
 class IndexController extends pm_Controller_Action {
+
+	// Three "===" - lines as comment mean the sepearation of the action methods 
+	// 		e.g (loginAction, settingsAction, ...)
+	//
+	// "=" as comment line means the semantic sepearation within an action 
+	// 		e.g (settingsAction => sepeartion of domain related, POST related and agent config related code)
+	//
+	// "+" as comment line means the sepeartion of form-related code within the POST request processing 
+	// 		e.g (if ($_POST == "registerDomains), if ($_POST == "unregisterDomains), ...)
+
 
 	public function init() {
 		parent::init();
 
 		// Init title for all actions
-		$this->view->pageTitle = 'nimbusec Agent';
+		$this->view->pageTitle = 'nimbusec Webshell Detection';
+		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
+		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent-plesk-plugin.log");
+	}
 
-		// Init tabs for all actions
-		$this->view->tabs = array(
+	public function oldTabs() {
+		return array(
 			array(
-				'title' => 'API',
-				'action' => 'api',
+				'title' => 'Setup',
+				'action' => 'setup'
+			),
+		);
+	}
+
+	public function newTabs() {
+		return array(
+			array(
+				'title' => 'Login to nimbusec',
+				'action' => 'login'
 			),
 			array(
-				'title' => 'Domains',
-				'action' => 'domains',
+				'title' => 'Settings',
+				'action' => 'settings',
 			),
 			array(
-				'title' => 'Run settings',
-				'action' => 'exec',
+				'title' => 'Update Agent',
+				'action' => 'updateagent'
+			),
+			array(
+				'title' => 'Setup',
+				'action' => 'setup',
 			),
 		);
 	}
 
 	public function indexAction() {
-		$this->_forward('api');
+		$setupTabs = pm_Settings::get("setupTabs");
+		if ($setupTabs == "0") {
+			$this->_forward('login');
+		} else {
+			$this->_forward('setup');
+		}
 	}
 
-	public function apiAction() {
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function setupAction() {
+		$setupTabs = pm_Settings::get("setupTabs");
+		if ($setupTabs == "0") {
+			$this->view->tabs = $this->newTabs();
+		} else {
+			$this->view->tabs = $this->oldTabs();
+		}
+
+		$this->view->info = pm_Locale::lmsg('apiInfo');
+		
 		//read config file
-		$string = file_get_contents(pm_Context::getVarDir() . '/agent.conf');
+		$string = file_get_contents(pm_Settings::get("agentConfig"));
 		$config = json_decode($string, true);
 		$apikey = $config['key'];
 
@@ -44,7 +91,6 @@ class IndexController extends pm_Controller_Action {
 		if (!empty(pm_Settings::get('apisecret'))) {
 			$apisecret = pm_Settings::get('apisecret');
 		}
-
 
 		$form = new pm_Form_Simple();
 		$form->addElement('text', 'apikey', array(
@@ -72,11 +118,18 @@ class IndexController extends pm_Controller_Action {
 			),
 		));
 
-		$form->addControlButtons(array(
-			'cancelLink' => pm_Context::getModulesListUrl(),
-		));
+		$buttons = array(
+			"cancelLink" => pm_Context::getModulesListUrl(),
+			"sendTitle" => "Download Server Agent"
+		);
+		
+		if (pm_Settings::get("setupTabs") == "0") {
+			$buttons["sendHidden"] = true;
+		}
+		$form->addControlButtons($buttons);
 
 		$err = false;
+		$msg = pm_Locale::lmsg('savedMessage');
 		if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
 			//store settings from form into key-value-store
 			pm_Settings::set('apikey', $form->getValue('apikey'));
@@ -89,7 +142,6 @@ class IndexController extends pm_Controller_Action {
 				$config['secret'] = pm_Settings::get('agentsecret');
 			} else {
 				//if agent key and secret not present query from api
-				require_once pm_Context::getPlibDir() . '/library/lib/Nimbusec.php';
 				$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 
 				try {
@@ -97,277 +149,79 @@ class IndexController extends pm_Controller_Action {
 					if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
 						//error!
 						$err = true;
-						$this->_status->addError(pm_Locale::lmsg('downloadError'));
+						$msg = pm_Locale::lmsg('downloadError');
 					} else {
 						//download and extract worked
-						$host = $this->getHost();
+						$host = Helpers::getHost();
+						$admin = Helpers::getAdministrator();
+
+						// upset admin and define signaturekey
+						$signatureKey = md5(uniqid(rand(), true));
+						$nimbusec->upsertUserWithSSO((string) $admin->admin_email, $signatureKey);
+
+						pm_Settings::set('signaturekey', $signatureKey);
 
 						//get new token
-						$token = $nimbusec->getAgentCredentials($host.'-plesk');
+						$token = $nimbusec->getAgentCredentials($host["0"].'-plesk');
 
 						pm_Settings::set('agentkey', $token['key']);
 						pm_Settings::set('agentsecret', $token['secret']);
 						pm_Settings::set('agenttoken-id', $token['id']);
 
+						// {"0":"localhost.localdomain"}
+
 						$config['key'] = pm_Settings::get('agentkey');
 						$config['secret'] = pm_Settings::get('agentsecret');
+
+						pm_Settings::set("setupTabs", "0");
 					}
 				} catch (NimbusecException $e) {
 					$err = true;
-					$this->_status->addError($e->getMessage());
+					$msg = $e->getMessage();
 				} catch (CUrlException $e) {
 					$err = true;
 					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-						$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-					}
-					if (strpos($e->getMessage(), '404')) {
-						$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
+						$msg = pm_Locale::lmsg('invalidAPICredentials');
+					} else if (strpos($e->getMessage(), '404')) {
+						$msg = pm_Locale::lmsg('invalidAgentVersion');
+					} else {
+						$msg = $e->getMessage();
 					}
 				}
 			}
 
 			if (!$err) {
 				$config['apiserver'] = rtrim($form->getValue('apiserver'),"/");
-
-				file_put_contents(pm_Context::getVarDir() . '/agent.conf', json_encode($config, JSON_UNESCAPED_SLASHES));
-
-				$this->_status->addMessage('info', pm_Locale::lmsg('savedMessage'));
+				$config["domains"] = new ArrayObject();
+				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
+				$this->_status->addMessage('info', $msg);
+			} else {
+				$this->_status->addMessage('error', $msg);
 			}
-			$this->_helper->json(array('redirect' => pm_Context::getBaseUrl()));
+			$this->_helper->json(array('redirect' => pm_Context::getActionUrl("index", "login")));
 		}
 
 		$this->view->form = $form;
 	}
 
-	//get hostname from plesk api
-	private function getHost() {
-		$request = <<<DATA
-<server>
-	<get>
-		<gen_info/>
-	</get>
-</server>
-DATA;
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
 
-		$resp = pm_ApiRpc::getService()->call($request);
+	public function settingsAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->responses = array();
 
-
-		return $resp->server->get->result->gen_info->server_name;
-	}
-
-	//get all domains on the host from plesk api
-	private function getDomainData() {
-		$api = pm_ApiRpc::getService();
-		$request = <<<DATA
-<webspace>
-	<get>
-		<filter/>
-		<dataset>
-			<gen_info/>
-			<hosting-basic/>
-		</dataset>
-	</get>
-</webspace>
-DATA;
-
-		$resp = $api->call($request);
-
-		$data = array();
-		foreach ($resp->webspace->get->result as $host) {
-			$dom = rtrim((string) $host->data->gen_info->name,"/");
-			foreach ($host->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					$dir = (string) $prop->value;
-					array_push($data, [$dom => $dir]);
-				}
-			}
-		}
-		$string = file_get_contents(pm_Context::getVarDir() . '/agent.conf');
-		$config = json_decode($string, true);
-
-
-
-		if (isset($_POST['submitted'])) {
-
-			//todo: check domain
-			//if returns true add to config
-			$domainsAdd = array();
-			$domains = $this->buildDomainArray($_POST['active']);
-			require_once pm_Context::getPlibDir() . '/library/lib/Nimbusec.php';
-			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-			$err = false;
-			foreach ($domains as $do => $di) {
-				try {
-					if ($nimbusec->checkDomain($do, $_POST['bundle'])) {
-						$domainsAdd[$do] = $di;
-					}
-				} catch (NimbusecException $e) {
-					if (!strpos($e->getMessage(), '409')) {
-						$err = true;
-						$this->_status->addError($e->getMessage());
-					}
-				} catch (CUrlException $e) {
-					
-					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-						$err = true;
-						$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-						
-					}
-					if (strpos($e->getMessage(), '404')) {
-						$err = true;
-						$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
-					}
-					if (strpos($e->getMessage(), '409')) {
-						//$err = true;
-						$this->_status->addError('Domain '.$do.' is known on your account but seems to be disabled. Please add it to a bundle in order to allow enabling it for the agent');
-					}
-				} catch (Exception $e) {
-					$this->_status->addError($e->getMessage());
-				}
-				
-			}
-			
-			if (!$err) {
-				$config['domains'] = $domainsAdd;
-
-				file_put_contents(pm_Context::getVarDir() . '/agent.conf', json_encode($config, JSON_UNESCAPED_SLASHES));
-				//$this->_status->addMessage('info', pm_Locale::lmsg('savedMessage'));
-				$this->view->submitted=true;
-				$this->view->infomsg=pm_Locale::lmsg('savedMessage');
-			}
-			
-			//$this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'domains')));
-		}
-		$d = $this->getListData($data, $config);
-
-
-		$list = new pm_View_List_Simple($this->view, $this->_request);
-		$list->setData($d);
-		$list->setColumns(array(
-			'column1' => array(
-				'title' => '<input type="checkbox" name="act" onclick="updateState()" id="act"> Add/Remove Domain',
-				'noEscape' => true,
-				'sortable' => false,
-			),
-			'column2' => array(
-				'title' => 'Domain',
-				'noEscape' => true,
-				'searchable' => true,
-			),
-			'column3' => array(
-				'title' => pm_Locale::lmsg('directory'),
-				'noEscape' => true,
-			),
-		));
-
-		$list->setDataUrl(array('action' => 'list-data'));
-
-		return $list;
-	}
-
-	public function domainsAction() {
-
-
-		$list = $this->getDomainData();
-
-		$this->view->list = $list;
-
-		require_once pm_Context::getPlibDir() . '/library/lib/Nimbusec.php';
+		// =====================================================================================
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-		try {
-			$this->view->bundles = $nimbusec->getBundles();
-			
-			
-		} catch (NimbusecException $e) {
-			$this->_status->addError($e->getMessage());
-		} catch (CUrlException $e) {
-			$err = true;
-			if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-				$this->_status->addError(pm_Locale::lmsg('invalidAPICredentials'));
-			}
-			if (strpos($e->getMessage(), '404')) {
-				$this->_status->addError(pm_Locale::lmsg('invalidAgentVersion'));
-			}
-		}
-		
-	}
+		$this->domainsView($nimbusec);
 
-	public function listDataAction() {
-		$list = $this->getDomainData();
+		// =====================================================================================
 
-		$this->_helper->json($list->fetchData());
-	}
+		$this->view->info = pm_Locale::lmsg("agentExecution");
 
-	private function getListData($data, $config) {
-		$ret = array();
-		foreach ($data as $var) {
-			foreach ($var as $key => $val) {
-				$box = '<input type="checkbox" name="active[]" value="' . $key . '"';
-				$box.= $this->isActive($key, $config);
-				$box.='/>';
-				$ret[] = array(
-					'column1' => $box,
-					'column2' => $key,
-					'column3' => $val,
-				);
-			}
-		}
-
-		return $ret;
-	}
-
-	//check if domain is already in agent config file if so add 'checked' to checkbox
-	private function isActive($domain, $config) {
-		foreach ($config['domains'] as $dom => $dir) {
-			if ($dom == $domain) {
-				return ' checked ';
-			}
-		}
-
-		return '';
-	}
-
-	private function buildDomainArray($domains) {
-		$domainObj = array();
-
-		foreach ($domains as $domain) {
-			$dir = (string) $this->getDomainDir($domain);
-			if ($dir != FALSE) {
-				$domainObj[$domain] = $dir;
-			}
-		}
-
-		return $domainObj;
-	}
-
-	//get htdocs dir for given domain from plesk api
-	private function getDomainDir($domain) {
-		$request = <<<DATA
-<webspace>
-	<get>
-		<filter>
-			<name>$domain</name>
-		</filter>
-		<dataset>
-			<hosting/>
-		</dataset>
-	</get>
-</webspace>	
-DATA;
-
-		$resp = pm_ApiRpc::getService()->call($request);
-
-		foreach ($resp->webspace->get->result[0]->data->hosting->vrt_hst->property as $prop) {
-			if ($prop->name == 'www_root') {
-				return $prop->value;
-			}
-		}
-		return false;
-	}
-
-	public function execAction() {
-		$this->view->note = pm_Locale::lmsg('pleaseNote');
+		$task = new pm_Scheduler_Task();
 		$id = pm_Settings::get('agent-schedule-id');
 		$cron_default = array(
 			'minute' => '30',
@@ -377,89 +231,296 @@ DATA;
 			'dow' => '*',
 		);
 
-		$form = new pm_Form_Simple();
+		if ($this->getRequest()->isPost()) {
+			$action = $_POST["submit"];
 
-		$status = 'inactive';
-		if (!empty($id)) {
+			try {
 
-			$status = 'active';
-		}
-		$form->addElement('checkbox', 'status', array(
-			'label' => 'Status (please check or uncheck to enable or disable the agent execution)',
-			'value' => pm_Settings::get('agentStatus'),
-		));
-		$form->addElement('select', 'interval', array(
-			'label' => 'Agent Scan Interval',
-			'multiOptions' => array(
-				'0' => pm_Locale::lmsg('once'),
-				'12' => pm_Locale::lmsg('twice'),
-				'8' => pm_Locale::lmsg('threeTimes'),
-				'6' => pm_Locale::lmsg('fourTimes'),
-			),
-			'value' => pm_Settings::get('schedule-interval'),
-			'required' => true,
-		));
-		$form->addControlButtons(array(
-			'cancelLink' => pm_Context::getModulesListUrl(),
-		));
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-		$task = new pm_Scheduler_Task();
-		if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-			$cron = $cron_default;
-			if ($form->getValue('interval') == '12') {
-				$cron['hour'] = '1,13';
-			} else if ($form->getValue('interval') == '8') {
-				$cron['hour'] = '1,9,17';
-			} else if ($form->getValue('interval') == '6') {
-				$cron['hour'] = '1,7,13,19';
-			}
+				if (strpos($action, "schedule") !== false) {
+					$interval = $_POST["interval"];
+					$status = $_POST["status"];
+					$yara = $_POST["yara"]; 
 
-			pm_Settings::set('agentStatus', $form->getValue('status'));
-
-			if ($form->getValue('status') == '1') {
-				try {
-					if (!empty($id)) {
-						$task = pm_Scheduler::getInstance()->getTaskById($id);
-						pm_Scheduler::getInstance()->removeTask($task);
+					if (!isset($_POST["status"])) {
+						$status = "0";
 					}
-				} catch (pm_Exception $e) {
+
+					if (!isset($_POST["yara"])) {
+						$yara = "0";
+					}
+
+					$cron = $cron_default;
+					if ($interval == '12') {
+						$cron['hour'] = '1,13';
+					} else if ($interval == '8') {
+						$cron['hour'] = '1,9,17';
+					} else if ($interval == '6') {
+						$cron['hour'] = '1,7,13,19';
+					}
+
+					pm_Settings::set('agentStatus', $status);
+					if ($status == "0") {
+						$yara = "0";	
+					}
+
+					pm_Settings::set("agentYara", $yara);
+
+					if ($status == "1") {
+						try {
+							if (!empty($id)) {
+								$task = pm_Scheduler::getInstance()->getTaskById($id);
+								pm_Scheduler::getInstance()->removeTask($task);
+							}
+						} catch (pm_Exception $e) {
+						} finally {
+							$task = new pm_Scheduler_Task();
+							$task->setCmd('run.php');
+							$task->setSchedule($cron);
+
+							pm_Scheduler::getInstance()->putTask($task);
+
+							pm_Settings::set('agent-schedule-id', $task->getId());
+							pm_Settings::set('schedule-interval', $interval);
+							array_push($this->view->responses, Helpers::createMessage("Agent successfully activated", "info"));
+						}
+					} else if ($status == "0") {
+						if (!empty($id)) {
+							try {
+								$task = pm_Scheduler::getInstance()->getTaskById($id);
+
+								pm_Scheduler::getInstance()->removeTask($task);
+								pm_Settings::set('agent-schedule-id', FALSE);
+								pm_Settings::set('schedule-interval', "0");
+							} catch (pm_Exception $e) {
+							} finally {
+								pm_Settings::set('agent-schedule-id', FALSE);
+								pm_Settings::set('schedule-interval', "0");
+								array_push($this->view->responses, Helpers::createMessage("Agent successfully deactivated", "info"));
+							}
+						}
+					} else {
+						array_push($this->view->responses, Helpers::createMessage("Invalid agent status chosen", "error"));
+					}
+				}
+
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+				if (strpos($action, "registerSelected") !== false) {
+					if (!isset($_POST["active0"])) {
+						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to register it.", "error"));
+						return;
+					}
+
+					$domains = $_POST["active0"];
 					
-				} finally {
+					$bundleString = split("__", $_POST["bundle"]);
+					$bundleId = $bundleString[0];
+					$bundleName = $bundleString[1];
 
-					$task = new pm_Scheduler_Task();
-					$task->setCmd('run.php');
-					$task->setSchedule($cron);
-					pm_Scheduler::getInstance()->putTask($task);
-
-					pm_Settings::set('agent-schedule-id', $task->getId());
-					pm_Settings::set('schedule-interval', $form->getValue('interval'));
-					$this->_status->addMessage('info', 'agent successfully activated');
-				}
-			}
-
-			if ($form->getValue('status') == '0') {
-				if (!empty($id)) {
-					try {
-						$task = pm_Scheduler::getInstance()->getTaskById($id);
-						pm_Scheduler::getInstance()->removeTask($task);
-
-						pm_Settings::set('agent-schedule-id', FALSE);
-					} catch (pm_Exception $e) {
-						
-					} finally {
-
-						pm_Settings::set('agent-schedule-id', FALSE);
-						$this->_status->addMessage('info', 'agent successfully deactivated');
+					$success = true;
+					foreach ($domains as $domain) {
+						$success = $success && $nimbusec->registerDomain($domain, $bundleId);
 					}
+
+					if (!$success) {
+						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						return;
+					}
+					array_push($this->view->responses, Helpers::createMessage("Successfully registered domains with <b>{$bundleName}</b>", "info"));
+				}
+
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+				if (strpos($action, "removeSelected") !== false) {
+					$index = substr($action, -1);
+					if (!isset($_POST["active{$index}"])) {
+						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to unregister it.", "error"));
+						return;
+					}
+
+					$domains = $_POST["active{$index}"];
+					$success = true;
+					foreach ($domains as $domain) {
+						$success = $success && $nimbusec->unregisterDomain($domain);
+					}
+
+					if (!$success) {
+						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						return;
+					}
+					array_push($this->view->responses, Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
+				}
+
+				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+			} catch (NimbusecException $e) {
+				array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+			} catch (CUrlException $e) {
+				if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+				} else if (strpos($e->getMessage(), '404')) {
+					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+				} else {
+					array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
 				}
 			}
-			 $this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'exec')));
-			
+
+			$this->domainsView($nimbusec);
 		}
 
+		// =====================================================================================
+		
+		$config = file_get_contents(pm_Settings::get("agentConfig"));
+		
+		$configForm = new pm_Form_Simple();
+		$configForm->addElement('textarea', 'configuration', array(
+			'label' => "Configuration",
+			'value' => $config,
+			"style" => "margin-right: 5px",
+			"attribs" => array("disabled" => "disabled"),
+		));
 
+		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
+		$this->view->configForm = $configForm;
+	}
+
+	public function domainsView($nimbusec) {
+		try {
+			$domains = Helpers::getHostDomains();
+			$keys = array_keys($domains);
+
+			$string = file_get_contents(pm_Settings::get("agentConfig"));
+			$config = json_decode($string, true);	
+			$config["domains"] = new ArrayObject();
+
+			$fetched = $nimbusec->getBundlesWithDomains();
+			foreach ($fetched as $id => $element) {
+				$element["domains"] = array_filter($element["domains"], function($domain) use ($keys) {
+					return in_array($domain["name"], $keys);
+				});
+
+				foreach ($element["domains"] as $domain) {
+					unset($domains[$domain["name"]]);
+
+					$directory = Helpers::getDomainDir($domain["name"]);
+					$config["domains"][$domain["name"]] = (string) $directory;
+				}
+				$fetched[$id]["domains"] = $element["domains"];
+			}
+
+			$this->view->domains = $domains;
+			$this->view->fetched = $fetched;
+
+			file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
+
+		} catch (NimbusecException $e) {
+			array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+		} catch (CUrlException $e) {
+			if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+			}
+			if (strpos($e->getMessage(), '404')) {
+				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+			}
+		}
+	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function loginAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->login = pm_Locale::lmsg('login');
+
+		if ($this->getRequest()->isPost()) {
+			$admin = Helpers::getAdministrator();
+			$this->_helper->json(array(
+				"link" => Helpers::getSignedLoginURL(
+					(string) $admin->admin_email, 
+					pm_Settings::get('signaturekey')
+			)));
+		}
+	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function updateagentAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->info = pm_Locale::lmsg("updateAgent");
+
+		$agent = json_decode(pm_Settings::get("agent"), true);
+		$this->view->installed = ($agent != null);
+		
+		$form = new pm_Form_Simple();
+		if ($this->view->installed) {
+			$this->view->agentStatus = pm_Locale::lmsg("agentInstalled");
+			$this->view->agentVersion = $agent["version"];
+			$this->view->agentOs = ucfirst($agent["os"]);
+			$this->view->agentArch = $agent["arch"];
+
+			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+			$version = $nimbusec->getNewestAgentVersion($agent["os"], $agent["arch"]);
+			if(intval($version) > intval($agent["version"])) {
+				$form->addControlButtons(array(
+					'sendTitle' => "Update to version {$version}",
+					'cancelLink' => pm_Context::getModulesListUrl(),
+				));
+				$this->_status->addMessage('warning', "Your current nimbusec Agent is outdated. Please download the newest update as soon as possible");
+			} else {
+				$this->_status->addMessage('info', "You have the newest version of the nimbusec Agent installed");
+				$form->addControlButtons(array(
+					"sendHidden" => true,
+					'cancelLink' => pm_Context::getModulesListUrl(),
+				));
+			}
+		} else {
+			$this->_status->addMessage('warning', "Your current nimbusec Agent is outdated. Please download the newest update as soon as possible");
+			$this->view->agentStatus = pm_Locale::lmsg("agentNotInstalled");
+			$form->addControlButtons(array(
+				'sendTitle' => 'Update',
+				'cancelLink' => pm_Context::getModulesListUrl(),
+			));
+		}
+
+		if ($this->getRequest()->isPost()) {
+			$err = false;
+			$msg = pm_Locale::lmsg('agentUpdated');
+		
+			//if agent key and secret not present query from api
+			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+			
+			try {
+				if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
+					$err = true;
+					$msg = pm_Locale::lmsg('downloadError');
+				}
+			} catch (NimbusecException $e) {
+				$err = true;
+				$msg = $e->getMessage();
+			} catch (CUrlException $e) {
+				$err = true;
+				if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+					$msg = pm_Locale::lmsg('invalidAPICredentials');
+				} else if (strpos($e->getMessage(), '404')) {
+					$msg = pm_Locale::lmsg('invalidAgentVersion');
+				} else {
+					$msg = $e->getMessage();
+				}
+			}
+
+			if (!$err) {
+				$this->_status->addMessage('info', $msg);
+			} else {
+				$this->_status->addMessage('error', $msg);
+			}
+			$this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'updateagent')));
+		}
 
 		$this->view->form = $form;
 	}
-
 }

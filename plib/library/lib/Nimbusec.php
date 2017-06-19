@@ -115,7 +115,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		require_once 'NimbusecAPI.php';
 		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
 
-		$users = $api->findUsers("mail=\"{$mail}\"");
+		$users = $api->findUsers("login=\"{$mail}\"");
 		if (count($users) > 0) {
 			$user = $users[0];
 			$user["signatureKey"] = $signatureKey;

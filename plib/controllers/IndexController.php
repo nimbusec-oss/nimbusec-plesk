@@ -362,6 +362,12 @@ class IndexController extends pm_Controller_Action {
 					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
 				} else if (strpos($e->getMessage(), '404')) {
 					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+				} else if (strpos($e->getMessage(), '409')) {
+					if (strpos($e->getMessage(), "X-Nimbusec-Error") !== false) {
+						array_push($this->view->responses, Helpers::createMessage("X-Nimbusec-Error" . split("X-Nimbusec-Error", $e->getMessage())[1], "error"));
+					} else {
+						array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));	
+					}
 				} else {
 					array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
 				}
@@ -378,8 +384,7 @@ class IndexController extends pm_Controller_Action {
 		$configForm->addElement('textarea', 'configuration', array(
 			'label' => "Configuration",
 			'value' => $config,
-			"style" => "margin-right: 5px",
-			"attribs" => array("disabled" => "disabled"),
+			"style" => "margin-right: 5px; height: 400px; width: 400px"
 		));
 
 		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");

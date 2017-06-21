@@ -10,17 +10,17 @@ $messages = array(
 	"twice" => "2x täglich",
 	"threeTimes" => "3x täglich",
 	"fourTimes" => "4x täglich",
-	"agentExecution" => "Innerhalb der Ausführungseinstellungen können Sie den nimbusec Agent anhand eines bestimmten Zeitplans ausführen bzw. zeitlich festlegen." .
+	"agentExecution" => "Innerhalb der Ausführungseinstellungen können Sie den Nimbusec Agent anhand eines bestimmten Zeitplans ausführen bzw. zeitlich festlegen." .
 						"<br>Bitte beachten Sie, dass der Server Agent erst ausgeführt wird nachdem einen Zeitplan ausgewählt haben.",
-	"apiInfo" => "Geben Sie ihre nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .
+	"apiInfo" => "Geben Sie ihre Nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .
 	  			 "Das API Server Feld sollte nicht verändert werden, um das korrekte Funktionieren des Plugins zu gewährleisten. " .
 				 "<br>Für weitere Information über den Erhalten und den Einsatz der API Zugangsdaten kontaktieren Sie uns bitte über plesk@nimbusec.com." .
 				 "<br>Die Dokumentation für dieses Plugin finden Sie auf <a href=\"https://kb.nimbusec.com/Integrations/Plesk\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
-	"login" => "Loggen Sie sich einfache und bequem ins nimbusec Portal via Single Sign On ein. Weitere Informationen zu diesem Plugin finden Sie auf <a href=\"https://kb.nimbusec.com/Integrations/Plesk\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
-	"updateAgent" => "Halten Sie den nimbusec Agent up-to-date indem Sie regelmäßig die neueste Version runterladen. Dies sorgt für eine zuverlässige und fehlerfreie Malwareerkennung.",
-	"agentUpdated" => "Der nimbusec Agent wurde erfolgreich heruntergeladen und mit der neuesten Version aktualisiert.",
+	"login" => "Loggen Sie sich einfache und bequem ins Nimbusec Portal via Single Sign On ein. Weitere Informationen zu diesem Plugin finden Sie auf <a href=\"https://kb.nimbusec.com/Integrations/Plesk\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
+	"updateAgent" => "Halten Sie den Nimbusec Agent up-to-date indem Sie regelmäßig die neueste Version runterladen. Dies sorgt für eine zuverlässige und fehlerfreie Malwareerkennung.",
+	"agentUpdated" => "Der Nimbusec Agent wurde erfolgreich heruntergeladen und mit der neuesten Version aktualisiert.",
 	"agentInstalled" => "installiert",
 	"agentNotInstalled" => "nicht installiert",
-	"agentConfiguration" => "Hier sehen Sie die aktuelle Konfiguration des nimbusec Agents",
+	"agentConfiguration" => "Hier sehen Sie die aktuelle Konfiguration des Nimbusec Agents",
 );
 

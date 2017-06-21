@@ -19,7 +19,7 @@ class IndexController extends pm_Controller_Action {
 		parent::init();
 
 		// Init title for all actions
-		$this->view->pageTitle = 'nimbusec Webshell Detection';
+		$this->view->pageTitle = 'Nimbusec Webshell Detection';
 		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
 		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent-plesk-plugin.log");
 	}
@@ -475,16 +475,16 @@ class IndexController extends pm_Controller_Action {
 					'sendTitle' => "Update to version {$version}",
 					'cancelLink' => pm_Context::getModulesListUrl(),
 				));
-				$this->_status->addMessage('warning', "Your current nimbusec Agent is outdated. Please download the newest update as soon as possible");
+				$this->_status->addMessage('warning', "Your current Nimbusec Agent is outdated. Please download the newest update as soon as possible");
 			} else {
-				$this->_status->addMessage('info', "You have the newest version of the nimbusec Agent installed");
+				$this->_status->addMessage('info', "You have the newest version of the Nimbusec Agent installed");
 				$form->addControlButtons(array(
 					"sendHidden" => true,
 					'cancelLink' => pm_Context::getModulesListUrl(),
 				));
 			}
 		} else {
-			$this->_status->addMessage('warning', "Your current nimbusec Agent is outdated. Please download the newest update as soon as possible");
+			$this->_status->addMessage('warning', "Your current Nimbusec Agent is outdated. Please download the newest update as soon as possible");
 			$this->view->agentStatus = pm_Locale::lmsg("agentNotInstalled");
 			$form->addControlButtons(array(
 				'sendTitle' => 'Update',

@@ -46,8 +46,8 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
-		if (count($domains) != 1) {
-			Modules_NimbusecAgentIntegration_Lib_Helpers::logger("error", "found more or less than 1 domain for {$domain}");
+		if (count($domains) == 1) {
+			pm_Log::err("found more or less than 1 domain for {$domain}");
 			return false;
 		}
 

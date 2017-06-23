@@ -8,5 +8,5 @@
   <vendor>nimbusec</vendor>
   <url>https://nimbusec.com</url>
   <help_url>https://kb.nimbusec.com/Integrations/Plesk</help_url>
-  <plesk_min_version>12.0</plesk_min_version>
+  <plesk_min_version>12.5</plesk_min_version>
 </module>

@@ -9,24 +9,20 @@
 set_time_limit(0);
 pm_Context::init('nimbusec-agent-integration');
 
-$binary = array(
-	'linux' => 'agent',
-	'unix' => 'agent',
-	'windows' => 'agent.exe',
-	'winnt' => 'agent.exe',
-	'win32' => 'agent.exe',
-);
+$varDir = pm_Context::getVarDir();
+$agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
-$selected = $binary[strtolower(PHP_OS)];
+// define command
+$utility = "agent.sh";
+$args = array();
 
-$path_exec = pm_Context::getVarDir() . '/' . $selected;
-$path_conf = pm_Context::getVarDir() . '/agent.conf';
+array_push($args, "{$varDir}/{$agent}");
+array_push($args, "-config", "{$varDir}/agent.conf");
 
-$cmd = sprintf("%s -config %s", $path_exec, $path_conf);
 if (pm_Settings::get("agentYara") == "1") {
-	$cmd .= " -yara";
+	array_push($args, "-yara");
 }
 
-$cmd .= " > " . pm_Context::getVarDir() . "agent-out.log 2> " . pm_Context::getVarDir() . "agent-err.log";
+array_push($args, ">", "{$varDir}/agent.log", "2>&1");
 
-system($cmd);
+pm_ApiCli::callSbin($utility, $args);

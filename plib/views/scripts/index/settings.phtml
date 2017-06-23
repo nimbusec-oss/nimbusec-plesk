@@ -138,7 +138,7 @@ echo $this->renderTabs($this->tabs);
                                                 <input name="active<?php echo $i; ?>[]" value="<?php echo $domain['name']; ?>" type="checkbox"> <?php echo $domain['name']; ?>
                                             </td>
                                             <td>
-                                                <?php echo Helpers::getDomainDir($domain["name"]); ?>
+                                                <?php echo Modules_NimbusecAgentIntegration_Lib_Helpers::getDomainDir($domain["name"]); ?>
                                             </td>
                                         </tr>
                                         <?php } ?>
@@ -285,6 +285,15 @@ echo $this->renderTabs($this->tabs);
             parent.appendChild(wait);
         }); 
     });
-
+    
     document.getElementById("configuration").readOnly = true;
+
+    function updateState(id) {
+        var elements = document.getElementsByName("active" + id + "[]");
+        var target = document.getElementById("act" + id).checked;
+
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].checked = target;
+        }
+    }
 </script>

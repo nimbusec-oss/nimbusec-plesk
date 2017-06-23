@@ -1,6 +1,6 @@
 <?php
 
-class Helpers {
+class Modules_NimbusecAgentIntegration_Lib_Helpers {
     public static function getSignedLoginURL($userName, $userSecret) {
 
 		// get time with milliseconds ~true timestamp (hack because PHP has no long)

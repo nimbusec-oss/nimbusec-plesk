@@ -1,6 +1,7 @@
 <?php
 
-require_once(pm_Context::getPlibDir() . "/helpers/Helpers.php");
+require_once(pm_Context::getPlibDir() . "/library/Helpers.php");
+require_once(pm_Context::getPlibDir() . "/library/lib/NimbusecAPI.php");
 
 /**
  * Nimbusec Helper Class
@@ -23,8 +24,8 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function registerDomain($domain, $bundle) {
-		require_once "NimbusecAPI.php";
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$scheme = "http";
 		$domain = array(
@@ -42,12 +43,11 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function unregisterDomain($domain) {
-		require_once "NimbusecAPI.php";
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
 		if (count($domains) != 1) {
-			Helpers::logger("error", "found more or less than 1 domain for {$domain}");
+			Modules_NimbusecAgentIntegration_Lib_Helpers::logger("error", "found more or less than 1 domain for {$domain}");
 			return false;
 		}
 
@@ -60,8 +60,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array list of all active bundles
 	 */
 	public function getBundles() {
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
 
@@ -71,8 +70,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	public function getBundlesWithDomains() {
 		$fetched = $this->getBundles();
 
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$bundles = array();
 		foreach ($fetched as $bundle) {
@@ -90,8 +88,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array array/object with data of the created token
 	 */
 	public function getAgentCredentials($name) {
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		
 		$storedToken = $api->findAgentToken("name=\"$name\"");
 		
@@ -112,8 +109,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return void
 	 */
 	public function upsertUserWithSSO($mail, $signatureKey) {
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$users = $api->findUsers("login=\"{$mail}\"");
 		if (count($users) > 0) {
@@ -139,8 +135,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return boolean indicates whether extracting the token worked
 	 */
 	public function fetchAgent($path) {
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		
 		$os = strtolower(PHP_OS);
 		
@@ -172,6 +167,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 				chmod($path . $name, 0755);
 			}
 
+			$agent["name"] = $name;
 			pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 			
 			return true;
@@ -180,8 +176,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function getNewestAgentVersion($os, $arch, $format = "bin") {
-		require_once 'NimbusecAPI.php';
-		$api = new NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$agents = $api->findServerAgents();
 		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {

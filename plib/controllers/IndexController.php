@@ -1,6 +1,6 @@
 <?php
 
-require_once(pm_Context::getPlibDir() . "/helpers/Helpers.php");
+require_once(pm_Context::getPlibDir() . "/library/Helpers.php");
 require_once(pm_Context::getPlibDir() . "/library/lib/Nimbusec.php");
 
 class IndexController extends pm_Controller_Action {
@@ -152,8 +152,8 @@ class IndexController extends pm_Controller_Action {
 						$msg = pm_Locale::lmsg('downloadError');
 					} else {
 						//download and extract worked
-						$host = Helpers::getHost();
-						$admin = Helpers::getAdministrator();
+						$host = Modules_NimbusecAgentIntegration_Lib_Helpers::getHost();
+						$admin = Modules_NimbusecAgentIntegration_Lib_Helpers::getAdministrator();
 
 						// upset admin and define signaturekey
 						$signatureKey = md5(uniqid(rand(), true));
@@ -283,7 +283,7 @@ class IndexController extends pm_Controller_Action {
 
 							pm_Settings::set('agent-schedule-id', $task->getId());
 							pm_Settings::set('schedule-interval', $interval);
-							array_push($this->view->responses, Helpers::createMessage("Agent successfully activated", "info"));
+							array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Agent successfully activated", "info"));
 						}
 					} else if ($status == "0") {
 						if (!empty($id)) {
@@ -297,11 +297,11 @@ class IndexController extends pm_Controller_Action {
 							} finally {
 								pm_Settings::set('agent-schedule-id', FALSE);
 								pm_Settings::set('schedule-interval', "0");
-								array_push($this->view->responses, Helpers::createMessage("Agent successfully deactivated", "info"));
+								array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Agent successfully deactivated", "info"));
 							}
 						}
 					} else {
-						array_push($this->view->responses, Helpers::createMessage("Invalid agent status chosen", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Invalid agent status chosen", "error"));
 					}
 				}
 
@@ -309,7 +309,7 @@ class IndexController extends pm_Controller_Action {
 
 				if (strpos($action, "registerSelected") !== false) {
 					if (!isset($_POST["active0"])) {
-						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to register it.", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("No domains selected. Please select a domain in order to register it.", "error"));
 						return;
 					}
 
@@ -325,10 +325,10 @@ class IndexController extends pm_Controller_Action {
 					}
 
 					if (!$success) {
-						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
 						return;
 					}
-					array_push($this->view->responses, Helpers::createMessage("Successfully registered domains with <b>{$bundleName}</b>", "info"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Successfully registered domains with <b>{$bundleName}</b>", "info"));
 				}
 
 				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -336,7 +336,7 @@ class IndexController extends pm_Controller_Action {
 				if (strpos($action, "removeSelected") !== false) {
 					$index = substr($action, -1);
 					if (!isset($_POST["active{$index}"])) {
-						array_push($this->view->responses, Helpers::createMessage("No domains selected. Please select a domain in order to unregister it.", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("No domains selected. Please select a domain in order to unregister it.", "error"));
 						return;
 					}
 
@@ -347,29 +347,29 @@ class IndexController extends pm_Controller_Action {
 					}
 
 					if (!$success) {
-						array_push($this->view->responses, Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An unexpected error occurred. Please check the log.", "error"));
 						return;
 					}
-					array_push($this->view->responses, Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Successfully unregistered domains from <b>{$_POST['bundle']}</b>", "info"));
 				}
 
 				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 			} catch (NimbusecException $e) {
-				array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));
 			} catch (CUrlException $e) {
 				if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
 				} else if (strpos($e->getMessage(), '404')) {
-					array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
 				} else if (strpos($e->getMessage(), '409')) {
 					if (strpos($e->getMessage(), "X-Nimbusec-Error") !== false) {
-						array_push($this->view->responses, Helpers::createMessage("X-Nimbusec-Error" . split("X-Nimbusec-Error", $e->getMessage())[1], "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("X-Nimbusec-Error" . split("X-Nimbusec-Error", $e->getMessage())[1], "error"));
 					} else {
-						array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));	
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));	
 					}
 				} else {
-					array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));
 				}
 			}
 
@@ -393,7 +393,7 @@ class IndexController extends pm_Controller_Action {
 
 	public function domainsView($nimbusec) {
 		try {
-			$domains = Helpers::getHostDomains();
+			$domains = Modules_NimbusecAgentIntegration_Lib_Helpers::getHostDomains();
 			$keys = array_keys($domains);
 
 			$string = file_get_contents(pm_Settings::get("agentConfig"));
@@ -409,7 +409,7 @@ class IndexController extends pm_Controller_Action {
 				foreach ($element["domains"] as $domain) {
 					unset($domains[$domain["name"]]);
 
-					$directory = Helpers::getDomainDir($domain["name"]);
+					$directory = Modules_NimbusecAgentIntegration_Lib_Helpers::getDomainDir($domain["name"]);
 					$config["domains"][$domain["name"]] = (string) $directory;
 				}
 				$fetched[$id]["domains"] = $element["domains"];
@@ -421,13 +421,13 @@ class IndexController extends pm_Controller_Action {
 			file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
 
 		} catch (NimbusecException $e) {
-			array_push($this->view->responses, Helpers::createMessage($e->getMessage(), "error"));
+			array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));
 		} catch (CUrlException $e) {
 			if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
 			}
 			if (strpos($e->getMessage(), '404')) {
-				array_push($this->view->responses, Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
 			}
 		}
 	}
@@ -441,9 +441,9 @@ class IndexController extends pm_Controller_Action {
 		$this->view->login = pm_Locale::lmsg('login');
 
 		if ($this->getRequest()->isPost()) {
-			$admin = Helpers::getAdministrator();
+			$admin = Modules_NimbusecAgentIntegration_Lib_Helpers::getAdministrator();
 			$this->_helper->json(array(
-				"link" => Helpers::getSignedLoginURL(
+				"link" => Modules_NimbusecAgentIntegration_Lib_Helpers::getSignedLoginURL(
 					(string) $admin->admin_email, 
 					pm_Settings::get('signaturekey')
 			)));

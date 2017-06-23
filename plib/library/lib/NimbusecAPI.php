@@ -20,7 +20,7 @@ require_once ('CURLClient.php');
  * 
  * <u> See the documentation for more details. </u>
  */
-class NimbusecAPI {
+class Modules_NimbusecAgentIntegration_Lib_NimbusecAPI {
     
     // -- Contains the cURL instance used to send the request to the API via SSL --
     private $client;
@@ -48,7 +48,7 @@ class NimbusecAPI {
         $this->consumer = new OAuthConsumer ( $key, $secret );
         
         // -- Create new cURL instance --
-        $this->client = new CURLClient ();
+        $this->client = new Modules_NimbusecAgentIntegration_Lib_CURLClient ();
     }
 
     /**

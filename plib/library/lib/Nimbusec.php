@@ -103,6 +103,42 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		}
 	}
 
+	public function getDomainIds($domains) {
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$query = "";
+		foreach ($domains as $index => $domain) {
+			$query .= "name=\"{$domain}\"";
+
+			if (($index + 1) < count($domains)) {
+				$query .= " or ";
+			}
+		}
+		$fetched = $api->findDomains($query);
+
+		if (count($fetched) != count($domains)) {
+			$difference = array_diff($fetched, $domains);
+			
+			pm_Log::err(sprintf("not all domain in Plesk were found by the API. exceptions are [%s]", 
+							join(", ", $difference)));
+			return;
+		}
+
+		return array_map(function($domain) { return $domain["id"]; }, $fetched);
+	}
+
+	public function getWebshellIssuesByDomain($names) {
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$ids = $this->getDomainIds($names);
+
+		// let the domain names be the keys and convert the id to an array as the value
+		$domains = array_combine($names, array_map(function ($id) { return array("id" => $id); }, $ids));
+
+		foreach ($domains as $name => $value) {
+			$domains[$name]["results"] = $api->findResults($value["id"], "event=\"webshell\"");
+		}
+	}
+
 	/**
 	 * Upserts a given user and set the signature key for him which enables SSO functionality
 	 * @param string $mail The mail of the user

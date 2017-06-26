@@ -192,6 +192,35 @@ class Modules_NimbusecAgentIntegration_Lib_NimbusecAPI {
         $this->client->send_request ( $request->get_normalized_http_method (), $requestUrl );
     }
 
+    function findResults($domainId, $filter = null) {
+
+        // -- Domain base path --
+        $url = $this->DEFAULT_BASE_URL . "/v2/domain/{$domainId}/result";
+        
+        // -- Create OAuth request based on OAuth consumer and the specific URL --
+        $request = OAuthRequest::from_consumer_and_token ( $this->consumer, NULL, 'GET', $url );
+        
+        // -- Check if filter was passed; if so, append to params --
+        if ( !empty ( $filter ) )
+            $request->set_parameter ( 'q', $filter );
+            
+        // -- Make signed OAuth request to contact API server --
+        $request->sign_request ( new OAuthSignatureMethod_HMAC_SHA1 (), $this->consumer, NULL );
+        
+        // -- Get the usable url for the request --
+        $requestUrl = $request->to_url ();
+        
+        // -- Run the cUrl request --
+        $response = $this->client->send_request ( $request->get_normalized_http_method (), $requestUrl );
+        
+        $results = json_decode ( $response, true );
+        $err = $this->json_last_error_msg_dep ();
+        if ( !empty ( $err ) )
+            throw new NimbusecException ( "JSON: an error occured '{$err}' while trying to decode {$response}" );
+        else
+            return $results;
+    }
+
     /**
      * Read all existing bundles depending on an optional filter.
      *

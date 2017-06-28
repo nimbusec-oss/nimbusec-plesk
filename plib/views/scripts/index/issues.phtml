@@ -1,0 +1,164 @@
+<?php
+foreach ($this->responses as $response) {
+    echo $response;
+}
+
+echo $this->renderTabs($this->tabs); 
+?>
+
+<link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    Issues
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+
+            <?php foreach ($this->issues as $name => $domain) { ?>
+                <div class="form-row">
+
+                    <div class="field-name">
+                        <h4><b><?php echo $name ?></b></h4>
+                    </div>
+                    <div class="field-value" style="margin-bottom: 15px;"></div>
+
+                    <?php foreach ($domain["results"] as $result) { ?>
+                        <div class="panel panel-collapsible p-promo panel-collapsed">
+                            <div class="panel-wrap">
+
+                                <div class="panel-heading">
+                                    <div class="panel-heading-wrap">
+                                        <span class="panel-control">
+                                            <span style="margin-left: -155px; font-size: 14px">
+                                                <?php echo date("m/d/o h:i A", $result["lastDate"] / 1000); ?>
+                                            </span>
+                                            <i></i>
+                                        </span>
+
+                                        <h4 class="panel-heading-name">
+                                            
+                                            <?php
+                                                $circle0 = "#bbb";
+                                                $circle1 = "#fdd835";
+                                                $circle2 = "#f44336";
+
+                                                $bubbleColors = array(
+                                                    $circle0, $circle0
+                                                );
+
+                                                if ($result["severity"] == 1) {
+                                                    $bubbleColors[0] = $circle1;
+                                                }
+
+                                                if ($result["severity"] > 1) {
+                                                    $bubbleColors[1] = $circle2;
+                                                }
+                                            ?> 
+
+                                            <span style="margin-right: 5px">
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[0]; ?>"></i>
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[1]; ?>"></i>
+                                            </span>
+
+                                            <span style="font-size: 13px">
+                                                <?php echo $result["resource"]; ?>
+                                            </span>
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <div class="panel-content">
+                                    <div class="panel-content-wrap">
+                                        <?php foreach ($result as $key => $value) { 
+                                            $title = "";
+                                            $text = $value;
+
+                                            if ($key == "createDate") {
+                                                $title = "Known since";
+                                                $text = date("m/d/o h:i A", $value / 1000);
+                                            }
+
+                                            if ($key == "threatname") {
+                                                $title = "Name";
+                                            }
+
+                                            if ($key == "resource") {
+                                                $title = "Path";
+                                            }
+
+                                            if ($key == "md5") {
+                                                $title = strtoupper($key);
+                                            }
+
+                                            if ($key == "owner" || $key == "group" || $key == "permission") {
+                                                $title = ucfirst($key);
+                                            }
+
+                                            if ($title == "") {
+                                                continue;
+                                            }
+                                        ?>
+                                        
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>
+                                                        <?php echo $title; ?>
+                                                    </span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?php echo $text; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <?php } ?>
+                                        
+                                        <pre><code class="html">
+                                            <?php echo htmlentities(file_get_contents($result["resource"])); ?>
+                                        </code></pre>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    
+                    </div>
+                </div>
+            <?php } ?> 
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+    Jsw.onReady(function() {
+        $$('.panel-heading').each(function (element) {
+            element.observe('click', function () {
+                this.up('.panel').toggleClassName('panel-collapsed');
+                this.up('.panel').toggleClassName('panel-expanded');
+
+                var panel = this.up('.panel');
+                var stateCookieName = panel.id + '-hidden';
+
+                if (panel.hasClassName('panel-collapsed')) {
+                    Jsw.Cookie.setPermanent(stateCookieName, 1, '/');
+                } else {
+                    Jsw.Cookie.remove(stateCookieName, '/');
+                }
+            });
+        });
+    });
+</script>

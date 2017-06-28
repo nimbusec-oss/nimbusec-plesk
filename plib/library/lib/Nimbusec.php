@@ -127,16 +127,18 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		return array_map(function($domain) { return $domain["id"]; }, $fetched);
 	}
 
-	public function getWebshellIssuesByDomain($names) {
+	public function getWebshellIssuesByDomain($domains) {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
-		$ids = $this->getDomainIds($names);
+		$ids = $this->getDomainIds($domains);
 
 		// let the domain names be the keys and convert the id to an array as the value
-		$domains = array_combine($names, array_map(function ($id) { return array("id" => $id); }, $ids));
+		$issues = array_combine($domains, array_map(function ($id) { return array("domainId" => $id); }, $ids));
 
-		foreach ($domains as $name => $value) {
-			$domains[$name]["results"] = $api->findResults($value["id"], "event=\"webshell\"");
+		foreach ($issues as $domain => $value) {
+			$issues[$domain]["results"] = $api->findResults($value["domainId"], "event=\"webshell\"");
 		}
+
+		return $issues;
 	}
 
 	/**

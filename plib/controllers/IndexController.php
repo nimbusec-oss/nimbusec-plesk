@@ -40,6 +40,10 @@ class IndexController extends pm_Controller_Action {
 				'action' => 'login'
 			),
 			array(
+				"title" => "Issues",
+				"action" => "issues"
+			),
+			array(
 				'title' => 'Settings',
 				'action' => 'settings',
 			),
@@ -202,6 +206,23 @@ class IndexController extends pm_Controller_Action {
 		}
 
 		$this->view->form = $form;
+	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function issuesAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->responses = array();
+
+		// =====================================================================================
+
+		$domains = Modules_NimbusecAgentIntegration_Lib_Helpers::getHostDomains();
+		$names = array_keys($domains);
+		
+		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+		$this->view->issues = $nimbusec->getWebshellIssuesByDomain($names);
 	}
 
 	// ===========================================================================================================================================

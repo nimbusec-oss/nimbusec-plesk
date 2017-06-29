@@ -23,8 +23,13 @@ echo $this->renderTabs($this->tabs);
             <?php foreach ($this->issues as $name => $domain) { ?>
                 <div class="form-row">
 
-                    <div class="field-name">
-                        <h4><b><?php echo $name ?></b></h4>
+                    <div class="field-name" style="width: 100%">
+                        <div style="display: inline-block;">
+                            <h4><b><?php echo $name ?></b></h4>
+                        </div>
+                        <div style="display: inline-block; margin-left: 5px;">
+                            <a id="issue-link-<?php echo $name; ?>">Select / Deselect all issues</a>
+                        </div>
                     </div>
                     <div class="field-value" style="margin-bottom: 15px;"></div>
 
@@ -35,13 +40,35 @@ echo $this->renderTabs($this->tabs);
                                 <div class="panel-heading">
                                     <div class="panel-heading-wrap">
                                         <span class="panel-control">
-                                            <span style="margin-left: -155px; font-size: 14px">
+                                            
+                                            <div style="margin-left: -140px; color: #303030; margin-top: 2px;">
                                                 <?php echo date("m/d/o h:i A", $result["lastDate"] / 1000); ?>
-                                            </span>
-                                            <i></i>
+                                            </div>
+
+                                            <div id="issue-dropdown" class="dropdown" style="margin-left: -210px; margin-top: -18px; color: #303030;">
+                                                <a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
+                                                    <span>Actions</span>
+                                                    <i class="mdi mdi-menu-down"></i>
+                                                </a>
+                                                <ul class="dropdown-menu" style="background-color: #fafafa; box-shadow: 0 1px 4px 0px rgb(0, 0, 0, 0.3);">
+                                                    <li><!-- <form method="post" action="/domain/result-id"> -->
+                                                        <a>
+                                                            <i class="mdi mdi-bug"></i>
+                                                            <span>Move to Quarantine</span>
+                                                        </a>
+                                                    </li>
+                                                    <li><!-- <form method="post" action="/domain/result-id"> -->
+                                                        <a>
+                                                            <i class="mdi mdi-flag"></i>
+                                                            <span>False positive</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div> 
+
                                         </span>
 
-                                        <h4 class="panel-heading-name">
+                                        <div class="panel-heading-name">
                                             
                                             <?php
                                                 $circle0 = "#bbb";
@@ -62,6 +89,7 @@ echo $this->renderTabs($this->tabs);
                                             ?> 
 
                                             <span style="margin-right: 5px">
+                                                <input type="checkbox" id="issue-<?php echo $name;?>"/>
                                                 <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[0]; ?>"></i>
                                                 <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[1]; ?>"></i>
                                             </span>
@@ -69,7 +97,7 @@ echo $this->renderTabs($this->tabs);
                                             <span style="font-size: 13px">
                                                 <?php echo $result["resource"]; ?>
                                             </span>
-                                        </h4>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -121,10 +149,22 @@ echo $this->renderTabs($this->tabs);
                                         </div>
 
                                         <?php } ?>
+
+                                        <div class="source-code">
+                                            <a>View source code <i id="source-code-icon" class="mdi mdi-arrow-down-drop-circle"></i></a>
+                                        </div>
                                         
-                                        <pre><code class="html">
-                                            <?php echo htmlentities(file_get_contents($result["resource"])); ?>
-                                        </code></pre>
+                                        <div class="panel panel-collapsible panel-collapsed" style="margin: 0px; border: 0px">
+                                            <div class="panel-wrap">
+                                                <div class="panel-content">
+                                                    <div class="panel-content-wrap">
+                                                        <pre><code class="html">
+                                                            <?php echo htmlentities(file_get_contents($result["resource"])); ?>
+                                                        </code></pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
@@ -144,21 +184,55 @@ echo $this->renderTabs($this->tabs);
 <script>hljs.initHighlightingOnLoad();</script>
 
 <script>
-    Jsw.onReady(function() {
-        $$('.panel-heading').each(function (element) {
-            element.observe('click', function () {
-                this.up('.panel').toggleClassName('panel-collapsed');
-                this.up('.panel').toggleClassName('panel-expanded');
 
-                var panel = this.up('.panel');
-                var stateCookieName = panel.id + '-hidden';
-
-                if (panel.hasClassName('panel-collapsed')) {
-                    Jsw.Cookie.setPermanent(stateCookieName, 1, '/');
-                } else {
-                    Jsw.Cookie.remove(stateCookieName, '/');
-                }
-            });
+    // show issue dropdown
+    document.querySelectorAll("[id^='issue-dropdown']").forEach(function(menu) { 
+        menu.querySelector(".dropdown-toggle").addEventListener("click", function(triggered) {
+            triggered.target.closest("#issue-dropdown").classList.toggle("open");
         });
     });
+
+    // checking / unchecking by domain
+    document.querySelectorAll("[id^='issue-link']").forEach(function(link) { 
+        link.addEventListener("click", function(triggered) { 
+            var parts = triggered.target.id.split("-"); 
+            var domain = parts[parts.length - 1];
+            
+            var checked = document.querySelector("[id='issue-" + domain + "']").checked;
+            checked = !checked;
+
+            document.querySelectorAll("[id='issue-" + domain + "']").forEach(function(issue) { issue.checked = checked; });
+        }); 
+    });
+
+    // expand main issue panel
+    Array.from(document.getElementsByClassName("panel-heading")).forEach(function(panel) { 
+        panel.addEventListener("click", function(triggered) {
+            console.log(triggered.target);
+            console.log(triggered.target.parentElement);
+            if (triggered.target.parentElement.tagName == "A") {
+                return;
+            }
+
+            triggered.target.closest(".panel").classList.toggle("panel-collapsed");
+            triggered.target.closest(".panel").classList.toggle("panel-expanded");
+        });
+    });
+
+    // source-code expanding / collapsing
+    Array.from(document.getElementsByClassName("source-code")).forEach(function(item) { 
+        item.addEventListener("click", function(triggered) {
+            var panel = triggered.target.parentElement.nextElementSibling;
+            var icon = triggered.target.querySelector("#source-code-icon");
+
+            panel.classList.toggle("panel-collapsed");
+            panel.classList.toggle("panel-expanded");
+
+            panel.style.cssText = collapsed ? "border: 0px; margin: 0px;" : ""; 
+
+            icon.classList.toggle("mdi-arrow-down-drop-circle");
+            icon.classList.toggle("mdi-arrow-up-drop-circle");
+        });
+    });
+
 </script>

@@ -46,7 +46,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
-		if (count($domains) == 1) {
+		if (count($domains) != 1) {
 			pm_Log::err("found more or less than 1 domain for {$domain}");
 			return false;
 		}
@@ -135,10 +135,34 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$issues = array_combine($domains, array_map(function ($id) { return array("domainId" => $id); }, $ids));
 
 		foreach ($issues as $domain => $value) {
-			$issues[$domain]["results"] = $api->findResults($value["domainId"], "event=\"webshell\"");
+			$results = $api->findResults($value["domainId"], "event=\"webshell\" and status=\"1\"");
+			
+			// when having no results, don't add them to the issue list
+			if (count($results) == 0) {
+				unset($issues[$domain]);
+				continue;
+			}
+
+			$issues[$domain]["results"] = $results;
 		}
 
 		return $issues;
+	}
+
+	public function getNewestAgentVersion($os, $arch, $format = "bin") {
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$agents = $api->findServerAgents();
+		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
+			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
+		});
+		$filtered = array_values($filtered);
+
+		if (count($filtered) > 0) {
+			return $filtered[0]["version"];
+		} 
+
+		return "0";
 	}
 
 	/**
@@ -213,19 +237,62 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		return false;
 	}
 
-	public function getNewestAgentVersion($os, $arch, $format = "bin") {
+	public function markAsFalsePositive($domain, $resultId, $file) {
+		return $this->updateResultStatus($domain, $resultId) && $this->sendToShellray($file);
+	}
+
+	private function updateResultStatus($domain, $resultId) {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$domains = $api->findDomains("name=\"$domain\"");
 
-		$agents = $api->findServerAgents();
-		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
-			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
-		});
-		$filtered = array_values($filtered);
+		if (count($domains) != 1) {
+			pm_Log::err("found " . count($domains) . " domains for {$domain}");
+			return false;
+		}
 
-		if (count($filtered) > 0) {
-			return $filtered[0]["version"];
-		} 
+		$api->updateResult($domains[0]["id"], $resultId, array(
+			"status" => 3
+		));
 
-		return "0";
+		return true;
+	}
+
+	private function sendToShellray($file) {
+		$handler = curl_init(pm_Settings::get("shellray"));
+		
+		curl_setopt_array($handler, array(
+			CURLOPT_CONNECTTIMEOUT 	=> 10,
+			CURLOPT_FRESH_CONNECT 	=> true,
+			CURLOPT_HEADER 			=> true,
+			CURLOPT_RETURNTRANSFER 	=> true,
+			CURLOPT_POST 			=> true,
+				CURLOPT_POSTFIELDS 	=> array(
+					"file" => new CURLFile($file)
+				),
+			CURLOPT_VERBOSE 		=> true
+		));
+
+		$header 		= array();
+		$content 		= curl_exec($handler);
+		$error 			= curl_errno($handler);
+		$errorMsg 		= curl_error($handler);
+		$http_code 		= curl_getinfo($handler, CURLINFO_HTTP_CODE);
+		$content_length = curl_getinfo($handler, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		curl_close($handler);
+
+		$header["http_code"] = $http_code;
+		$header["download_content_length"] = $content_length;
+		$header["content"] = $content;
+		$header["error"] = $error;
+		$header["errorMsg"] = $errorMsg;
+
+		if ($header["http_code"] != 200) {
+			pm_Log::err("Response from shellray.com resulted in {$header['http_code']}. Full response: " . 
+				json_encode($header, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+			return false;
+		}
+
+		pm_Log::info("Content: " . substr($header["content"], $header["download_content_length"]));
+		return true;
 	}
 }

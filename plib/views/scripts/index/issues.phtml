@@ -19,6 +19,61 @@ echo $this->renderTabs($this->tabs);
             </div>
         </div>
         <div class="content">
+            <div class="form-row">
+                <div class="field-name">
+                    Bulk actions
+                </div>
+                <div class="field-value">
+                    <div style="display: inline-block; margin-right: 10px;">
+                        <div id="issue-dropdown" class="dropdown">
+                            <a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false" style="color: black;">
+                                <span>Select action</span>
+                                <i class="mdi mdi-menu-down"></i>
+                            </a>
+                            <ul class="dropdown-menu" style="background-color: #fafafa; box-shadow: 0 1px 4px 0px rgb(0, 0, 0, 0.3);">
+                                <li><!-- <form method="post" action="/domain/result-id"> -->
+                                    <a>
+                                        <i class="mdi mdi-bug"></i>
+                                        <span>Move to Quarantine</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a id="issue-link">Select / Deselect all issues</a></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field-name">
+                    Automatically move domains to quarantine
+                </div>
+                <div class="field-value">
+                    <span style="margin-right: 2px;">
+                        <span>None</span>
+                        <input type="radio" name="quarantine-state" checked="checked"/>
+                        <span style="color: #303030;">|</span>
+                    </span>
+                    <span style="margin-right: 2px;">
+                        <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
+                        <span>Yellow</span>
+                        <input type="radio" name="quarantine-state"/>
+                        <span style="color: #303030;">|</span>
+                    </span>
+                    <span style="margin-right: 2px;">
+                        <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
+                        <span>Red</span>
+                        <input type="radio" name="quarantine-state"/>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="btns-box"></div>
+
+            <?php if (count($this->issues) == 0) { ?>
+                <h5>Congratulations! No issues found.</h5>
+            <?php } ?>
 
             <?php foreach ($this->issues as $name => $domain) { ?>
                 <div class="form-row">
@@ -40,31 +95,33 @@ echo $this->renderTabs($this->tabs);
                                 <div class="panel-heading">
                                     <div class="panel-heading-wrap">
                                         <span class="panel-control">
-                                            
-                                            <div style="margin-left: -140px; color: #303030; margin-top: 2px;">
-                                                <?php echo date("m/d/o h:i A", $result["lastDate"] / 1000); ?>
-                                            </div>
 
-                                            <div id="issue-dropdown" class="dropdown" style="margin-left: -210px; margin-top: -18px; color: #303030;">
-                                                <a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
-                                                    <span>Actions</span>
-                                                    <i class="mdi mdi-menu-down"></i>
-                                                </a>
-                                                <ul class="dropdown-menu" style="background-color: #fafafa; box-shadow: 0 1px 4px 0px rgb(0, 0, 0, 0.3);">
-                                                    <li><!-- <form method="post" action="/domain/result-id"> -->
-                                                        <a>
-                                                            <i class="mdi mdi-bug"></i>
-                                                            <span>Move to Quarantine</span>
-                                                        </a>
-                                                    </li>
-                                                    <li><!-- <form method="post" action="/domain/result-id"> -->
-                                                        <a>
-                                                            <i class="mdi mdi-flag"></i>
-                                                            <span>False positive</span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div> 
+                                            <div style="margin-left: -140px; color: #303030; margin-top: 2px;display: inline-block;">
+                                                    <?php echo date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
+                                            </div>
+                                            <div style="margin-left: -236px; display: inline-block;">
+                                                <form method="post">
+                                                    <input name="action" value="falsePositive" type="hidden"/>
+                                                    <input name="domain" value="<?php echo $name; ?>" type="hidden"/>
+                                                    <input name="resultId" value="<?php echo $result['id']; ?>" type="hidden"/>
+                                                    <input name="file" value="<?php echo $result['resource'];?>" type="hidden">
+                                                    <a onclick="sendForm(this);">
+                                                        <i class="mdi mdi-flag"></i>
+                                                        <span>False positive</span>
+                                                    </a>
+                                                </form>
+                                            </div>
+                                            <div style="margin-left: -246px; margin-top: 2px;display: inline-block;">
+                                                <form method="post">
+                                                    <input name="action" value="moveToQuarantine" type="hidden">
+                                                    <input name="domain" value="<?php echo $name; ?>" type="hidden">
+                                                    <input name="file" value="<?php echo $result['resource'];?>" type="hidden">
+                                                    <a onclick="sendForm(this);">
+                                                        <i class="mdi mdi-bug"></i>
+                                                        <span>Move to Quarantine</span>
+                                                    </a>
+                                                </form>
+                                            </div>
 
                                         </span>
 
@@ -185,19 +242,30 @@ echo $this->renderTabs($this->tabs);
 
 <script>
 
+    function sendForm(element) {
+        element.closest("form").submit();
+    }
+
     // show issue dropdown
-    document.querySelectorAll("[id^='issue-dropdown']").forEach(function(menu) { 
+    document.querySelectorAll("[id='issue-dropdown']").forEach(function(menu) { 
         menu.querySelector(".dropdown-toggle").addEventListener("click", function(triggered) {
             triggered.target.closest("#issue-dropdown").classList.toggle("open");
         });
     });
 
-    // checking / unchecking by domain
+    // checking / unchecking domains
     document.querySelectorAll("[id^='issue-link']").forEach(function(link) { 
         link.addEventListener("click", function(triggered) { 
             var parts = triggered.target.id.split("-"); 
+            if (parts.length < 3) {
+                var checked = document.querySelector("input[id^='issue-']").checked;
+                checked = !checked;
+
+                document.querySelectorAll("input[id^='issue-']").forEach(function (issue) { issue.checked = checked; });
+                return;
+            }
+
             var domain = parts[parts.length - 1];
-            
             var checked = document.querySelector("[id='issue-" + domain + "']").checked;
             checked = !checked;
 
@@ -205,11 +273,9 @@ echo $this->renderTabs($this->tabs);
         }); 
     });
 
-    // expand main issue panel
+    // expand issue panel
     Array.from(document.getElementsByClassName("panel-heading")).forEach(function(panel) { 
         panel.addEventListener("click", function(triggered) {
-            console.log(triggered.target);
-            console.log(triggered.target.parentElement);
             if (triggered.target.parentElement.tagName == "A") {
                 return;
             }

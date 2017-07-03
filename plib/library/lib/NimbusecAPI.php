@@ -221,6 +221,36 @@ class Modules_NimbusecAgentIntegration_Lib_NimbusecAPI {
             return $results;
     }
 
+    function updateResult ( $domainID, $resultID, $result ) {
+
+        $payload = json_encode ( $result );
+        $err = $this->json_last_error_msg_dep ();
+        if ( !empty ( $err ) )
+            throw new NimbusecException ( "JSON: an error ocurred '{$err}' while encoding" );
+        
+        // -- Domain base path --
+        $url = $this->DEFAULT_BASE_URL . "/v2/domain/{$domainID}/result/{$resultID}";
+        
+        // -- Create OAuth request based on OAuth consumer and the specific URL --
+        $request = OAuthRequest::from_consumer_and_token ( $this->consumer, NULL, 'PUT', $url );
+        
+        // -- Make signed OAuth request to contact API server --
+        $request->sign_request ( new OAuthSignatureMethod_HMAC_SHA1 (), $this->consumer, NULL );
+        
+        // -- Get the usable url for the request --
+        $requestUrl = $request->to_url ();
+        
+        // -- Run the cUrl request --
+        $response = $this->client->send_request ( $request->get_normalized_http_method (), $requestUrl, null, $payload );
+        
+        $result = json_decode ( $response, true );
+        $err = $this->json_last_error_msg_dep ();
+        if ( !empty ( $err ) )
+            throw new NimbusecException ( "JSON: an error occured '{$err}' while trying to decode {$response}" );
+        else
+            return $result;
+    }
+
     /**
      * Read all existing bundles depending on an optional filter.
      *

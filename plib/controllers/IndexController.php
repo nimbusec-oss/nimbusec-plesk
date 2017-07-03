@@ -21,7 +21,8 @@ class IndexController extends pm_Controller_Action {
 		// Init title for all actions
 		$this->view->pageTitle = 'Nimbusec Webshell Detection';
 		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
-		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent-plesk-plugin.log");
+		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent.log");
+		pm_Settings::set("shellray", "https://shellray.com/upload");
 	}
 
 	public function oldTabs() {
@@ -216,13 +217,82 @@ class IndexController extends pm_Controller_Action {
 		$this->view->tabs = $this->newTabs();
 		$this->view->responses = array();
 
+		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+
 		// =====================================================================================
 
+		$this->issuesView($nimbusec);
+
+		// =====================================================================================
+
+		if ($this->getRequest()->isPost()) {
+			$action = $_POST["action"];
+
+			if (strpos($action, "falsePositive") !== false) {
+				if (!isset($_POST["domain"]) || !isset($_POST["resultId"]) || !isset($_POST["file"])) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Not enough POST params given", "error"));
+					return;
+				}
+
+				$domain = $_POST["domain"];
+				$resultId = $_POST["resultId"];
+				$file = $_POST["file"];
+
+				try {
+					$success = $nimbusec->markAsFalsePositive($domain, $resultId, $file);
+					if ($success) {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Successfully marked {$file} as False Positive.", "info"));
+					} else {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An error occurred. Please check the log files.", "error"));
+					}
+
+				} catch (NimbusecException $e) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));
+				} catch (CUrlException $e) {
+					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
+					} else if (strpos($e->getMessage(), '404')) {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
+					} else if (strpos($e->getMessage(), '409')) {
+						if (strpos($e->getMessage(), "X-Nimbusec-Error") !== false) {
+							array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("X-Nimbusec-Error" . split("X-Nimbusec-Error", $e->getMessage())[1], "error"));
+						} else {
+							array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));	
+						}
+					} else {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage($e->getMessage(), "error"));
+					}
+				}
+			}
+
+			$this->issuesView($nimbusec);
+		}
+	}
+
+	public function issuesView($nimbusec) {
 		$domains = Modules_NimbusecAgentIntegration_Lib_Helpers::getHostDomains();
-		$names = array_keys($domains);
-		
-		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
-		$this->view->issues = $nimbusec->getWebshellIssuesByDomain($names);
+		$domainNames = array_keys($domains);
+
+		$issues = $nimbusec->getWebshellIssuesByDomain($domainNames);
+
+		// filter by quarantined files
+		$quarantine = json_decode(pm_Settings::get("domain_quarantine"), true);
+		if ($quarantine == null) {
+			$quarantine = array();
+		}
+
+		foreach ($quarantine as $domain => $files) {
+			if (!array_key_exists($domain, $issues)) {
+				continue;
+			}
+
+			foreach($files as $file) {
+				$index = array_search($file, array_column($issues[$domain]["results"], "resource"));
+				unset($issues[$domain]["results"][$index]);
+			}
+		}
+
+		$this->view->issues = $issues;
 	}
 
 	// ===========================================================================================================================================

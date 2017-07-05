@@ -273,7 +273,7 @@ echo $this->renderTabs($this->tabs);
 <script>
     document.getElementsByName("submit").forEach((node) => { 
         node.addEventListener("click", function(obj) { 
-            obj.target.textContent = "";
+            obj.target.style.display = "None";
             
             var parent = obj.target.parentNode;
             parent.classList.add("disabled");

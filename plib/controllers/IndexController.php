@@ -216,6 +216,7 @@ class IndexController extends pm_Controller_Action {
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 		$this->domainsView($nimbusec);
+		$this->configView();
 
 		// =====================================================================================
 
@@ -374,21 +375,8 @@ class IndexController extends pm_Controller_Action {
 			}
 
 			$this->domainsView($nimbusec);
+			$this->configView();
 		}
-
-		// =====================================================================================
-		
-		$config = file_get_contents(pm_Settings::get("agentConfig"));
-		
-		$configForm = new pm_Form_Simple();
-		$configForm->addElement('textarea', 'configuration', array(
-			'label' => "Configuration",
-			'value' => $config,
-			"style" => "margin-right: 5px; height: 400px; width: 400px"
-		));
-
-		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
-		$this->view->configForm = $configForm;
 	}
 
 	public function domainsView($nimbusec) {
@@ -440,6 +428,20 @@ class IndexController extends pm_Controller_Action {
 				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
 			}
 		}
+	}
+
+	public function configView() {
+		$config = file_get_contents(pm_Settings::get("agentConfig"));
+		
+		$configForm = new pm_Form_Simple();
+		$configForm->addElement('textarea', 'configuration', array(
+			'label' => "Configuration",
+			'value' => $config,
+			"style" => "margin-right: 5px; height: 400px; width: 400px"
+		));
+
+		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
+		$this->view->configForm = $configForm;
 	}
 
 	// ===========================================================================================================================================

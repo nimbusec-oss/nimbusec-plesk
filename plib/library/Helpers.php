@@ -47,7 +47,9 @@ DATA;
 	}
 
 	public static function getHostDomains() {
-		$api = pm_ApiRpc::getService();
+		$domains = array();
+
+		// get primary domains
 		$request = <<<DATA
 <webspace>
 	<get>
@@ -59,16 +61,40 @@ DATA;
 	</get>
 </webspace>
 DATA;
+		$resp = pm_ApiRpc::getService()->call($request);
 
-		$resp = $api->call($request);
-
-		$domains = array();
 		foreach ($resp->webspace->get->result as $host) {
 			$domain = rtrim((string) $host->data->gen_info->name, "/");
+
 			foreach ($host->data->hosting->vrt_hst->property as $prop) {
 				if ($prop->name == 'www_root') {
-					$directory = (string) $prop->value;
-					$domains[$domain] = $directory;
+					$domains[$domain] = (string) $prop->value;
+					break;
+				}
+			}
+		}
+
+		// get secondary domains (addon, subdomains)
+		$request = <<<DATA
+<site>
+	<get>
+		<filter/>
+		<dataset>
+			<gen_info/>
+			<hosting/>
+		</dataset>
+	</get>
+</site>
+DATA;
+		$resp = pm_ApiRpc::getService()->call($request);
+
+		foreach ($resp->site->get->result as $host) {
+			$domain = rtrim((string) $host->data->gen_info->name, "/");
+
+			foreach ($host->data->hosting->vrt_hst->property as $prop) {
+				if ($prop->name == 'www_root') {
+					$domains[$domain] = (string) $prop->value;
+					break;
 				}
 			}
 		}
@@ -78,6 +104,32 @@ DATA;
 
 	//get htdocs dir for given domain from plesk api
 	public static function getDomainDir($domain) {
+		$parts = explode(".", $domain);
+		$isSubDomain = count($parts) == 3;
+
+		if ($isSubDomain) {
+			$request = <<<DATA
+<site>
+	<get>
+		<filter>
+			<name>$domain</name>
+		</filter>
+		<dataset>
+			<hosting/>
+		</dataset>
+	</get>
+</site>	
+DATA;
+			$resp = pm_ApiRpc::getService()->call($request);
+
+			foreach ($resp->site->get->result[0]->data->hosting->vrt_hst->property as $prop) {
+				if ($prop->name == 'www_root') {
+					return $prop->value;
+				}
+			}
+
+		} else {
+
 		$request = <<<DATA
 <webspace>
 	<get>
@@ -90,14 +142,15 @@ DATA;
 	</get>
 </webspace>	
 DATA;
+			$resp = pm_ApiRpc::getService()->call($request);
 
-		$resp = pm_ApiRpc::getService()->call($request);
-
-		foreach ($resp->webspace->get->result[0]->data->hosting->vrt_hst->property as $prop) {
-			if ($prop->name == 'www_root') {
-				return $prop->value;
+			foreach ($resp->webspace->get->result[0]->data->hosting->vrt_hst->property as $prop) {
+				if ($prop->name == 'www_root') {
+					return $prop->value;
+				}
 			}
 		}
+		
 		return false;
 	}
 

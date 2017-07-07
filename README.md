@@ -1,6 +1,6 @@
 # Nimbusec Website Security Monitor & Abuse Process Automation
 
-This is a plesk extension compatible with versions 12.0 and above. 
+This is a plesk extension compatible with versions 12.5 and above. 
 
 ## Install
 To install the extension you can either use the official Plesk Extension Catalogue or you can package this repository as zip-file and upload it via the Plesk Admin Panel.

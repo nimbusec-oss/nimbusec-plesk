@@ -307,6 +307,7 @@ class IndexController extends pm_Controller_Action {
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 		$this->domainsView($nimbusec);
+		$this->configView();
 
 		// =====================================================================================
 
@@ -465,25 +466,14 @@ class IndexController extends pm_Controller_Action {
 			}
 
 			$this->domainsView($nimbusec);
+			$this->configView();
 		}
-
-		// =====================================================================================
-		
-		$config = file_get_contents(pm_Settings::get("agentConfig"));
-		
-		$configForm = new pm_Form_Simple();
-		$configForm->addElement('textarea', 'configuration', array(
-			'label' => "Configuration",
-			'value' => $config,
-			"style" => "margin-right: 5px; height: 400px; width: 400px"
-		));
-
-		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
-		$this->view->configForm = $configForm;
 	}
 
 	public function domainsView($nimbusec) {
 		try {
+
+			// domains found in Plesk
 			$domains = Modules_NimbusecAgentIntegration_Lib_Helpers::getHostDomains();
 			$keys = array_keys($domains);
 
@@ -491,18 +481,26 @@ class IndexController extends pm_Controller_Action {
 			$config = json_decode($string, true);	
 			$config["domains"] = new ArrayObject();
 
+			// domains grouped by bundle from API
 			$fetched = $nimbusec->getBundlesWithDomains();
 			foreach ($fetched as $id => $element) {
+
+				// allow only Plesk domains which are already in the API to be seen 
 				$element["domains"] = array_filter($element["domains"], function($domain) use ($keys) {
 					return in_array($domain["name"], $keys);
 				});
 
 				foreach ($element["domains"] as $domain) {
+					// remove already registered domains from the set of Plesk ones
+					// $domains = unregistered from Plesk
+					// $fetched = registered by API
 					unset($domains[$domain["name"]]);
 
 					$directory = Modules_NimbusecAgentIntegration_Lib_Helpers::getDomainDir($domain["name"]);
+					// add registered to agent config
 					$config["domains"][$domain["name"]] = (string) $directory;
 				}
+
 				$fetched[$id]["domains"] = $element["domains"];
 			}
 
@@ -521,6 +519,20 @@ class IndexController extends pm_Controller_Action {
 				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
 			}
 		}
+	}
+
+	public function configView() {
+		$config = file_get_contents(pm_Settings::get("agentConfig"));
+		
+		$configForm = new pm_Form_Simple();
+		$configForm->addElement('textarea', 'configuration', array(
+			'label' => "Configuration",
+			'value' => $config,
+			"style" => "margin-right: 5px; height: 400px; width: 400px"
+		));
+
+		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
+		$this->view->configForm = $configForm;
 	}
 
 	// ===========================================================================================================================================

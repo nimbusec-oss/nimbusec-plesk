@@ -237,6 +237,52 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		return false;
 	}
 
+	public function moveToQuarantine($domain, $file) {
+		if (!is_writable($file)) {
+			pm_Log::err("No permission to move file into quarantine. Manual interaction needed.");
+			return false;
+		}
+
+		$src = pm_Context::getVarDir() . "/quarantine";
+		if (!is_dir($src)) {
+
+			// create the quarantine dir
+			if (!mkdir($src)) {
+				pm_Log::err("Creating a quarantine directory failed");
+				return false;
+			}
+		}
+
+		// create domain dir if not already existing
+		$domainDir = "{$src}/{$domain}";
+		if (!is_dir($domainDir)) {
+			
+			if (!mkdir($domainDir)) {
+				pm_Log::err("Creating a domain directory failed");
+				return false;
+			}
+		}
+
+		// move the file to quarantine
+		$dst = "{$src}/{$domain}/" . pathinfo($file, PATHINFO_BASENAME);
+		if (!rename($file, $dst)) {
+			pm_Log::err("Couldn't move {$file} into quarantine: {$dst}");
+			return false;
+		}
+
+		// save in store
+		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
+		if (!array_key_exists($domain, $quarantine)) {
+			$quarantine[$domain] = array();
+		}
+
+		$quarantine[$domain][$file] = array(
+			"resource" => $file,
+			"path" => $dst
+		);
+		return true;
+	}
+
 	public function markAsFalsePositive($domain, $resultId, $file) {
 		return $this->updateResultStatus($domain, $resultId) && $this->sendToShellray($file);
 	}

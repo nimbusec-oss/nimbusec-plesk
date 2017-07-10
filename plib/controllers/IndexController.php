@@ -227,6 +227,12 @@ class IndexController extends pm_Controller_Action {
 
 		if ($this->getRequest()->isPost()) {
 			$action = $_POST["action"];
+			if (!isset($action)) {
+				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Invalid request", "error"));
+				return;
+			}
+
+			// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 			if (strpos($action, "falsePositive") !== false) {
 				if (!isset($_POST["domain"]) || !isset($_POST["resultId"]) || !isset($_POST["file"])) {
@@ -265,6 +271,27 @@ class IndexController extends pm_Controller_Action {
 				}
 			}
 
+			// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+			if (strpos($action, "moveToQuarantine") !== false) {
+				if (!isset($_POST["domain"]) || !isset($_POST["file"])) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Not enough POST params given", "error"));
+					return;
+				}
+
+				$domain = $_POST["domain"];
+				$file = $_POST["file"];
+
+				$success = $nimbusec->moveToQuarantine($domain, $file);
+				if ($success) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Successfully moved {$file} into Quarantine.", "info"));
+				} else {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An error occurred. Please check the log files.", "error"));
+				}
+			}
+
+			// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 			$this->issuesView($nimbusec);
 		}
 	}
@@ -276,7 +303,7 @@ class IndexController extends pm_Controller_Action {
 		$issues = $nimbusec->getWebshellIssuesByDomain($domainNames);
 
 		// filter by quarantined files
-		$quarantine = json_decode(pm_Settings::get("domain_quarantine"), true);
+		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
 		if ($quarantine == null) {
 			$quarantine = array();
 		}
@@ -286,8 +313,8 @@ class IndexController extends pm_Controller_Action {
 				continue;
 			}
 
-			foreach($files as $file) {
-				$index = array_search($file, array_column($issues[$domain]["results"], "resource"));
+			foreach($files as $key => $value) {
+				$index = array_search($key, array_column($issues[$domain]["results"], "resource"));
 				unset($issues[$domain]["results"][$index]);
 			}
 		}

@@ -14,6 +14,14 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	private $secret = '';
 	private $server = '';
 
+	public static function withCred($key, $secret, $server) {
+		$instance = new self();
+		$instance->setKey($key);
+		$instance->setSecret($secret);
+		$instance->setServer($server);
+		return $instance;
+	}
+
 	public function __construct() {
 		pm_Context::init('nimbusec-agent-integration');
 
@@ -23,8 +31,49 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$this->server = pm_Settings::get('apiserver');
 	}
 
+	public function setKey($key) {
+		$this->key = $key;
+	}
+
+	public function setSecret($secret) {
+		$this->secret = $secret;
+	}
+
+	public function setServer($server) {
+		$this->server = $server;
+	}
+
+	public function testAPICredentials() {
+		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		try {
+			$api->findBundles();
+		} catch (NimbusecException $e) {
+			pm_Log::err("A nimbusec error occured: " . $e->getMessage());
+			return false;
+
+		} catch (CUrlException $e) {
+			pm_Log::err("Failed while trying to connect to API: " . $e->getMessage());
+			if (empty($e->getMessage())) {
+				pm_Log::err("Invalid server url entered.");
+			}
+
+			if (strpos($e->getMessage(), '400') || strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+				pm_Log::err("Wrong API credentials. Please make sure that the key and secret are right.");
+			} else if (strpos($e->getMessage(), '404')) {
+				pm_Log::err("404 indicates a wrong server url. Please check {$server} to make sure it's right.");
+			}
+			return false;
+
+		} catch (Exception $e) {
+			pm_Log::err("Unexpected exception raised. " . $e->getMessage());
+			return false;
+
+		}
+		return true;
+	}
+
 	public function registerDomain($domain, $bundle) {
-		
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$scheme = "http";
@@ -63,7 +112,6 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
-
 		return $bundles;
 	}
 
@@ -188,27 +236,27 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
 		});
 		$filtered = array_values($filtered);
-		
-		if (count($filtered) > 0) {
-			$agent = $filtered[0];
-			$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
-			
-			$name = 'agent';
-			if ($os == 'windows') {
-				$name = $name . '.exe';
-			}
-			file_put_contents($path . $name, $agentBin);
-			
-			if ($os != 'windows') {
-				chmod($path . $name, 0755);
-			}
 
-			$agent["name"] = $name;
-			pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
-			
-			return true;
+		if (count($filtered) == 0) {
+			pm_Log::err("No agent found for following requirements: {$os}, {$arch}, {$format}");
+			throw new Exception("No server agents found");
 		}
-		return false;
+		
+		$agent = $filtered[0];
+		$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
+		
+		$name = 'agent';
+		if ($os == 'windows') {
+			$name = $name . '.exe';
+		}
+		file_put_contents($path . $name, $agentBin);
+		
+		if ($os != 'windows') {
+			chmod($path . $name, 0755);
+		}
+
+		$agent["name"] = $name;
+		pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 	}
 
 	public function getNewestAgentVersion($os, $arch, $format = "bin") {

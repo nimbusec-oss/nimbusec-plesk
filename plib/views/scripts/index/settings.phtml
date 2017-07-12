@@ -25,8 +25,8 @@ echo $this->renderTabs($this->tabs);
             <br>
             <form method="post" id="register">
                 <div class="form-row">
-                    <div class="field-name">
-                        <select name="bundle">
+                    <div class="field-name" style="width: 250px;">
+                        <select name="bundle" style="width: 250px;">
                             <?php
                                 foreach ($this->fetched as $id => $element) {
                                     echo "<option value='{$id}__{$element['bundle']['name']}'>{$element['bundle']['display']}</option>";
@@ -36,7 +36,7 @@ echo $this->renderTabs($this->tabs);
                     </div>
                     <div class="field-value">
                         <?php if (count($this->domains) > 0) { ?>
-                            <span id="btn-send" class="btn action">
+                            <span id="btn-send" class="btn action" style="margin-left: 20px;">
                                 <button type="submit" name="submit" value="registerSelected">Register the selected domains</button>
                             </span>
                         <?php } ?>
@@ -285,7 +285,6 @@ echo $this->renderTabs($this->tabs);
             parent.appendChild(wait);
         }); 
     });
-    
     document.getElementById("configuration").readOnly = true;
 
     function updateState(id) {

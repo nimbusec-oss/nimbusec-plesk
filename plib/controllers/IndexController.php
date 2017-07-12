@@ -75,133 +75,96 @@ class IndexController extends pm_Controller_Action {
 			$this->view->tabs = $this->oldTabs();
 		}
 
+		$this->view->responses = array();
 		$this->view->info = pm_Locale::lmsg('apiInfo');
-		
-		//read config file
-		$string = file_get_contents(pm_Settings::get("agentConfig"));
-		$config = json_decode($string, true);
-		$apikey = $config['key'];
 
-		//if api key and secret are not present int the key-value-store read them from the config file
-		if (!empty(pm_Settings::get('apikey'))) {
-			$apikey = pm_Settings::get('apikey');
-		}
+		if ($this->getRequest()->isPost()) {
+			$action = $_POST["submit"];
 
-		$apisecret = $config['secret'];
-		if (!empty(pm_Settings::get('apisecret'))) {
-			$apisecret = pm_Settings::get('apisecret');
-		}
+			if (strpos($action, "downloadAgent") !== false) {
 
-		$form = new pm_Form_Simple();
-		$form->addElement('text', 'apikey', array(
-			'label' => 'API Key',
-			'value' => $apikey,
-			'required' => true,
-			'validators' => array(
-				array('NotEmpty', true),
-			),
-		));
-		$form->addElement('text', 'apisecret', array(
-			'label' => 'API Secret',
-			'value' => $apisecret,
-			'required' => true,
-			'validators' => array(
-				array('NotEmpty', true),
-			),
-		));
-		$form->addElement('text', 'apiserver', array(
-			'label' => 'API Server',
-			'value' => $config['apiserver'],
-			'required' => true,
-			'validators' => array(
-				array('NotEmpty', true),
-			),
-		));
+				if (!isset($_POST["apikey"]) || !isset($_POST["apisecret"]) || !isset($_POST["apiserver"])) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Please fill out all fields.", "error"));
+					return;
+				}
 
-		$buttons = array(
-			"cancelLink" => pm_Context::getModulesListUrl(),
-			"sendTitle" => "Download Server Agent"
-		);
-		
-		if (pm_Settings::get("setupTabs") == "0") {
-			$buttons["sendHidden"] = true;
-		}
-		$form->addControlButtons($buttons);
+				$key = $_POST["apikey"];
+				$secret = $_POST["apisecret"];
+				$serverUrl = rtrim($_POST["apiserver"], "/");
 
-		$err = false;
-		$msg = pm_Locale::lmsg('savedMessage');
-		if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
-			//store settings from form into key-value-store
-			pm_Settings::set('apikey', $form->getValue('apikey'));
-			pm_Settings::set('apisecret', $form->getValue('apisecret'));
-			pm_Settings::set('apiserver', rtrim($form->getValue('apiserver'),"/"));
+				$nimbusec = Modules_NimbusecAgentIntegration_Lib_Nimbusec::withCred($key, $secret, $serverUrl);
 
-			//if agent key and secret present in kv-store use them
-			if (!empty(pm_Settings::get('agentkey')) && !empty(pm_Settings::get('agentkey'))) {
-				$config['key'] = pm_Settings::get('agentkey');
-				$config['secret'] = pm_Settings::get('agentsecret');
-			} else {
-				//if agent key and secret not present query from api
-				$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
+				// test credentials
+				$success = $nimbusec->testAPICredentials();
+				if (!$success) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("Invalid credentials. Please make sure you have the right credentials entered and try again. For more information, please check the log.", "error"));	
+					return;
+				}
 
 				try {
-					//get agent binary from api
-					if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
-						//error!
-						$err = true;
-						$msg = pm_Locale::lmsg('downloadError');
-					} else {
-						//download and extract worked
-						$host = Modules_NimbusecAgentIntegration_Lib_Helpers::getHost();
-						$admin = Modules_NimbusecAgentIntegration_Lib_Helpers::getAdministrator();
-
-						// upset admin and define signaturekey
-						$signatureKey = md5(uniqid(rand(), true));
-						$nimbusec->upsertUserWithSSO((string) $admin->admin_email, $signatureKey);
-
-						pm_Settings::set('signaturekey', $signatureKey);
-
-						//get new token
-						$token = $nimbusec->getAgentCredentials($host["0"].'-plesk');
-
-						pm_Settings::set('agentkey', $token['key']);
-						pm_Settings::set('agentsecret', $token['secret']);
-						pm_Settings::set('agenttoken-id', $token['id']);
-
-						// {"0":"localhost.localdomain"}
-
-						$config['key'] = pm_Settings::get('agentkey');
-						$config['secret'] = pm_Settings::get('agentsecret');
-
-						pm_Settings::set("setupTabs", "0");
-					}
-				} catch (NimbusecException $e) {
-					$err = true;
-					$msg = $e->getMessage();
-				} catch (CUrlException $e) {
-					$err = true;
-					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-						$msg = pm_Locale::lmsg('invalidAPICredentials');
-					} else if (strpos($e->getMessage(), '404')) {
-						$msg = pm_Locale::lmsg('invalidAgentVersion');
-					} else {
-						$msg = $e->getMessage();
-					}
+					// fetch server agent
+					$nimbusec->fetchAgent(pm_Context::getVarDir());
+				} catch (Exception $e) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An error occurred while downloading the server agent. For more information, please check the log.", "error"));	
+					pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
+					return;
 				}
-			}
 
-			if (!$err) {
-				$config['apiserver'] = rtrim($form->getValue('apiserver'),"/");
+				// upsert admin and define signaturekey
+				$host = Modules_NimbusecAgentIntegration_Lib_Helpers::getHost();
+				$admin = Modules_NimbusecAgentIntegration_Lib_Helpers::getAdministrator();
+
+				$signatureKey = md5(uniqid(rand(), true));
+
+				try {
+					$nimbusec->upsertUserWithSSO((string) $admin->admin_email, $signatureKey);
+				} catch (Exception $e) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An error occurred while establishing a Single Sign On connection. For more information, please check the log.", "error"));	
+					pm_Log::err("Upserting administrator failed: {$e->getMessage()}");
+					return;
+				}
+
+				pm_Settings::set('signaturekey', $signatureKey);
+
+				// retrieving agent token
+				$token = array();
+				try {
+					$token = $nimbusec->getAgentCredentials($host["0"].'-plesk');
+				} catch (Exception $e) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Lib_Helpers::createMessage("An error occurred while retrieving Agent credentials. For more information, please check the log.", "error"));	
+					pm_Log::err("Upserting administrator failed: {$e->getMessage()}");
+					return;
+				}
+
+				// store agent credentials
+				pm_Settings::set('agentkey', $token['key']);
+				pm_Settings::set('agentsecret', $token['secret']);
+				pm_Settings::set('agenttoken-id', $token['id']);
+
+				$config['key'] = pm_Settings::get('agentkey');
+				$config['secret'] = pm_Settings::get('agentsecret');
+				$config['apiserver'] = $serverUrl;
+
+				// store api credentials
+				pm_Settings::set('apikey', $key);
+				pm_Settings::set('apisecret', $secret);
+				pm_Settings::set('apiserver', $serverUrl);
+
+				// enable other view
+				pm_Settings::set("setupTabs", "0");
+
+				// write agent config
 				$config["domains"] = new ArrayObject();
-				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));				
-				$this->_status->addMessage('info', $msg);
-			} else {
-				$this->_status->addMessage('error', $msg);
-			}
-			$this->_helper->json(array('redirect' => pm_Context::getActionUrl("index", "login")));
-		}
+				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
 
-		$this->view->form = $form;
+				// redirect to new view
+				$this->_status->addMessage('info', "Server Agent successfully installed");
+				$redirect = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . pm_Context::getActionUrl('index', 'login');
+
+				header("Location: {$redirect}", true, 303);
+				die();
+			}
+		}
 	}
 
 	// ===========================================================================================================================================

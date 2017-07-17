@@ -138,6 +138,9 @@ class IndexController extends pm_Controller_Action {
 				pm_Settings::set('agentsecret', $token['secret']);
 				pm_Settings::set('agenttoken-id', $token['id']);
 
+				$configString = file_get_contents(pm_Settings::get("agentConfig"));
+				$config = json_decode($configString, true);
+				
 				$config['key'] = pm_Settings::get('agentkey');
 				$config['secret'] = pm_Settings::get('agentsecret');
 				$config['apiserver'] = $serverUrl;

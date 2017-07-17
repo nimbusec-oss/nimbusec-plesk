@@ -218,8 +218,8 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 	public function fetchAgent($path) {
 		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
-		$os = pm_ProductInfo::getPlatform();
-		$os = $os == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
+		$platform = pm_ProductInfo::getPlatform();
+		$os = $platform == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
 
 		$arch = pm_ProductInfo::getOsArch();
 		$arch = $arch == pm_ProductInfo::ARCH_32 ? "32bit" : "64bit";
@@ -242,11 +242,11 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 		$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
 		
 		// save binary
-		$name = $os == pm_ProductInfo::PLATFORM_UNIX ? "agent" : "agent.exe";
+		$name = $platform == pm_ProductInfo::PLATFORM_UNIX ? "agent" : "agent.exe";
 		file_put_contents($path . $name, $agentBin);
 		
 		// give permissions
-		if ($os == pm_ProductInfo::PLATFORM_UNIX) {
+		if ($platform == pm_ProductInfo::PLATFORM_UNIX) {
 			chmod($path . $name, 0755);
 		}
 

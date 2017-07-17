@@ -1,14 +1,11 @@
 <?php
 
-require_once(pm_Context::getPlibDir() . "/library/Helpers.php");
-require_once(pm_Context::getPlibDir() . "/library/lib/NimbusecAPI.php");
-
 /**
  * Nimbusec Helper Class
  * 
  * All public method may throw NimbusecExceptions that have to be caught in the IndexController since there they can be added to the appropriate status messages
  */
-class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
+class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 
 	private $key = '';
 	private $secret = '';
@@ -44,7 +41,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function testAPICredentials() {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		try {
 			$api->findBundles();
@@ -74,7 +71,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function registerDomain($domain, $bundle) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$scheme = "http";
 		$domain = array(
@@ -92,7 +89,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function unregisterDomain($domain) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
 		if (count($domains) != 1) {
@@ -109,7 +106,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array list of all active bundles
 	 */
 	public function getBundles() {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
 		return $bundles;
@@ -118,7 +115,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	public function getBundlesWithDomains() {
 		$fetched = $this->getBundles();
 
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$bundles = array();
 		foreach ($fetched as $bundle) {
@@ -136,7 +133,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array array/object with data of the created token
 	 */
 	public function getAgentCredentials($name) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		
 		$storedToken = $api->findAgentToken("name=\"$name\"");
 		
@@ -152,7 +149,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function getDomainIds($domains) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$query = "";
 		foreach ($domains as $index => $domain) {
@@ -176,7 +173,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function getWebshellIssuesByDomain($names) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$ids = $this->getDomainIds($names);
 
 		// let the domain names be the keys and convert the id to an array as the value
@@ -193,7 +190,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return void
 	 */
 	public function upsertUserWithSSO($mail, $signatureKey) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$users = $api->findUsers("login=\"{$mail}\"");
 		if (count($users) > 0) {
@@ -219,7 +216,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return boolean indicates whether extracting the token worked
 	 */
 	public function fetchAgent($path) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$os = pm_ProductInfo::getPlatform();
 		$os = $os == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
@@ -258,7 +255,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function getNewestAgentVersion($os, $arch, $format = "bin") {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$agents = $api->findServerAgents();
 		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {

@@ -138,7 +138,7 @@ echo $this->renderTabs($this->tabs);
                                                 <input name="active<?php echo $i; ?>[]" value="<?php echo $domain['name']; ?>" type="checkbox"> <?php echo $domain['name']; ?>
                                             </td>
                                             <td>
-                                                <?php echo Modules_NimbusecAgentIntegration_Lib_Helpers::getDomainDir($domain["name"]); ?>
+                                                <?php echo Modules_NimbusecAgentIntegration_Helpers::getDomainDir($domain["name"]); ?>
                                             </td>
                                         </tr>
                                         <?php } ?>

@@ -1,6 +1,6 @@
 <?php
 
-class Modules_NimbusecAgentIntegration_Lib_CURLClient {
+class Modules_NimbusecAgentIntegration_SDK_CURLClient {
     
     // -- The actual cURL instance -- 
     public $curl;

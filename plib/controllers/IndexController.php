@@ -445,7 +445,7 @@ class IndexController extends pm_Controller_Action {
 
 			$nimbusec = new Modules_NimbusecAgentIntegration_Lib_Nimbusec();
 			$version = $nimbusec->getNewestAgentVersion($agent["os"], $agent["arch"]);
-			if(intval($version) > intval($agent["version"])) {
+			if($version > $agent["version"]) {
 				$form->addControlButtons(array(
 					'sendTitle' => "Update to version {$version}",
 					'cancelLink' => pm_Context::getModulesListUrl(),

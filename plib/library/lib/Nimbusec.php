@@ -220,17 +220,16 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 */
 	public function fetchAgent($path) {
 		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$os = pm_ProductInfo::getPlatform();
+		$os = $os == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
+
+		$arch = pm_ProductInfo::getOsArch();
+		$arch = $arch == pm_ProductInfo::ARCH_32 ? "32bit" : "64bit";
+
+		$format = "bin";
 		
-		$os = strtolower(PHP_OS);
-		
-		if ($os == 'winnt' || $os == 'win32') {
-			$os = 'windows';
-		}
-		
-		$arch = (string)8 * PHP_INT_SIZE;
-		$arch .= 'bit';
-		$format = 'bin';
-		
+		// look up for agents
 		$agents = $api->findServerAgents();
 		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
 			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
@@ -245,13 +244,12 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$agent = $filtered[0];
 		$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
 		
-		$name = 'agent';
-		if ($os == 'windows') {
-			$name = $name . '.exe';
-		}
+		// save binary
+		$name = $os == pm_ProductInfo::PLATFORM_UNIX ? "agent" : "agent.exe";
 		file_put_contents($path . $name, $agentBin);
 		
-		if ($os != 'windows') {
+		// give permissions
+		if ($os == pm_ProductInfo::PLATFORM_UNIX) {
 			chmod($path . $name, 0755);
 		}
 
@@ -272,6 +270,6 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 			return $filtered[0]["version"];
 		} 
 
-		return "0";
+		return 0;
 	}
 }

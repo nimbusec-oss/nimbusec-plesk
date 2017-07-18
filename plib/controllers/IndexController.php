@@ -272,13 +272,25 @@ class IndexController extends pm_Controller_Action {
 		}
 
 		foreach ($quarantine as $domain => $files) {
+			// filter only quarantined domain which has been detected as issues
 			if (!array_key_exists($domain, $issues)) {
 				continue;
 			}
 
+			// save the indices of the issues
+			$indices = array();
 			foreach($files as $key => $value) {
 				$index = array_search($key, array_column($issues[$domain]["results"], "resource"));
+				array_push($indices, $index);
+			}
+
+			foreach ($indices as $index) {
 				unset($issues[$domain]["results"][$index]);
+				
+				// if the domain has no results, delete it
+				if (count($issues[$domain]["results"]) == 0) {
+					unset($issues[$domain]);
+				}
 			}
 		}
 

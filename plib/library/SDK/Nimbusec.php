@@ -281,35 +281,43 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 	}
 
 	public function moveToQuarantine($domain, $file) {
-		if (!is_writable($file)) {
-			pm_Log::err("No permission to move file into quarantine. Manual interaction needed.");
+		$fileManager = new pm_ServerFileManager();
+
+		if (!$fileManager->fileExists($file)) {
+			pm_Log::err("File {$file} not existing. Cannot be moved into quarantine.");
 			return false;
 		}
 
+		// create quarantine directory
 		$src = pm_Context::getVarDir() . "/quarantine";
-		if (!is_dir($src)) {
+		if (!$fileManager->fileExists($src)) {
 
-			// create the quarantine dir
-			if (!mkdir($src)) {
-				pm_Log::err("Creating a quarantine directory failed");
+			try {
+				$fileManager->mkdir($src);
+			} catch (Exception $e) {
+				pm_Log::err("Creating a quarantine directory failed: {$e->getMessage()}");
 				return false;
 			}
 		}
 
 		// create domain dir if not already existing
 		$domainDir = "{$src}/{$domain}";
-		if (!is_dir($domainDir)) {
+		if (!$fileManager->fileExists($domainDir)) {
 			
-			if (!mkdir($domainDir)) {
-				pm_Log::err("Creating a domain directory failed");
+			try {
+				$fileManager->mkdir($domainDir);
+			} catch (Exception $e) {
+				pm_Log::err("Creating a quarantine directory failed: {$e->getMessage()}");
 				return false;
 			}
 		}
 
 		// move the file to quarantine
 		$dst = "{$src}/{$domain}/" . pathinfo($file, PATHINFO_BASENAME);
-		if (!rename($file, $dst)) {
-			pm_Log::err("Couldn't move {$file} into quarantine: {$dst}");
+		try {
+			$fileManager->moveFile($file, $dst);
+		} catch (Exception $e) {
+			pm_Log::err("Couldn't move {$file} into quarantine {$dst}: {$e->getMessage()}");
 			return false;
 		}
 
@@ -323,6 +331,8 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 			"resource" => $file,
 			"path" => $dst
 		);
+		pm_Settings::set("quarantine", json_encode($quarantine));
+
 		return true;
 	}
 

@@ -172,9 +172,9 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 		return array_map(function($domain) { return $domain["id"]; }, $fetched);
 	}
 
-	public function getWebshellIssuesByDomain($names) {
+	public function getWebshellIssuesByDomain($domains) {
 		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
-		$ids = $this->getDomainIds($names);
+		$ids = $this->getDomainIds($domains);
 
 		// let the domain names be the keys and convert the id to an array as the value
 		$issues = array_combine($domains, array_map(function ($id) { return array("domainId" => $id); }, $ids));
@@ -195,7 +195,7 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 	}
 
 	public function getNewestAgentVersion($os, $arch, $format = "bin") {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$agents = $api->findServerAgents();
 		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
@@ -331,7 +331,7 @@ class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 	}
 
 	private function updateResultStatus($domain, $resultId) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
 		if (count($domains) != 1) {

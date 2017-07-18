@@ -1,6 +1,7 @@
 <?php
 
-class Modules_NimbusecAgentIntegration_Lib_Helpers {
+class Modules_NimbusecAgentIntegration_Helpers {
+	
     public static function getSignedLoginURL($userName, $userSecret) {
 
 		// get time with milliseconds ~true timestamp (hack because PHP has no long)
@@ -49,109 +50,30 @@ DATA;
 	public static function getHostDomains() {
 		$domains = array();
 
-		// get primary domains
-		$request = <<<DATA
-<webspace>
-	<get>
-		<filter/>
-		<dataset>
-			<gen_info/>
-			<hosting-basic/>
-		</dataset>
-	</get>
-</webspace>
-DATA;
-		$resp = pm_ApiRpc::getService()->call($request);
+		$fetched = pm_Domain::getAllDomains();
+		$filtered = array_filter($fetched, function($domain) {
+			return $domain->hasHosting();
+		});
 
-		foreach ($resp->webspace->get->result as $host) {
-			$domain = rtrim((string) $host->data->gen_info->name, "/");
+		foreach ($filtered as $domain) {
+			$name = $domain->getDisplayName();
+			$path = $domain->getDocumentRoot();
 
-			foreach ($host->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					$domains[$domain] = (string) $prop->value;
-					break;
-				}
-			}
-		}
-
-		// get secondary domains (addon, subdomains)
-		$request = <<<DATA
-<site>
-	<get>
-		<filter/>
-		<dataset>
-			<gen_info/>
-			<hosting/>
-		</dataset>
-	</get>
-</site>
-DATA;
-		$resp = pm_ApiRpc::getService()->call($request);
-
-		foreach ($resp->site->get->result as $host) {
-			$domain = rtrim((string) $host->data->gen_info->name, "/");
-
-			foreach ($host->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					$domains[$domain] = (string) $prop->value;
-					break;
-				}
-			}
+			$domains[$name] = $path;
 		}
 
 		return $domains;
 	}
 
-	//get htdocs dir for given domain from plesk api
+	// get htdocs dir for given domain from plesk api
 	public static function getDomainDir($domain) {
-		$parts = explode(".", $domain);
-		$isSubDomain = count($parts) == 3;
+		$fetched = pm_Domain::getByName($domain);
 
-		if ($isSubDomain) {
-			$request = <<<DATA
-<site>
-	<get>
-		<filter>
-			<name>$domain</name>
-		</filter>
-		<dataset>
-			<hosting/>
-		</dataset>
-	</get>
-</site>	
-DATA;
-			$resp = pm_ApiRpc::getService()->call($request);
-
-			foreach ($resp->site->get->result[0]->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					return $prop->value;
-				}
-			}
-
-		} else {
-
-		$request = <<<DATA
-<webspace>
-	<get>
-		<filter>
-			<name>$domain</name>
-		</filter>
-		<dataset>
-			<hosting/>
-		</dataset>
-	</get>
-</webspace>	
-DATA;
-			$resp = pm_ApiRpc::getService()->call($request);
-
-			foreach ($resp->webspace->get->result[0]->data->hosting->vrt_hst->property as $prop) {
-				if ($prop->name == 'www_root') {
-					return $prop->value;
-				}
-			}
+		if (!$fetched->hasHosting()) {
+			return false;
 		}
-		
-		return false;
+
+		return $fetched->getDocumentRoot();
 	}
 
 	public static function createMessage($msg, $level) {

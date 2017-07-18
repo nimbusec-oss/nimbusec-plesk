@@ -1,18 +1,23 @@
 <?php
 
-require_once(pm_Context::getPlibDir() . "/library/Helpers.php");
-require_once(pm_Context::getPlibDir() . "/library/lib/NimbusecAPI.php");
-
 /**
  * Nimbusec Helper Class
  * 
  * All public method may throw NimbusecExceptions that have to be caught in the IndexController since there they can be added to the appropriate status messages
  */
-class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
+class Modules_NimbusecAgentIntegration_SDK_Nimbusec {
 
 	private $key = '';
 	private $secret = '';
 	private $server = '';
+
+	public static function withCred($key, $secret, $server) {
+		$instance = new self();
+		$instance->setKey($key);
+		$instance->setSecret($secret);
+		$instance->setServer($server);
+		return $instance;
+	}
 
 	public function __construct() {
 		pm_Context::init('nimbusec-agent-integration');
@@ -23,9 +28,50 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		$this->server = pm_Settings::get('apiserver');
 	}
 
+	public function setKey($key) {
+		$this->key = $key;
+	}
+
+	public function setSecret($secret) {
+		$this->secret = $secret;
+	}
+
+	public function setServer($server) {
+		$this->server = $server;
+	}
+
+	public function testAPICredentials() {
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		try {
+			$api->findBundles();
+		} catch (NimbusecException $e) {
+			pm_Log::err("A nimbusec error occured: " . $e->getMessage());
+			return false;
+
+		} catch (CUrlException $e) {
+			pm_Log::err("Failed while trying to connect to API: " . $e->getMessage());
+			if (empty($e->getMessage())) {
+				pm_Log::err("Invalid server url entered.");
+			}
+
+			if (strpos($e->getMessage(), '400') || strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
+				pm_Log::err("Wrong API credentials. Please make sure that the key and secret are right.");
+			} else if (strpos($e->getMessage(), '404')) {
+				pm_Log::err("404 indicates a wrong server url. Please check {$server} to make sure it's right.");
+			}
+			return false;
+
+		} catch (Exception $e) {
+			pm_Log::err("Unexpected exception raised. " . $e->getMessage());
+			return false;
+
+		}
+		return true;
+	}
+
 	public function registerDomain($domain, $bundle) {
-		
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$scheme = "http";
 		$domain = array(
@@ -43,7 +89,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function unregisterDomain($domain) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$domains = $api->findDomains("name=\"$domain\"");
 
 		if (count($domains) != 1) {
@@ -60,17 +106,16 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array list of all active bundles
 	 */
 	public function getBundles() {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		$bundles = $api->findBundles();
 		
-
 		return $bundles;
 	}
 
 	public function getBundlesWithDomains() {
 		$fetched = $this->getBundles();
 
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$bundles = array();
 		foreach ($fetched as $bundle) {
@@ -88,7 +133,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return array array/object with data of the created token
 	 */
 	public function getAgentCredentials($name) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 		
 		$storedToken = $api->findAgentToken("name=\"$name\"");
 		
@@ -104,7 +149,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	}
 
 	public function getDomainIds($domains) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$query = "";
 		foreach ($domains as $index => $domain) {
@@ -127,9 +172,9 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 		return array_map(function($domain) { return $domain["id"]; }, $fetched);
 	}
 
-	public function getWebshellIssuesByDomain($domains) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
-		$ids = $this->getDomainIds($domains);
+	public function getWebshellIssuesByDomain($names) {
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
+		$ids = $this->getDomainIds($names);
 
 		// let the domain names be the keys and convert the id to an array as the value
 		$issues = array_combine($domains, array_map(function ($id) { return array("domainId" => $id); }, $ids));
@@ -162,7 +207,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 			return $filtered[0]["version"];
 		} 
 
-		return "0";
+		return 0;
 	}
 
 	/**
@@ -171,7 +216,7 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return void
 	 */
 	public function upsertUserWithSSO($mail, $signatureKey) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
 
 		$users = $api->findUsers("login=\"{$mail}\"");
 		if (count($users) > 0) {
@@ -197,44 +242,42 @@ class Modules_NimbusecAgentIntegration_Lib_Nimbusec {
 	 * @return boolean indicates whether extracting the token worked
 	 */
 	public function fetchAgent($path) {
-		$api = new Modules_NimbusecAgentIntegration_Lib_NimbusecAPI($this->key, $this->secret, $this->server);
+		$api = new Modules_NimbusecAgentIntegration_SDK_NimbusecAPI($this->key, $this->secret, $this->server);
+
+		$platform = pm_ProductInfo::getPlatform();
+		$os = $platform == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
+
+		$arch = pm_ProductInfo::getOsArch();
+		$arch = $arch == pm_ProductInfo::ARCH_32 ? "32bit" : "64bit";
+
+		$format = "bin";
 		
-		$os = strtolower(PHP_OS);
-		
-		if ($os == 'winnt' || $os == 'win32') {
-			$os = 'windows';
-		}
-		
-		$arch = (string)8 * PHP_INT_SIZE;
-		$arch .= 'bit';
-		$format = 'bin';
-		
+		// look up for agents
 		$agents = $api->findServerAgents();
 		$filtered = array_filter($agents, function($agent) use ($os, $arch, $format) {
 			return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
 		});
 		$filtered = array_values($filtered);
-		
-		if (count($filtered) > 0) {
-			$agent = $filtered[0];
-			$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
-			
-			$name = 'agent';
-			if ($os == 'windows') {
-				$name = $name . '.exe';
-			}
-			file_put_contents($path . $name, $agentBin);
-			
-			if ($os != 'windows') {
-				chmod($path . $name, 0755);
-			}
 
-			$agent["name"] = $name;
-			pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
-			
-			return true;
+		if (count($filtered) == 0) {
+			pm_Log::err("No agent found for following requirements: {$os}, {$arch}, {$format}");
+			throw new Exception("No server agents found");
 		}
-		return false;
+		
+		$agent = $filtered[0];
+		$agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
+		
+		// save binary
+		$name = $platform == pm_ProductInfo::PLATFORM_UNIX ? "agent" : "agent.exe";
+		file_put_contents($path . $name, $agentBin);
+		
+		// give permissions
+		if ($platform == pm_ProductInfo::PLATFORM_UNIX) {
+			chmod($path . $name, 0755);
+		}
+
+		$agent["name"] = $name;
+		pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 	}
 
 	public function moveToQuarantine($domain, $file) {

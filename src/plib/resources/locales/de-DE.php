@@ -6,10 +6,10 @@ $messages = array(
 	"invalidAgentVersion" => "Für Ihr Betriebssystem konnte kein passender Server Agent gefunden werden. Wenn Sie diese Nachricht auf einem Windows oder Linux Host sehen können Sie sich gerne an office@cumulo.at wenden.",
 	"savedMessage" => "Die Daten wurden erfolgreich gespeichert",
 	"directory" => "Verzeichnis",
-	"once" => "1x täglich",
-	"twice" => "2x täglich",
-	"threeTimes" => "3x täglich",
-	"fourTimes" => "4x täglich",
+	"once" => "1x täglich um 13:30",
+	"twice" => "2x täglich um 1:30 und 13:30",
+	"threeTimes" => "3x täglich um 1:30, 9:30 und 17:30",
+	"fourTimes" => "4x täglich um 1:30, 7:30, 13:30 und 19:30",
 	"agentExecution" => "Innerhalb der Ausführungseinstellungen können Sie den Nimbusec Agent anhand eines bestimmten Zeitplans ausführen bzw. zeitlich festlegen." .
 						"<br>Bitte beachten Sie, dass der Server Agent erst ausgeführt wird nachdem einen Zeitplan ausgewählt haben.",
 	"apiInfo" => "Geben Sie ihre Nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .

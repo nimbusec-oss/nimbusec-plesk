@@ -1,4 +1,18 @@
 #!/bin/bash
+#
+# Minimized Plesk extension packing script
+#
+# Usage: bash pleskpack.sh [<source_path>] [<dest_path>]
+# Examples:
+#
+#   expects the current dir (pwd) to have an src/ folder; saves the zipped in $HOME/tmp
+#
+#       bash pleskpack.sh
+#
+#   expects /path/to/extension to have an src/ folder; saves the zipped in /home/tmp
+#
+#       bash pleskback.sh /path/to/extension /home/tmp
+#
 
 extension_name="nimbusec-agent-integration"
 

@@ -1,6 +1,6 @@
 <?php
 
-class Modules_NimbusecAgentIntegration_Helpers {
+class Modules_NimbusecAgentIntegration_PleskHelper {
 	
     public static function getSignedLoginURL($userName, $userSecret) {
 

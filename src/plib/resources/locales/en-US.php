@@ -6,10 +6,10 @@ $messages = array(
 	"invalidAgentVersion" => "Our Server Agent does not seem to support your OS. If you see this message on a Windows or Linux Server please feel free to contact us at office@cumulo.at",
 	"savedMessage" => "Data was successfully saved.",
 	"directory" => "Directory",
-	"once" => "1x per day",
-	"twice" => "2x per day",
-	"threeTimes" => "3x per day",
-	"fourTimes" => "4x per day",
+	"once" => "1x per day at 1:30 PM",
+	"twice" => "2x per day at 1:30 PM and 1:30 AM",
+	"threeTimes" => "3x per day at 1:30 AM, 9:30 AM and 5:30 PM",
+	"fourTimes" => "4x per day at 1:30 AM, 7:30 AM, 1:30 PM and 7:30 PM" ,
 	"agentExecution" => "Within these settings, you can configure the Nimbusec Agent for a specific schedule as well as enabling or disabling the agent at all." . 
 						"<br>Please note that the Nimbusec Agent will not start until a schedule is set.",
 	"apiInfo" => "Enter your Nimbusec API credentials in order to download the Nimbusec Server Agent. " .

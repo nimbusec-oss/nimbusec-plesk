@@ -3,7 +3,7 @@
     "description": "The official Nimbusec extension fully integrated into Plesk",
     "type": "project",
     "require": {
-        "nimbusec/nimbusec-php": "^1.0"
+        "nimbusec/nimbusec-php": ">=1.0"
     },
     "homepage": "https://nimbusec.com",
     "license": "MIT",

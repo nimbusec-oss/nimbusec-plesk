@@ -140,36 +140,42 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 		}
 	}
 
-	public function getDomainIds($domains) {
+	public function appendDomainIds($domainNames) {
 		$api = new API($this->key, $this->secret, $this->server);
 
 		$query = "";
-		foreach ($domains as $index => $domain) {
+		foreach ($domainNames as $index => $domain) {
 			$query .= "name=\"{$domain}\"";
 
-			if (($index + 1) < count($domains)) {
+			if (($index + 1) < count($domainNames)) {
 				$query .= " or ";
 			}
 		}
 		$fetched = $api->findDomains($query);
 
-		if (count($fetched) != count($domains)) {
-			$difference = array_diff($fetched, $domains);
+		if (count($fetched) != count($domainNames)) {
+			$difference = array_diff($domainNames, array_map(function($domain) { return $domain["name"]; }, $fetched));
 			
 			pm_Log::err(sprintf("not all domain in Plesk were found by the API. exceptions are [%s]", 
 							join(", ", $difference)));
 			return;
 		}
 
-		return array_map(function($domain) { return $domain["id"]; }, $fetched);
+		// sort both array to prevent wrong associations
+		sort($domainNames);
+		usort($fetched, function($a, $b) { 
+			if ($a["name"] == $b["name"]) { 
+				return 0; 
+			} 
+			return ($a["name"] < $b["name"]) ? -1 : 1; 
+		});
+
+		return array_combine($domainNames, array_map(function ($fetchedDomain) { return array("domainId" => $fetchedDomain["id"]); }, $fetched));
 	}
 
-	public function getWebshellIssuesByDomain($names) {
+	public function getWebshellIssuesByDomain($domainNames) {
 		$api = new API($this->key, $this->secret, $this->server);
-		$ids = $this->getDomainIds($names);
-
-		// let the domain names be the keys and convert the id to an array as the value
-		$issues = array_combine($domains, array_map(function ($id) { return array("domainId" => $id); }, $ids));
+		$issues = $this->appendDomainIds($domainNames);
 
 		foreach ($issues as $domain => $value) {
 			$results = $api->findResults($value["domainId"], "event=\"webshell\" and status=\"1\"");
@@ -340,7 +346,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 			pm_Log::err("found " . count($domains) . " domains for {$domain}");
 			return false;
 		}
-
+		
 		$api->updateResult($domains[0]["id"], $resultId, array(
 			"status" => 3
 		));

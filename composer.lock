@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "bf8d6f832884747eaf60922839bf339f",
+    "content-hash": "0e9a281d3cfe0a32cc21b00676e8e30e",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -245,16 +245,16 @@
         },
         {
             "name": "nimbusec/nimbusec-php",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cumulodev/nimbusec-php.git",
-                "reference": "b61d9bc4a2833081cccb8a7ace4f23d873c8a73a"
+                "reference": "163d0736e55fb7ced788dab3d3ef481ecf169d03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cumulodev/nimbusec-php/zipball/b61d9bc4a2833081cccb8a7ace4f23d873c8a73a",
-                "reference": "b61d9bc4a2833081cccb8a7ace4f23d873c8a73a",
+                "url": "https://api.github.com/repos/cumulodev/nimbusec-php/zipball/163d0736e55fb7ced788dab3d3ef481ecf169d03",
+                "reference": "163d0736e55fb7ced788dab3d3ef481ecf169d03",
                 "shasum": ""
             },
             "require": {
@@ -299,7 +299,7 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2017-05-11T20:15:45+00:00"
+            "time": "2017-07-26T13:40:49+00:00"
         },
         {
             "name": "psr/http-message",

@@ -180,7 +180,7 @@ class IndexController extends pm_Controller_Action {
 		$this->view->tabs = $this->newTabs();
 		$this->view->responses = array();
 
-		$nimbusec = new Modules_NimbusecAgentIntegration_SDK_Nimbusec();
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
 		// =====================================================================================
 
@@ -191,7 +191,7 @@ class IndexController extends pm_Controller_Action {
 		if ($this->getRequest()->isPost()) {
 			$action = $_POST["action"];
 			if (!isset($action)) {
-				array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("Invalid request", "error"));
+				array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Invalid request", "error"));
 				return;
 			}
 
@@ -199,7 +199,7 @@ class IndexController extends pm_Controller_Action {
 
 			if (strpos($action, "falsePositive") !== false) {
 				if (!isset($_POST["domain"]) || !isset($_POST["resultId"]) || !isset($_POST["file"])) {
-					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("Not enough POST params given", "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Not enough POST params given", "error"));
 					return;
 				}
 
@@ -210,27 +210,13 @@ class IndexController extends pm_Controller_Action {
 				try {
 					$success = $nimbusec->markAsFalsePositive($domain, $resultId, $file);
 					if ($success) {
-						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("Successfully marked {$file} as False Positive.", "info"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Successfully marked {$file} as False Positive.", "info"));
 					} else {
-						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("An error occurred. Please check the log files.", "error"));
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("An error occurred. Please check the log files.", "error"));
 					}
 
-				} catch (NimbusecException $e) {
-					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage($e->getMessage(), "error"));
-				} catch (CUrlException $e) {
-					if (strpos($e->getMessage(), '401') || strpos($e->getMessage(), '403')) {
-						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage(pm_Locale::lmsg('invalidAPICredentials'), "error"));
-					} else if (strpos($e->getMessage(), '404')) {
-						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage(pm_Locale::lmsg('invalidAgentVersion'), "error"));
-					} else if (strpos($e->getMessage(), '409')) {
-						if (strpos($e->getMessage(), "X-Nimbusec-Error") !== false) {
-							array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("X-Nimbusec-Error" . split("X-Nimbusec-Error", $e->getMessage())[1], "error"));
-						} else {
-							array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage($e->getMessage(), "error"));	
-						}
-					} else {
-						array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage($e->getMessage(), "error"));
-					}
+				} catch (Exception $e) {
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage($e->getMessage(), "error"));	
 				}
 			}
 
@@ -238,7 +224,7 @@ class IndexController extends pm_Controller_Action {
 
 			if (strpos($action, "moveToQuarantine") !== false) {
 				if (!isset($_POST["domain"]) || !isset($_POST["file"])) {
-					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("Not enough POST params given", "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Not enough POST params given", "error"));
 					return;
 				}
 
@@ -247,9 +233,9 @@ class IndexController extends pm_Controller_Action {
 
 				$success = $nimbusec->moveToQuarantine($domain, $file);
 				if ($success) {
-					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("Successfully moved {$file} into Quarantine.", "info"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Successfully moved {$file} into Quarantine.", "info"));
 				} else {
-					array_push($this->view->responses, Modules_NimbusecAgentIntegration_Helpers::createMessage("An error occurred. Please check the log files.", "error"));
+					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("An error occurred. Please check the log files.", "error"));
 				}
 			}
 
@@ -260,7 +246,7 @@ class IndexController extends pm_Controller_Action {
 	}
 
 	public function issuesView($nimbusec) {
-		$domains = Modules_NimbusecAgentIntegration_Helpers::getHostDomains();
+		$domains = Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains();
 		$domainNames = array_keys($domains);
 
 		$issues = $nimbusec->getWebshellIssuesByDomain($domainNames);

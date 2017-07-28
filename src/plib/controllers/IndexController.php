@@ -411,6 +411,34 @@ class IndexController extends pm_Controller_Action {
 		$this->view->tabs = $this->newTabs();
 		$this->view->info = pm_Locale::lmsg("updateAgent");
 
+		if ($this->getRequest()->isPost()) {
+			$err = false;
+			$msg = pm_Locale::lmsg('agentUpdated');
+		
+			//if agent key and secret not present query from api
+			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+			
+			try {
+				$nimbusec->fetchAgent(pm_Context::getVarDir());
+			} catch (Exception $e) {
+				$err = true;
+				$message = $e->getMessage();
+
+				if (strpos($message, '400') !== false || strpos($message, '401') !== false || strpos($message, '403') !== false) {
+					$msg = pm_Locale::lmsg('invalidAPICredentials');
+				} else if (strpos($message, '404') !== false) {
+					$msg = pm_Locale::lmsg('invalidAgentVersion');
+				}
+			}
+
+			if (!$err) {
+				$this->_status->addMessage('info', $msg);
+			} else {
+				$this->_status->addMessage('error', $msg);
+			}
+			$this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'updateagent')));
+		}
+
 		$agent = json_decode(pm_Settings::get("agent"), true);
 		$this->view->installed = ($agent != null);
 		
@@ -443,38 +471,6 @@ class IndexController extends pm_Controller_Action {
 				'sendTitle' => 'Update',
 				'cancelLink' => pm_Context::getModulesListUrl(),
 			));
-		}
-
-		if ($this->getRequest()->isPost()) {
-			$err = false;
-			$msg = pm_Locale::lmsg('agentUpdated');
-		
-			//if agent key and secret not present query from api
-			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
-			
-			try {
-				if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
-					$err = true;
-					$msg = pm_Locale::lmsg('downloadError');
-				}
-
-			} catch (Exception $e) {
-				$err = true;
-				$message = $e->getMessage();
-
-				if (strpos($message, '400') !== false || strpos($message, '401') !== false || strpos($message, '403') !== false) {
-					$msg = pm_Locale::lmsg('invalidAPICredentials');
-				} else if (strpos($message, '404') !== false) {
-					$msg = pm_Locale::lmsg('invalidAgentVersion');
-				}
-			}
-
-			if (!$err) {
-				$this->_status->addMessage('info', $msg);
-			} else {
-				$this->_status->addMessage('error', $msg);
-			}
-			$this->_helper->json(array('redirect' => pm_Context::getActionUrl('index', 'updateagent')));
 		}
 
 		$this->view->form = $form;

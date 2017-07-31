@@ -23,10 +23,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 		pm_Context::init('nimbusec-agent-integration');
 
 		//read necessary properties from key-value-store and store them into class variables
-		$this->key = pm_Settings::get('apikey');
-		$this->secret = pm_Settings::get('apisecret');
-		$this->server = pm_Settings::get('apiserver');
-	}
+		$this->key 		= pm_Settings::get('apikey');
+		$this->secret 	= pm_Settings::get('apisecret');
+		$this->server 	= pm_Settings::get('apiserver');
+	}	
 
 	public function setKey($key) {
 		$this->key = $key;
@@ -67,13 +67,13 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 
 		$scheme = "http";
 		$domain = array(
-			"scheme" => $scheme,
-			"name" => $domain,
-			"deepScan" => $scheme . '://' . $domain,
+			"scheme" 	=> $scheme,
+			"name" 		=> $domain,
+			"deepScan" 	=> "{$scheme}://{$domain}",
 			"fastScans" => array(
-				$scheme . '://' . $domain
+				"{$scheme}://{$domain}"
 			),
-			"bundle" => $bundle
+			"bundle" 	=> $bundle
 		);
 
 		$api->createDomain($domain);
@@ -226,12 +226,21 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 		}
 
 		$user = array(
-			"login" => $mail,
-			"mail" => $mail,
-			"role" => "admin",
-			"signatureKey" => $signatureKey
+			"login" 		=> $mail,
+			"mail" 			=> $mail,
+			"role" 			=> "admin",
+			"signatureKey" 	=> $signatureKey
 		);
 		$api->createUser($user);
+	}
+
+	public function resolvePath($path) {
+		$subpaths = array_filter(explode("/", $path));
+		if (!in_array("quarantine", $subpaths)) {
+			array_splice($subpaths, 0, 0, array("quarantine"));
+		}
+
+		return implode("/", $subpaths);
 	}
 	
 	/**
@@ -278,6 +287,70 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 		pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
 	}
 
+	public function fetchQuarantine($path) {
+		$fragments = array_filter(explode("/", $path));
+		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
+
+		$fetched = array();
+		if (count($fragments) == 0) {
+			pm_Log::err("Invalid path given: {$path}");
+			return array();
+		}
+
+		// root
+		if (count($fragments) == 1 && $fragments[0] == "quarantine") {
+			
+			foreach ($quarantine as $domain => $files) {	
+				array_push($fetched, array(
+					"type" 	=> 0,
+					"name" 	=> $domain,
+					"count" => count($files)
+				));
+			}
+
+			return $fetched;
+		}
+
+		// domain
+		if (count($fragments) == 2) {
+
+			$domain = $fragments[1];
+			foreach ($quarantine[$domain] as $id => $value) {
+				
+				array_push($fetched, array(
+					"id"			=> $id,
+					"type" 			=> 1,
+					"name" 			=> pathinfo($value["path"], PATHINFO_BASENAME),
+
+					// path with domain as root
+					"old" 			=> pathinfo(explode($domain, $value["old"])[1], PATHINFO_DIRNAME),
+					"create_date" 	=> date("M d, Y h:i A" , $value["create_date"]),
+					"filesize" 		=> Modules_NimbusecAgentIntegration_PleskHelper::formatBytes($value["filesize"]),
+					"owner" 		=> $value["owner"],
+					"group" 		=> $value["group"],
+					"permission" 	=> Modules_NimbusecAgentIntegration_PleskHelper::formatPermission($value["permission"])
+				));
+			}
+		}
+
+		// file
+		if (count($fragments) == 3) {
+			$domain = $fragments[1];
+			$file = $fragments[2];
+
+			$value = $quarantine[$domain][$file];
+			
+			array_push($fetched, array(
+				"id" 	=> $file,
+				"type" 	=> 2,
+				"name" 	=> pathinfo($value["path"], PATHINFO_BASENAME),
+				"path" 	=> $value["path"]
+			));
+		}
+
+		return $fetched;
+	}
+
 	public function moveToQuarantine($domain, $file) {
 		$fileManager = new pm_ServerFileManager();
 
@@ -287,7 +360,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 		}
 
 		// create quarantine directory
-		$src = pm_Context::getVarDir() . "/quarantine";
+		$src = pm_Settings::get("quarantine_root");
 		if (!$fileManager->fileExists($src)) {
 
 			try {
@@ -321,13 +394,35 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 
 		// save in store
 		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
+		if (empty($quarantine)) {
+			$quarantine = array();
+		}
+
 		if (!array_key_exists($domain, $quarantine)) {
 			$quarantine[$domain] = array();
 		}
 
-		$quarantine[$domain][$file] = array(
-			"resource" => $file,
-			"path" => $dst
+		$owner = fileowner($dst) != false ? posix_getpwuid(fileowner($dst))["name"] : "unknown";
+		if ($owner == "") {
+			$owner = fileowner($dst);
+		}
+
+		$group = filegroup($dst) != false ? posix_getgrgid(filegroup($dst))["name"] : "unknown";
+		if ($group == "") {
+			$group = filegroup($dst);
+		}
+
+		$filesize = filesize($dst) != false ? filesize($dst) : "unknown";
+
+		$fileId = Modules_NimbusecAgentIntegration_PleskHelper::uuidv4();
+		$quarantine[$domain][$fileId] = array(
+			"old" 			=> $file,
+			"path" 			=> $dst,
+			"create_date" 	=> time(),
+			"filesize" 		=> $filesize,
+			"owner" 		=> $owner,
+			"group" 		=> $group,
+			"permission" 	=> decoct(fileperms($dst) & 0777)
 		);
 		pm_Settings::set("quarantine", json_encode($quarantine));
 

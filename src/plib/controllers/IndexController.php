@@ -19,7 +19,11 @@ class IndexController extends pm_Controller_Action {
 		$this->view->pageTitle = 'Nimbusec Webshell Detection';
 		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
 		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent.log");
+
 		pm_Settings::set("shellray", "https://shellray.com/upload");
+		pm_Settings::set("portal_url", "https://portal.nimbusec.com/");
+
+		pm_Settings::set("quarantine_root", pm_Context::getVarDir() . "/quarantine");
 	}
 
 	public function oldTabs() {
@@ -40,6 +44,10 @@ class IndexController extends pm_Controller_Action {
 			array(
 				"title" => "Issues",
 				"action" => "issues"
+			),
+			array(
+				"title" => "Quarantine",
+				"action" => "quarantine"
 			),
 			array(
 				'title' => 'Settings',
@@ -266,7 +274,7 @@ class IndexController extends pm_Controller_Action {
 			// save the indices of the issues
 			$indices = array();
 			foreach($files as $key => $value) {
-				$index = array_search($key, array_column($issues[$domain]["results"], "resource"));
+				$index = array_search($value["old"], array_column($issues[$domain]["results"], "path"));
 				array_push($indices, $index);
 			}
 
@@ -281,6 +289,67 @@ class IndexController extends pm_Controller_Action {
 		}
 
 		$this->view->issues = $issues;
+	}
+
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+	// ===========================================================================================================================================
+
+	public function quarantineAction() {
+		$this->view->tabs = $this->newTabs();
+		$this->view->responses = array();
+
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+
+		// =====================================================================================
+
+		if ($this->getRequest()->isPost()) {
+			$action = $_POST["action"];
+
+			if (!isset($action)) {
+				$this->_helper->json(
+					array(
+						"error" => Modules_NimbusecAgentIntegration_PleskHelper::createJSONR("Invalid request")
+					)
+				);
+				return;
+			}
+
+			// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+			if (strpos($action, "fetch") !== false) {
+
+				if (!isset($_POST["path"])) {
+					$this->_helper->json(
+						array(
+							"error" => Modules_NimbusecAgentIntegration_PleskHelper::createJSONR("Not enough POST params given")
+						)
+					);
+					return;
+				}
+
+				$path = $nimbusec->resolvePath($_POST["path"]);
+
+				$fetched = $nimbusec->fetchQuarantine($path);
+				$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($path) .
+							Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($path, $fetched);
+
+				$this->_helper->json(
+					array(
+						"files" => $fetched,
+						"html" 	=> $html,
+						"path" 	=> $path,
+						"error" => false
+					)
+				);
+				return;
+			}
+
+			// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		}
+
+		$this->view->root_path = "/";
 	}
 
 	// ===========================================================================================================================================
@@ -304,11 +373,11 @@ class IndexController extends pm_Controller_Action {
 		$task = new pm_Scheduler_Task();
 		$id = pm_Settings::get('agent-schedule-id');
 		$cron_default = array(
-			'minute' => '30',
-			'hour' => '13',
-			'dom' => '*',
-			'month' => '*',
-			'dow' => '*',
+			'minute' 	=> '30',
+			'hour' 		=> '13',
+			'dom' 		=> '*',
+			'month' 	=> '*',
+			'dow' 		=> '*',
 		);
 
 		if ($this->getRequest()->isPost()) {

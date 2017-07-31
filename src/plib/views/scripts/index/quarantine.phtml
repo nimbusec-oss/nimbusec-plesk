@@ -1,0 +1,89 @@
+<?php
+foreach ($this->responses as $response) {
+    echo $response;
+}
+
+echo $this->renderTabs($this->tabs); 
+?>
+
+<link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    Quarantine
+                </h3>
+            </div>
+        </div>
+
+        <br>
+        
+        <div id="content" class="content">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+
+    window.addEventListener("load", function() {
+        var path = "<?php echo $this->root_path; ?>";
+        redirect(path);
+    });
+
+    function redirect(path) {
+        var form = new FormData();
+        form.append("path", path);
+        form.append("action", "fetch");
+        
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function(){ 
+            var response = JSON.parse(xhr.responseText);
+            if (response.error) {
+                console.log(response.error.msg);
+                return;
+            }
+
+            console.log(response);
+            update(response);
+        }
+
+        xhr.open ("post", "", false);
+        xhr.send (form);
+    }
+
+    function update(response) {
+        var container = document.getElementById("content");
+        if (response.files.length == 0) {
+            container.innerHTML = "No quarantined files found.";
+            return;
+        }
+
+        container.innerHTML = response.html;
+        setHandler();
+    }
+
+    function setHandler() {
+        var checkbox = document.getElementById("select-all");
+        if (checkbox != null) {
+            document.getElementById("select-all").addEventListener("click", function(event) {
+                var state = event.target.checked;
+
+                document.querySelectorAll("#select").forEach(function(checkbox) { 
+                    checkbox.checked = state;
+                });
+            });
+        }
+
+        document.querySelectorAll("#subpath").forEach(function(subpath) { 
+            subpath.addEventListener("click", function(triggered) {
+                redirect(triggered.target.closest("#subpath").getAttribute("path"));
+            });
+        });
+    }
+
+</script>

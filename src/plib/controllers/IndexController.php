@@ -128,14 +128,14 @@ class IndexController extends pm_Controller_Action {
 				
 				$config['key'] = pm_Settings::get('agent_key');
 				$config['secret'] = pm_Settings::get('agent_secret');
-				$config['apiserver'] = $serverUrl;
+				$config['apiserver'] = $api_server;
 				$config["domains"] = new ArrayObject();
 				file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
 				// store api credentials
-				pm_Settings::set('api_key', $key);
-				pm_Settings::set('api_secret', $secret);
-				pm_Settings::set('api_server', $serverUrl);
+				pm_Settings::set('api_key', $api_key);
+				pm_Settings::set('api_secret', $api_secret);
+				pm_Settings::set('api_server', $api_server);
 
 				pm_Settings::set("extension_installed", "true");	
 

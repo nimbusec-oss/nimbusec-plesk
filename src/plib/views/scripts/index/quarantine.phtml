@@ -1,10 +1,5 @@
-<?php
-foreach ($this->responses as $response) {
-    echo $response;
-}
-
-echo $this->renderTabs($this->tabs); 
-?>
+<?= $this->renderTabs($this->tabs); ?> 
+<?= implode($this->responses); ?>
 
 <link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 
@@ -31,7 +26,7 @@ echo $this->renderTabs($this->tabs);
 <script>
 
     window.addEventListener("load", function() {
-        var path = "<?php echo $this->root_path; ?>";
+        var path = "<?= $this->root_path; ?>";
         redirect(path);
     });
 

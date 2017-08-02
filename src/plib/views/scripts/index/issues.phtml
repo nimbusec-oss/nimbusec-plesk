@@ -1,10 +1,5 @@
-<?php
-foreach ($this->responses as $response) {
-    echo $response;
-}
-
-echo $this->renderTabs($this->tabs); 
-?>
+<?= $this->renderTabs($this->tabs); ?> 
+<?= implode($this->responses); ?>
 
 <link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
@@ -71,24 +66,25 @@ echo $this->renderTabs($this->tabs);
             
             <div class="btns-box"></div>
 
-            <?php if (count($this->issues) == 0) { ?>
+            <?php if (count($this->issues) == 0): ?>
                 <h5>Congratulations! No issues found.</h5>
-            <?php } ?>
+            <?php endif; ?>
 
-            <?php foreach ($this->issues as $name => $domain) { ?>
+            <?php foreach ($this->issues as $name => $domain): ?>
                 <div class="form-row">
 
                     <div class="field-name" style="width: 100%">
                         <div style="display: inline-block;">
-                            <h4><b><?php echo $name ?></b></h4>
+                            <h4><b><?= $name ?></b></h4>
                         </div>
                         <div style="display: inline-block; margin-left: 5px;">
-                            <a id="issue-link-<?php echo $name; ?>">Select / Deselect all issues</a>
+                            <a id="issue-link-<?= $name; ?>">Select / Deselect all issues</a>
                         </div>
                     </div>
+
                     <div class="field-value" style="margin-bottom: 15px;"></div>
 
-                    <?php foreach ($domain["results"] as $result) { ?>
+                    <?php foreach ($domain["results"] as $result): ?>
                         <div class="panel panel-collapsible p-promo panel-collapsed">
                             <div class="panel-wrap">
 
@@ -97,14 +93,14 @@ echo $this->renderTabs($this->tabs);
                                         <span class="panel-control">
 
                                             <div style="margin-left: -140px; color: #303030; margin-top: 2px;display: inline-block;">
-                                                    <?php echo date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
+                                                    <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
                                             </div>
                                             <div style="margin-left: -236px; display: inline-block;">
                                                 <form method="post">
                                                     <input name="action" value="falsePositive" type="hidden"/>
-                                                    <input name="domain" value="<?php echo $name; ?>" type="hidden"/>
-                                                    <input name="resultId" value="<?php echo $result['id']; ?>" type="hidden"/>
-                                                    <input name="file" value="<?php echo $result['resource'];?>" type="hidden">
+                                                    <input name="domain" value="<?= $name; ?>" type="hidden"/>
+                                                    <input name="resultId" value="<?= $result['id']; ?>" type="hidden"/>
+                                                    <input name="file" value="<?= $result['resource'];?>" type="hidden">
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-flag"></i>
                                                         <span>False positive</span>
@@ -114,8 +110,8 @@ echo $this->renderTabs($this->tabs);
                                             <div style="margin-left: -246px; margin-top: 2px;display: inline-block;">
                                                 <form method="post">
                                                     <input name="action" value="moveToQuarantine" type="hidden">
-                                                    <input name="domain" value="<?php echo $name; ?>" type="hidden">
-                                                    <input name="file" value="<?php echo $result['resource'];?>" type="hidden">
+                                                    <input name="domain" value="<?= $name; ?>" type="hidden">
+                                                    <input name="file" value="<?= $result['resource'];?>" type="hidden">
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-bug"></i>
                                                         <span>Move to Quarantine</span>
@@ -146,13 +142,13 @@ echo $this->renderTabs($this->tabs);
                                             ?> 
 
                                             <span style="margin-right: 5px">
-                                                <input type="checkbox" id="issue-<?php echo $name;?>"/>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[0]; ?>"></i>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?php echo $bubbleColors[1]; ?>"></i>
+                                                <input type="checkbox" id="issue-<?= $name;?>"/>
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $bubbleColors[0]; ?>"></i>
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $bubbleColors[1]; ?>"></i>
                                             </span>
 
                                             <span style="font-size: 13px">
-                                                <?php echo $result["resource"]; ?>
+                                                <?= $result["resource"]; ?>
                                             </span>
                                         </div>
                                     </div>
@@ -160,52 +156,52 @@ echo $this->renderTabs($this->tabs);
 
                                 <div class="panel-content">
                                     <div class="panel-content-wrap">
-                                        <?php foreach ($result as $key => $value) { 
-                                            $title = "";
-                                            $text = $value;
+                                        <?php foreach ($result as $key => $value): 
+                                                $title = "";
+                                                $text = $value;
 
-                                            if ($key == "createDate") {
-                                                $title = "Known since";
-                                                $text = date("m/d/o h:i A", $value / 1000);
-                                            }
+                                                if ($key == "createDate") {
+                                                    $title = "Known since";
+                                                    $text = date("m/d/o h:i A", $value / 1000);
+                                                }
 
-                                            if ($key == "threatname") {
-                                                $title = "Name";
-                                            }
+                                                if ($key == "threatname") {
+                                                    $title = "Name";
+                                                }
 
-                                            if ($key == "resource") {
-                                                $title = "Path";
-                                            }
+                                                if ($key == "resource") {
+                                                    $title = "Path";
+                                                }
 
-                                            if ($key == "md5") {
-                                                $title = strtoupper($key);
-                                            }
+                                                if ($key == "md5") {
+                                                    $title = strtoupper($key);
+                                                }
 
-                                            if ($key == "owner" || $key == "group" || $key == "permission") {
-                                                $title = ucfirst($key);
-                                            }
+                                                if ($key == "owner" || $key == "group" || $key == "permission") {
+                                                    $title = ucfirst($key);
+                                                }
 
-                                            if ($title == "") {
-                                                continue;
-                                            }
+                                                if ($title == "") {
+                                                    continue;
+                                                }
                                         ?>
                                         
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
                                                     <span>
-                                                        <?php echo $title; ?>
+                                                        <?= $title; ?>
                                                     </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
-                                                        <?php echo $text; ?>
+                                                        <?= $text; ?>
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <?php } ?>
+                                        <?php endforeach; ?>
 
                                         <div class="source-code">
                                             <a>View source code <i id="source-code-icon" class="mdi mdi-arrow-down-drop-circle"></i></a>
@@ -216,7 +212,7 @@ echo $this->renderTabs($this->tabs);
                                                 <div class="panel-content">
                                                     <div class="panel-content-wrap">
                                                         <pre><code class="html">
-                                                            <?php echo htmlentities(file_get_contents($result["resource"])); ?>
+                                                            <?= htmlentities(file_get_contents($result["resource"])); ?>
                                                         </code></pre>
                                                     </div>
                                                 </div>
@@ -227,11 +223,11 @@ echo $this->renderTabs($this->tabs);
                                 </div>
                             </div>
                         </div>
-                    <?php } ?>
+                    <?php endforeach; ?>
                     
                     </div>
                 </div>
-            <?php } ?> 
+            <?php endforeach; ?> 
 
         </div>
     </div>

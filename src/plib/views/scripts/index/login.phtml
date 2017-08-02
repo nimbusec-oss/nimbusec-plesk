@@ -1,4 +1,5 @@
-<?php echo $this->renderTabs($this->tabs); ?>
+<?= $this->renderTabs($this->tabs); ?>
+
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -9,7 +10,7 @@
             </div>
         </div>
         <div class="content">
-            <?php echo $this->login; ?>
+            <?= $this->login; ?>
             <form method="post" onsubmit="return generateSSOLink(this);">
                 <div class="btns-box">
                     <div class="box-area">

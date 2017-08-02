@@ -1,10 +1,5 @@
-<?php
-foreach ($this->responses as $response) {
-    echo $response;
-}
-
-echo $this->renderTabs($this->tabs); 
-?>
+<?= $this->renderTabs($this->tabs); ?> 
+<?= implode($this->responses); ?>
 
 <!-- ========================================= [ UNREGISTERED DOMAINS ] ===================================================================== -->
 
@@ -23,31 +18,36 @@ echo $this->renderTabs($this->tabs);
             and click on the button "Register the selected domains" to complete the registration.
             <br>
             <br>
+
             <form method="post" id="register">
                 <div class="form-row">
+                    
                     <div class="field-name" style="width: 250px;">
                         <select name="bundle" style="width: 250px;">
-                            <?php
-                                foreach ($this->fetched as $id => $element) {
-                                    echo "<option value='{$id}__{$element['bundle']['name']}'>{$element['bundle']['display']}</option>";
-                                }
-                            ?>
+                            <?php foreach ($this->fetched as $id => $element): ?>
+
+                                <?php $value = "{$id}__{$element['bundle']['name']}"; ?>
+                                <option value="<?= $value ?>"><?= $element['bundle']['display']; ?></option>
+
+                            <?php endforeach; ?>
                         </select>
                     </div>
+                    
                     <div class="field-value">
-                        <?php if (count($this->domains) > 0) { ?>
+                        <?php if (count($this->domains) > 0): ?>
                             <span id="btn-send" class="btn action" style="margin-left: 20px;">
                                 <button type="submit" name="submit" value="registerSelected">Register the selected domains</button>
                             </span>
-                        <?php } ?>
+                        <?php endif; ?>
                     </div>
                     <br>
+                    
                     <div class="list">
-                        <?php if (count($this->domains) == 0) { ?>
+                        <?php if (count($this->domains) == 0): ?>
                             <span class="hint">
                                 No domains found.
                             </span>
-                        <?php } else { ?>
+                        <?php else: ?>
                             <table width="100%" cellspacing="0">
                                 <thead>
                                     <tr>
@@ -60,20 +60,21 @@ echo $this->renderTabs($this->tabs);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach($this->domains as $domain => $directory) { ?>
+                                    <?php foreach($this->domains as $domain => $directory): ?>
                                     <tr class=" odd" data-row-id="">
                                         <td class="">
-                                            <input name="active0[]" value="<?php echo $domain; ?>" type="checkbox"> <?php echo $domain; ?>
+                                            <input name="active0[]" value="<?= $domain; ?>" type="checkbox"> <?= $domain; ?>
                                         </td>
                                         <td class="">
-                                            <?php echo $directory; ?>
+                                            <?= $directory; ?>
                                         </td>
                                     </tr>
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
-                        <?php } ?>
+                        <?php endif; ?>
                     </div>
+
                 </div>
             </form>
         </div>
@@ -97,32 +98,37 @@ echo $this->renderTabs($this->tabs);
             Below you can find your registered domains with their corresponding bundle. To unregister a bundle, select it on the checkbox and click on the button to complete the unregistration.
             <br>
             <br>
+
             <?php $i = 1; ?>
-            <?php foreach ($this->fetched as $id => $element) { ?>
+            <?php foreach ($this->fetched as $id => $element): ?>
+
                 <form method="post">
-                    <input type="hidden" name="bundle" value="<?php echo $element["bundle"]["name"]; ?>"/>
+                    <input type="hidden" name="bundle" value="<?= $element["bundle"]["name"]; ?>"/>
                     <div class="form-row">
+                        
                         <div class="field-name">
-                            <h5><b><?php echo $element["bundle"]["name"]; ?></b></h5>
+                            <h5><b><?= $element["bundle"]["name"]; ?></b></h5>
                         </div>
+                        
                         <div class="field-value">
-                            <?php if (count($element["domains"]) > 0) { ?>
+                            <?php if (count($element["domains"]) > 0): ?>
                                 <span id="btn-send" class="btn action">
-                                    <button type="submit" name="submit" value="removeSelected<?php echo $i; ?>">Remove selected domains</button>
+                                    <button type="submit" name="submit" value="removeSelected<?= $i; ?>">Remove selected domains</button>
                                 </span>
-                            <?php } ?>
+                            <?php endif; ?>
                         </div>
+
                         <div class="list">
-                            <?php if (count($element["domains"]) == 0) { ?>
+                            <?php if (count($element["domains"]) == 0): ?>
                                 <span class="hint">
                                     No registered domains found for this bundle.
                                 </span>
-                            <?php } else { ?>
+                            <?php else: ?>
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>
-                                                <input name="act<?php echo $i; ?>" id="act<?php echo $i; ?>" type="checkbox" onclick="updateState(<?php echo $i; ?>)"> Unregister domain 
+                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" onclick="updateState(<?= $i; ?>)"> Unregister domain 
                                             </th>
                                             <th>
                                                 Directory
@@ -130,33 +136,36 @@ echo $this->renderTabs($this->tabs);
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach($element["domains"] as $domain) { ?>
+                                        <?php foreach($element["domains"] as $domain): ?>
                                             <tr>
                                                 <td>
-                                                    <input name="active<?php echo $i; ?>[]" value="<?php echo $domain['name']; ?>" type="checkbox"> <?php echo $domain['name']; ?>
+                                                    <input name="active<?= $i; ?>[]" value="<?= $domain['name']; ?>" type="checkbox"> <?= $domain['name']; ?>
                                                 </td>
                                                 <td>
-                                                    <?php echo Modules_NimbusecAgentIntegration_PleskHelper::getDomainDir($domain["name"]); ?>
+                                                    <?= Modules_NimbusecAgentIntegration_PleskHelper::getDomainDir($domain["name"]); ?>
                                                 </td>
                                             </tr>
-                                        <?php } ?>
+                                        <?php endforeach; ?>
                                     </tbody>
                                 </table>
-                            <?php } ?>
+                            <?php endif; ?>
                         </div>
+
                     </div>
                 </form>
-                <?php if ($i == count($this->fetched)) { ?>
+                
+                <?php if ($i == count($this->fetched)): ?>
                     <br>
                     <br>
                     <div class="btns-box" style="border-top: 3px solid #ddd;"></div>
                     <br>
-                <?php } else { ?>
+                <?php else: ?>
                     <div class="btns-box"></div>
                     <br>
-                <?php } ?>
+                <?php endif; ?>
+
             <?php $i = $i + 1; ?>
-            <?php } ?>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>
@@ -173,14 +182,14 @@ echo $this->renderTabs($this->tabs);
             </div>
         </div>
         <div class="content">
-            <?php echo $this->configInfo; ?>
+            <?= $this->configInfo; ?>
             <br><br>
             <div class="form-row">
                 <div class="field-name">
                     Configuration
                 </div>
                 <div class="field-value">
-                    <textarea style="margin-right: 5px; height: 400px; width: 400px" readonly><?php echo $this->configuration; ?></textarea>
+                    <textarea style="margin-right: 5px; height: 400px; width: 400px" readonly><?= $this->configuration; ?></textarea>
                 </div>
             </div>
         </div>
@@ -199,7 +208,7 @@ echo $this->renderTabs($this->tabs);
             </div>
         </div>
         <div class="content">
-            <?php echo $this->info; ?>
+            <?= $this->info; ?>
             <br>
             <br>
             <form method="post" id="schedule">
@@ -242,17 +251,17 @@ echo $this->renderTabs($this->tabs);
                     </div>
                     <div class="field-value">
                         <select name="interval"> 
-                            <option value="0" <?php if (pm_Settings::get('schedule-interval') == "0") { ?> selected <?php } ?>>
-                                <?php echo pm_Locale::lmsg('once'); ?>
+                            <option value="0" <?php if (pm_Settings::get('schedule-interval') == "0"): ?> selected <?php endif; ?>>
+                                <?= pm_Locale::lmsg('once'); ?>
                             </option>
-                            <option value="12" <?php if (pm_Settings::get('schedule-interval') == "12") { ?> selected <?php } ?>>
-                                <?php echo pm_Locale::lmsg('twice'); ?>
+                            <option value="12" <?php if (pm_Settings::get('schedule-interval') == "12"): ?> selected <?php endif; ?>>
+                                <?= pm_Locale::lmsg('twice'); ?>
                             </option>
-                            <option value="8" <?php if (pm_Settings::get('schedule-interval') == "8") { ?> selected <?php } ?>>
-                                <?php echo pm_Locale::lmsg('threeTimes'); ?>
+                            <option value="8" <?php if (pm_Settings::get('schedule-interval') == "8"): ?> selected <?php endif; ?>>
+                                <?= pm_Locale::lmsg('threeTimes'); ?>
                             </option>
-                            <option value="6" <?php if (pm_Settings::get('schedule-interval') == "6") { ?> selected <?php } ?>>
-                                <?php echo pm_Locale::lmsg('fourTimes'); ?>
+                            <option value="6" <?php if (pm_Settings::get('schedule-interval') == "6"): ?> selected <?php endif; ?>>
+                                <?= pm_Locale::lmsg('fourTimes'); ?>
                             </option>
                         </select>
                     </div>

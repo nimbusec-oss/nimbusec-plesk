@@ -1,9 +1,6 @@
-<?php echo $this->renderTabs($this->tabs); 
+<?= $this->renderTabs($this->tabs); ?>
+<?= implode($this->responses); ?>
 
-foreach ($this->responses as $response) {
-    echo $response;
-}
-?>
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -14,7 +11,7 @@ foreach ($this->responses as $response) {
             </div>
         </div>
         <div class="content">
-            <?php echo $this->info; ?>
+            <?= $this->info; ?>
             <br>
             <br>
             
@@ -26,8 +23,8 @@ foreach ($this->responses as $response) {
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="api_key" value="<?php echo $this->api_key; ?>" 
-                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_key" value="<?= $this->api_key; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true"): ?> readonly="true" <?php endif; ?>/>
                     </div>
                 </div>
 
@@ -37,8 +34,8 @@ foreach ($this->responses as $response) {
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="api_secret" value="<?php echo $this->api_secret; ?>" 
-                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_secret" value="<?= $this->api_secret; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true"): ?> readonly="true" <?php endif; ?>/>
                     </div>
                 </div>
 
@@ -48,13 +45,13 @@ foreach ($this->responses as $response) {
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="api_server" value="<?php echo $this->api_server; ?>" 
-                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_server" value="<?= $this->api_server; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true"): ?> readonly="true" <?php endif; ?>/>
                     </div>
                 </div>
 
                 <div class="btns-box">
-                    <?php if (pm_Settings::get("extension_installed") !== "true") { ?>
+                    <?php if (pm_Settings::get("extension_installed") !== "true"): ?>
                         <div class="box-area">
                             <div class="form-row">
                                 <div class="field-name">
@@ -68,7 +65,7 @@ foreach ($this->responses as $response) {
                                 </div>
                             </div>
                         </div>
-                    <?php } ?>
+                    <?php endif; ?>
                 </div>
 
             </form>

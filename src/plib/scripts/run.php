@@ -12,12 +12,12 @@ pm_Context::init('nimbusec-agent-integration');
 $varDir = pm_Context::getVarDir();
 $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
-$cmd = "{$varDir}/{$agent} -config " . pm_Settings::get("agentConfig") . " ";
+$cmd = "{$varDir}/{$agent} -config " . pm_Settings::get("agent_config") . " ";
 
 if (pm_Settings::get("agentYara") == "1") {
 	$cmd .= "-yara ";
 }
 
-$cmd .= "> " . pm_Settings::get("agentLog") . " 2>&1";
+$cmd .= "> " . pm_Settings::get("agent_log") . " 2>&1";
 
 system($cmd);

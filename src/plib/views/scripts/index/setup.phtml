@@ -20,54 +20,41 @@ foreach ($this->responses as $response) {
             
             <form method="post">
 
-                <?php
-                    $apikey = "Your Nimbusec API Key";
-                    $apisecret = "Your Nimbusec API Secret";
-
-                    if (!empty(pm_Settings::get('apikey'))) {
-                        $apikey = pm_Settings::get('apikey');
-                    }
-
-                    if (!empty(pm_Settings::get('apisecret'))) {
-                        $apisecret = pm_Settings::get('apisecret');
-                    }
-                ?>
-
-                <!-- API key -->
                 <div class="form-row">
                     <div class="field-name">
                         <span>API Key </span>
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="apikey" value="<?php echo $apikey; ?>" <?php if (pm_Settings::get("setupTabs") == "0") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_key" value="<?php echo $this->api_key; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
                     </div>
                 </div>
 
-                <!-- API secret -->
                 <div class="form-row">
                     <div class="field-name">
                         <span>API Secret </span>
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="apisecret" value="<?php echo $apisecret; ?>" <?php if (pm_Settings::get("setupTabs") == "0") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_secret" value="<?php echo $this->api_secret; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
                     </div>
                 </div>
 
-                <!-- API server -->
                 <div class="form-row">
                     <div class="field-name">
                         <span>API Server </span>
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="apiserver" value="https://api.nimbusec.com" <?php if (pm_Settings::get("setupTabs") == "0") { ?> readonly="true" <?php } ?>/>
+                        <input type="text" name="api_server" value="<?php echo $this->api_server; ?>" 
+                            <?php if (pm_Settings::get("extension_installed") === "true") { ?> readonly="true" <?php } ?>/>
                     </div>
                 </div>
 
                 <div class="btns-box">
-                    <?php if (pm_Settings::get("setupTabs") != "0") { ?>
+                    <?php if (pm_Settings::get("extension_installed") !== "true") { ?>
                         <div class="box-area">
                             <div class="form-row">
                                 <div class="field-name">

@@ -2,75 +2,48 @@
 
 class IndexController extends pm_Controller_Action {
 
-	// Three "===" - lines as comment mean the sepearation of the action methods 
-	// 		e.g (loginAction, settingsAction, ...)
-	//
-	// "=" as comment line means the semantic sepearation within an action 
-	// 		e.g (settingsAction => sepeartion of domain related, POST related and agent config related code)
-	//
-	// "+" as comment line means the sepeartion of form-related code within the POST request processing 
-	// 		e.g (if ($_POST == "registerDomains), if ($_POST == "unregisterDomains), ...)
-
-
 	public function init() {
 		parent::init();
-
-		// Init title for all actions
 		$this->view->pageTitle = 'Nimbusec Webshell Detection';
-		pm_Settings::set("agentConfig", pm_Context::getVarDir() . "/agent.conf");
-		pm_Settings::set("agentLog", pm_Context::getVarDir() . "/agent.log");
 
-		pm_Settings::set("shellray", "https://shellray.com/upload");
-		pm_Settings::set("portal_url", "https://portal.nimbusec.com/");
+		pm_Settings::set("agent_config", pm_Context::getVarDir() . "/agent.conf");
+		pm_Settings::set("agent_log", pm_Context::getVarDir() . "/agent.log");
+
+		pm_Settings::set("shellray_url", 	"https://shellray.com/upload");
+		pm_Settings::set("portal_url", 		"https://portal.nimbusec.com/");
+		pm_Settings::set("api_url", 		"https://api.nimbusec.com");
 
 		pm_Settings::set("quarantine_root", pm_Context::getVarDir() . "/quarantine");
+		
+		//pm_Settings::set("extension_installed", "false");
 	}
 
-	public function oldTabs() {
-		return array(
-			array(
-				'title' => 'Setup',
-				'action' => 'setup'
-			),
-		);
-	}
+	public function getTabs() {
+		$installed = pm_Settings::get("extension_installed");
+		if ($installed !== "true") {
+			return array(
+				array("title" => "Setup",	"action" => "setup"),
+			);
+		}
 
-	public function newTabs() {
 		return array(
-			array(
-				'title' => 'Login to nimbusec',
-				'action' => 'login'
-			),
-			array(
-				"title" => "Issues",
-				"action" => "issues"
-			),
-			array(
-				"title" => "Quarantine",
-				"action" => "quarantine"
-			),
-			array(
-				'title' => 'Settings',
-				'action' => 'settings',
-			),
-			array(
-				'title' => 'Update Agent',
-				'action' => 'updateagent'
-			),
-			array(
-				'title' => 'Setup',
-				'action' => 'setup',
-			),
+			array("title" => "Login to nimbusec", 	"action" => "login"),
+			array("title" => "Issues", 				"action" => "issues"),
+			array("title" => "Quarantine",			"action" => "quarantine"),
+			array("title" => "Settings",			"action" => "settings"),
+			array("title" => "Update Agent",		"action" => "updateagent"),
+			array("title" => "Setup",				"action" => "setup"),
 		);
 	}
 
 	public function indexAction() {
-		$setupTabs = pm_Settings::get("setupTabs");
-		if ($setupTabs == "0") {
-			$this->_forward('login');
-		} else {
-			$this->_forward('setup');
+		$installed = pm_Settings::get("extension_installed");
+		if ($installed !== "true") {
+			$this->_forward("setup");
+			return;
 		}
+
+		$this->_forward("login");
 	}
 
 	// ===========================================================================================================================================
@@ -78,31 +51,29 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function setupAction() {
-		$setupTabs = pm_Settings::get("setupTabs");
-		if ($setupTabs == "0") {
-			$this->view->tabs = $this->newTabs();
-		} else {
-			$this->view->tabs = $this->oldTabs();
-		}
+		$this->view->tabs = $this->getTabs();
 
 		$this->view->responses = array();
-		$this->view->info = pm_Locale::lmsg('apiInfo');
+		$this->view->info = pm_Locale::lmsg("apiInfo");
+
+		$this->view->api_key = pm_Settings::get("api_key", "Your Nimbusec API Key");
+		$this->view->api_secret = pm_Settings::get("api_secret", "Your Nimbusec API Secret");
+		$this->view->api_server = pm_Settings::get("api_url");
 
 		if ($this->getRequest()->isPost()) {
 			$action = $_POST["submit"];
 
 			if (strpos($action, "downloadAgent") !== false) {
-
-				if (!isset($_POST["apikey"]) || !isset($_POST["apisecret"]) || !isset($_POST["apiserver"])) {
+				if (!isset($_POST["api_key"]) || !isset($_POST["api_secret"]) || !isset($_POST["api_server"])) {
 					array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Please fill out all fields.", "error"));
 					return;
 				}
 
-				$key = $_POST["apikey"];
-				$secret = $_POST["apisecret"];
-				$serverUrl = rtrim($_POST["apiserver"], "/");
+				$api_key = $_POST["api_key"];
+				$api_secret = $_POST["api_secret"];
+				$api_server = rtrim($_POST["api_server"], "/");
 
-				$nimbusec = Modules_NimbusecAgentIntegration_NimbusecHelper::withCred($key, $secret, $serverUrl);
+				$nimbusec = Modules_NimbusecAgentIntegration_NimbusecHelper::withCred($api_key, $api_secret, $api_server);
 
 				// test credentials
 				$success = $nimbusec->testAPICredentials();
@@ -124,6 +95,7 @@ class IndexController extends pm_Controller_Action {
 				$host = Modules_NimbusecAgentIntegration_PleskHelper::getHost();
 				$admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();
 
+				// generate signature key
 				$signatureKey = md5(uniqid(rand(), true));
 
 				try {
@@ -147,28 +119,25 @@ class IndexController extends pm_Controller_Action {
 				}
 
 				// store agent credentials
-				pm_Settings::set('agentkey', $token['key']);
-				pm_Settings::set('agentsecret', $token['secret']);
-				pm_Settings::set('agenttoken-id', $token['id']);
-
-				$configString = file_get_contents(pm_Settings::get("agentConfig"));
-				$config = json_decode($configString, true);
-				
-				$config['key'] = pm_Settings::get('agentkey');
-				$config['secret'] = pm_Settings::get('agentsecret');
-				$config['apiserver'] = $serverUrl;
-
-				// store api credentials
-				pm_Settings::set('apikey', $key);
-				pm_Settings::set('apisecret', $secret);
-				pm_Settings::set('apiserver', $serverUrl);
-
-				// enable other view
-				pm_Settings::set("setupTabs", "0");
+				pm_Settings::set('agent_key', $token['key']);
+				pm_Settings::set('agent_secret', $token['secret']);
+				pm_Settings::set('agent_tokenid', $token['id']);
 
 				// write agent config
+				$config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
+				
+				$config['key'] = pm_Settings::get('agent_key');
+				$config['secret'] = pm_Settings::get('agent_secret');
+				$config['apiserver'] = $serverUrl;
 				$config["domains"] = new ArrayObject();
-				file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
+				file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+
+				// store api credentials
+				pm_Settings::set('api_key', $key);
+				pm_Settings::set('api_secret', $secret);
+				pm_Settings::set('api_server', $serverUrl);
+
+				pm_Settings::set("extension_installed", "true");	
 
 				// redirect to new view
 				$this->_status->addMessage('info', "Server Agent successfully installed");
@@ -185,7 +154,7 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function issuesAction() {
-		$this->view->tabs = $this->newTabs();
+		$this->view->tabs = $this->getTabs();
 		$this->view->responses = array();
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -296,7 +265,7 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function quarantineAction() {
-		$this->view->tabs = $this->newTabs();
+		$this->view->tabs = $this->getTabs();
 		$this->view->responses = array();
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -357,7 +326,7 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function settingsAction() {
-		$this->view->tabs = $this->newTabs();
+		$this->view->tabs = $this->getTabs();
 		$this->view->responses = array();
 
 		// =====================================================================================
@@ -526,7 +495,7 @@ class IndexController extends pm_Controller_Action {
 			$domains = Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains();
 			$keys = array_keys($domains);
 
-			$string = file_get_contents(pm_Settings::get("agentConfig"));
+			$string = file_get_contents(pm_Settings::get("agent_config"));
 			$config = json_decode($string, true);	
 			$config["domains"] = new ArrayObject();
 
@@ -556,7 +525,7 @@ class IndexController extends pm_Controller_Action {
 			$this->view->domains = $domains;
 			$this->view->fetched = $fetched;
 
-			file_put_contents(pm_Settings::get("agentConfig"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
+			file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));	
 
 		} catch (Exception $e) {
 			array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage($e->getMessage(), "error"));	
@@ -564,7 +533,7 @@ class IndexController extends pm_Controller_Action {
 	}
 
 	public function configView() {
-		$config = file_get_contents(pm_Settings::get("agentConfig"));
+		$config = file_get_contents(pm_Settings::get("agent_config"));
 
 		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
 		$this->view->configuration = $config;
@@ -575,16 +544,15 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function loginAction() {
-		$this->view->tabs = $this->newTabs();
+		$this->view->tabs = $this->getTabs();
 		$this->view->login = pm_Locale::lmsg('login');
 
 		if ($this->getRequest()->isPost()) {
 			$admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();
+
 			$this->_helper->json(array(
-				"link" => Modules_NimbusecAgentIntegration_PleskHelper::getSignedLoginURL(
-					(string) $admin->admin_email, 
-					pm_Settings::get('signaturekey')
-			)));
+				"link" => Modules_NimbusecAgentIntegration_PleskHelper::getSignedLoginURL((string) $admin->admin_email, pm_Settings::get('signaturekey'))
+			));
 		}
 	}
 
@@ -593,7 +561,7 @@ class IndexController extends pm_Controller_Action {
 	// ===========================================================================================================================================
 
 	public function updateagentAction() {
-		$this->view->tabs = $this->newTabs();
+		$this->view->tabs = $this->getTabs();
 		$this->view->info = pm_Locale::lmsg("updateAgent");
 
 		$agent = json_decode(pm_Settings::get("agent"), true);

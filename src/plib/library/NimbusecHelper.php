@@ -7,9 +7,9 @@ use Nimbusec\API as API;
  */
 class Modules_NimbusecAgentIntegration_NimbusecHelper {
 
-	private $key = '';
-	private $secret = '';
-	private $server = '';
+	private $key = "";
+	private $secret = "";
+	private $server = "";
 
 	public static function withCred($key, $secret, $server) {
 		$instance = new self();
@@ -20,12 +20,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 	}
 
 	public function __construct() {
-		pm_Context::init('nimbusec-agent-integration');
+		pm_Context::init("nimbusec-agent-integration");
 
 		//read necessary properties from key-value-store and store them into class variables
-		$this->key 		= pm_Settings::get('apikey');
-		$this->secret 	= pm_Settings::get('apisecret');
-		$this->server 	= pm_Settings::get('apiserver');
+		$this->key 		= pm_Settings::get("api_key");
+		$this->secret 	= pm_Settings::get("api_secret");
+		$this->server 	= pm_Settings::get("api_server");
 	}	
 
 	public function setKey($key) {
@@ -50,9 +50,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper {
 			$message = $e->getMessage();
 			$reason = "";
 
-			if (strpos($message, '400') !== false || strpos($message, '401') !== false || strpos($message, '403') !== false) {
+			if (strpos($message, "400") !== false || strpos($message, "401") !== false || strpos($message, "403") !== false) {
 				$reason = "Wrong API credentials. Please make sure that the key and secret are right.";
-			} else if (strpos($message, '404') !== false) {
+			} else if (strpos($message, "404") !== false) {
 				$reason = "404 indicates a wrong server url. Please check {$server} to make sure it's right.";
 			}
 

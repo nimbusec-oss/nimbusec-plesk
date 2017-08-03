@@ -257,6 +257,7 @@ class IndexController extends pm_Controller_Action {
 			}
 		}
 
+		$this->view->colors = array("#bbb", "#fdd835", "#f44336");
 		$this->view->issues = $issues;
 	}
 
@@ -334,10 +335,9 @@ class IndexController extends pm_Controller_Action {
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		$this->domainsView($nimbusec);
 		$this->configView();
+		$this->runView();
 
 		// =====================================================================================
-
-		$this->view->info = pm_Locale::lmsg("agentExecution");
 
 		$task = new pm_Scheduler_Task();
 		$id = pm_Settings::get('agent-schedule-id');
@@ -357,35 +357,36 @@ class IndexController extends pm_Controller_Action {
 				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 				if (strpos($action, "schedule") !== false) {
+					if (!isset($_POST["interval"])) {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Not enough POST params given", "error"));
+						return;
+					}
+
 					$interval = $_POST["interval"];
-					$status = $_POST["status"];
-					$yara = $_POST["yara"]; 
+					if ($interval !== "0" && $interval !== "12" && $interval !== "8" && $interval !== "6") {
+						array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Invalid interval given", "error"));
+						return;
+					}
+					
+					// retrive information
+					$status = isset($_POST["status"]) ? $_POST["status"] : "false";
+					$yara = isset($_POST["yara"]) ? $_POST["yara"] : "false"; 
 
-					if (!isset($_POST["status"])) {
-						$status = "0";
+					// if no status is set, then unset yara rules
+					if ($status === "false") {
+						$yara = "false";
 					}
 
-					if (!isset($_POST["yara"])) {
-						$yara = "0";
-					}
-
+					// define cronjob
 					$cron = $cron_default;
-					if ($interval == '12') {
-						$cron['hour'] = '1,13';
-					} else if ($interval == '8') {
-						$cron['hour'] = '1,9,17';
-					} else if ($interval == '6') {
-						$cron['hour'] = '1,7,13,19';
+					switch ($interval) {
+						case "0": $cron["hour"] = "13"; break;
+						case "12": $cron['hour'] = "1,13"; break;
+						case "8": $cron['hour'] = "1,9,17"; break;
+						case "6": $cron['hour'] = "1,7,13,19"; break;
 					}
 
-					pm_Settings::set('agentStatus', $status);
-					if ($status == "0") {
-						$yara = "0";	
-					}
-
-					pm_Settings::set("agentYara", $yara);
-
-					if ($status == "1") {
+					if ($status === "true") {
 						try {
 							if (!empty($id)) {
 								$task = pm_Scheduler::getInstance()->getTaskById($id);
@@ -403,7 +404,7 @@ class IndexController extends pm_Controller_Action {
 							pm_Settings::set('schedule-interval', $interval);
 							array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Agent successfully activated", "info"));
 						}
-					} else if ($status == "0") {
+					} else if ($status === "false") {
 						if (!empty($id)) {
 							try {
 								$task = pm_Scheduler::getInstance()->getTaskById($id);
@@ -421,6 +422,9 @@ class IndexController extends pm_Controller_Action {
 					} else {
 						array_push($this->view->responses, Modules_NimbusecAgentIntegration_PleskHelper::createMessage("Invalid agent status chosen", "error"));
 					}
+
+					pm_Settings::set("agent_scheduled", $status);
+					pm_Settings::set("agent_yara", $yara);
 				}
 
 				// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -485,6 +489,7 @@ class IndexController extends pm_Controller_Action {
 
 			$this->domainsView($nimbusec);
 			$this->configView();
+			$this->runView();
 		}
 	}
 
@@ -537,6 +542,10 @@ class IndexController extends pm_Controller_Action {
 
 		$this->view->configInfo = pm_Locale::lmsg("agentConfiguration");
 		$this->view->configuration = $config;
+	}
+
+	public function runView() {
+		$this->view->runInfo = pm_Locale::lmsg("agentExecution");
 	}
 
 	// ===========================================================================================================================================

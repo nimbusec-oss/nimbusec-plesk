@@ -14,7 +14,7 @@ $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
 $cmd = "{$varDir}/{$agent} -config " . pm_Settings::get("agent_config") . " ";
 
-if (pm_Settings::get("agentYara") == "1") {
+if (pm_Settings::get("agent_yara") === "true") {
 	$cmd .= "-yara ";
 }
 

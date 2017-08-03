@@ -47,19 +47,19 @@
                 <div class="field-value">
                     <span style="margin-right: 2px;">
                         <span>None</span>
-                        <input type="radio" name="quarantine-state" checked="checked"/>
+                        <input type="checkbox" name="quarantine-state" checked="checked"/>
                         <span style="color: #303030;">|</span>
                     </span>
                     <span style="margin-right: 2px;">
                         <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
                         <span>Yellow</span>
-                        <input type="radio" name="quarantine-state"/>
+                        <input type="checkbox" name="quarantine-state"/>
                         <span style="color: #303030;">|</span>
                     </span>
                     <span style="margin-right: 2px;">
                         <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
                         <span>Red</span>
-                        <input type="radio" name="quarantine-state"/>
+                        <input type="checkbox" name="quarantine-state"/>
                     </span>
                 </div>
             </div>
@@ -124,84 +124,130 @@
                                         <div class="panel-heading-name">
                                             
                                             <?php
-                                                $circle0 = "#bbb";
-                                                $circle1 = "#fdd835";
-                                                $circle2 = "#f44336";
-
-                                                $bubbleColors = array(
-                                                    $circle0, $circle0
-                                                );
-
-                                                if ($result["severity"] == 1) {
-                                                    $bubbleColors[0] = $circle1;
-                                                }
-
-                                                if ($result["severity"] > 1) {
-                                                    $bubbleColors[1] = $circle2;
-                                                }
+                                                $left_bubble = $result["severity"] == 1 ? $this->colors[1] : $this->colors[0];
+                                                $right_bubble = $result["severity"] > 1 ? $this->colors[2] : $this->colors[0];
                                             ?> 
 
                                             <span style="margin-right: 5px">
                                                 <input type="checkbox" id="issue-<?= $name;?>"/>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $bubbleColors[0]; ?>"></i>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $bubbleColors[1]; ?>"></i>
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $left_bubble; ?>"></i>
+                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $right_bubble; ?>"></i>
                                             </span>
 
                                             <span style="font-size: 13px">
                                                 <?= $result["resource"]; ?>
                                             </span>
                                         </div>
+
                                     </div>
                                 </div>
 
                                 <div class="panel-content">
                                     <div class="panel-content-wrap">
-                                        <?php foreach ($result as $key => $value): 
-                                                $title = "";
-                                                $text = $value;
 
-                                                if ($key == "createDate") {
-                                                    $title = "Known since";
-                                                    $text = date("m/d/o h:i A", $value / 1000);
-                                                }
-
-                                                if ($key == "threatname") {
-                                                    $title = "Name";
-                                                }
-
-                                                if ($key == "resource") {
-                                                    $title = "Path";
-                                                }
-
-                                                if ($key == "md5") {
-                                                    $title = strtoupper($key);
-                                                }
-
-                                                if ($key == "owner" || $key == "group" || $key == "permission") {
-                                                    $title = ucfirst($key);
-                                                }
-
-                                                if ($title == "") {
-                                                    continue;
-                                                }
-                                        ?>
-                                        
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>
-                                                        <?= $title; ?>
-                                                    </span>
+                                                    <span>Occured on</span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
-                                                        <?= $text; ?>
+                                                        <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <?php endforeach; ?>
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Known since</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= date("m/d/o h:i A", $result["createDate"] / 1000); ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Path</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["resource"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Name</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["threatname"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>MD5</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["md5"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Owner</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["owner"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Group</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["group"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="box-area">
+                                            <div class="form-row">
+                                                <div class="field-name">
+                                                    <span>Permission</span>
+                                                </div>
+                                                <div class="field-value">
+                                                    <span style="vertical-align: middle;">
+                                                        <?= $result["permission"]; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <div class="source-code">
                                             <a>View source code <i id="source-code-icon" class="mdi mdi-arrow-down-drop-circle"></i></a>
@@ -289,8 +335,6 @@
 
             panel.classList.toggle("panel-collapsed");
             panel.classList.toggle("panel-expanded");
-
-            panel.style.cssText = collapsed ? "border: 0px; margin: 0px;" : ""; 
 
             icon.classList.toggle("mdi-arrow-down-drop-circle");
             icon.classList.toggle("mdi-arrow-up-drop-circle");

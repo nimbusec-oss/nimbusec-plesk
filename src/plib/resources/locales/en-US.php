@@ -22,5 +22,8 @@ $messages = array(
 	"agentInstalled" => "installed",
 	"agentNotInstalled" => "not installed",
 	"agentConfiguration" => "Below you can see the current manual configuration file for the Nimbusec Agent",
+	"agentStatus" => "Scheduled (please check or uncheck to enable or disable the agent execution)",
+	"agentYara" => "Activate Yara",
+	"agentYaraNotSupported32Bit" => "(not supported with 32bit agent)",
 );
 

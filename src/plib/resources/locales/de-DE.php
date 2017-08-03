@@ -22,5 +22,8 @@ $messages = array(
 	"agentInstalled" => "installiert",
 	"agentNotInstalled" => "nicht installiert",
 	"agentConfiguration" => "Hier sehen Sie die aktuelle Konfiguration des Nimbusec Agents",
+	"agentStatus" => "Geplant zum Laufen im Hintergrund (klicken Sie, um den Agent zu aktivieren bzw. zu deaktivieren)",
+	"agentYara" => "Yara aktivieren",
+	"agentYaraNotSupported32Bit" => "(wird mit 32bit agent nicht unterstützt)",
 );
 

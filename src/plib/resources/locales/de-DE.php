@@ -26,4 +26,3 @@ $messages = array(
 	"agentYara" => "Yara aktivieren",
 	"agentYaraNotSupported32Bit" => "(wird mit 32bit agent nicht unterstützt)",
 );
-

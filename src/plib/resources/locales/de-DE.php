@@ -12,7 +12,7 @@ $messages = array(
 	"fourTimes" => "4x täglich um 1:30, 7:30, 13:30 und 19:30",
 	"agentExecution" => "Innerhalb der Ausführungseinstellungen können Sie den Nimbusec Agent anhand eines bestimmten Zeitplans ausführen bzw. zeitlich festlegen." .
 						"<br>Bitte beachten Sie, dass der Server Agent erst ausgeführt wird nachdem einen Zeitplan ausgewählt haben.",
-	"apiInfo" => "Geben Sie ihre Nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .
+	"setupInfoText" => "Geben Sie ihre Nimbusec API Zugangsdaten ein, um den nimbsuec Agent herunterzuladen. " .
 	  			 "Das API Server Feld sollte nicht verändert werden, um das korrekte Funktionieren des Plugins zu gewährleisten. " .
 				 "<br>Für weitere Information über den Erhalten und den Einsatz der API Zugangsdaten kontaktieren Sie uns bitte über plesk@nimbusec.com." .
 				 "<br>Die Dokumentation für dieses Plugin finden Sie auf <a href=\"https://kb.nimbusec.com/Integrations/Plesk\">https://kb.nimbusec.com/Integrations/Plesk</a>.",

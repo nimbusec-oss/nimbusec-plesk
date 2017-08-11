@@ -2,6 +2,51 @@
 
 class Modules_NimbusecAgentIntegration_PleskHelper
 {
+    public static function getTabs()
+    {
+        $installed = pm_Settings::get("extension_installed");
+        if ($installed !== "true") {
+            return array(
+				array("title" => "Setup", "action" => "view", "controller" => "setup"),
+			);
+        }
+
+        return array(
+			array("title" => "Login to Nimbusec",   "action" => "login", "controller" => "index"),
+			array("title" => "Issues",              "action" => "view", "controller" => "issues"),
+			array("title" => "Quarantine",          "action" => "view", "controller" => "quarantine"),
+			array("title" => "Settings",            "action" => "view", "controller" => "settings"),
+			array("title" => "Update Agent",        "action" => "view", "controller" => "agent"),
+			array("title" => "Setup",               "action" => "view", "controller" => "setup"),
+		);
+    }
+
+    public static function isValidPostRequest($request, $form_event = "action", $expected_action, $dynamic_action = false) 
+    {
+		if (!$request->isPost()) {
+			return false;
+		}
+
+		$fetched_action = $request->getPost($form_event);
+		if (!isset($fetched_action)) {
+			return false;
+		}
+
+        if (!$dynamic_action) {       
+            if ($fetched_action !== $expected_action) {
+                return false;
+            }
+        }
+
+        if ($dynamic_action) {
+            if (strpos($fetched_action, $expected_action) === false) {
+                return false;
+            }
+        }
+
+		return true;
+	}
+
     public static function getSignedLoginURL($userName, $userSecret)
     {
 

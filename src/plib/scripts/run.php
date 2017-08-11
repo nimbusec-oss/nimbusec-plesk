@@ -7,17 +7,19 @@
  */
 
 set_time_limit(0);
-pm_Context::init('nimbusec-agent-integration');
+pm_Context::init("nimbusec-agent-integration");
 
 $varDir = pm_Context::getVarDir();
 $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
-$cmd = "{$varDir}/{$agent} -config " . pm_Settings::get("agent_config") . " ";
+$config_path = pm_Settings::get("agent_config");
+$cmd = "{$varDir}/{$agent} -config {$config_path}";
 
 if (pm_Settings::get("agent_yara") === "true") {
-    $cmd .= "-yara ";
+    $cmd .= " -yara";
 }
 
-$cmd .= "> " . pm_Settings::get("agent_log") . " 2>&1";
+$log_path = pm_Settings::get("agent_log");
+$cmd .= " > {$log_path} 2>&1";
 
 system($cmd);

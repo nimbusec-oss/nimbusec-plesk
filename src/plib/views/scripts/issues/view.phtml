@@ -1,5 +1,5 @@
 <?= $this->renderTabs($this->tabs); ?> 
-<?= implode($this->responses); ?>
+<?= $this->response; ?>
 
 <link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
@@ -15,9 +15,11 @@
         </div>
         <div class="content">
             <div class="form-row">
+
                 <div class="field-name">
                     Bulk actions
                 </div>
+            
                 <div class="field-value">
                     <div style="display: inline-block; margin-right: 10px;">
                         <div id="issue-dropdown" class="dropdown">
@@ -39,11 +41,14 @@
                         <a id="issue-link">Select / Deselect all issues</a></div>
                     </div>
                 </div>
+
             </div>
             <div class="form-row">
+
                 <div class="field-name">
                     Automatically move domains to quarantine
                 </div>
+
                 <div class="field-value">
                     <span style="margin-right: 2px;">
                         <span>None</span>
@@ -62,6 +67,7 @@
                         <input type="checkbox" name="quarantine-state"/>
                     </span>
                 </div>
+
             </div>
             
             <div class="btns-box"></div>
@@ -96,7 +102,8 @@
                                                     <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
                                             </div>
                                             <div style="margin-left: -236px; display: inline-block;">
-                                                <form method="post">
+
+                                                <form method="post" action="<?= $this->h->url('false-positive', 'issues'); ?>">
                                                     <input name="action" value="falsePositive" type="hidden"/>
                                                     <input name="domain" value="<?= $name; ?>" type="hidden"/>
                                                     <input name="resultId" value="<?= $result['id']; ?>" type="hidden"/>
@@ -106,9 +113,11 @@
                                                         <span>False positive</span>
                                                     </a>
                                                 </form>
+
                                             </div>
                                             <div style="margin-left: -246px; margin-top: 2px;display: inline-block;">
-                                                <form method="post">
+
+                                                <form method="post" action="<?= $this->h->url('quarantine', 'issues'); ?>">
                                                     <input name="action" value="moveToQuarantine" type="hidden">
                                                     <input name="domain" value="<?= $name; ?>" type="hidden">
                                                     <input name="file" value="<?= $result['resource'];?>" type="hidden">
@@ -117,6 +126,7 @@
                                                         <span>Move to Quarantine</span>
                                                     </a>
                                                 </form>
+
                                             </div>
 
                                         </span>

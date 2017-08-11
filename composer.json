@@ -3,7 +3,12 @@
     "description": "The official Nimbusec extension fully integrated into Plesk",
     "type": "project",
     "require": {
-        "nimbusec/nimbusec-php": ">=1.0"
+        "nimbusec/nimbusec-php": ">=1.0",
+        "zendframework/zend-escaper": "^2.5",
+        "zendframework/zend-validator": "^2.9",
+        "zendframework/zend-uri": "^2.5",
+        "zendframework/zend-i18n": "^2.7",
+        "zendframework/zend-filter": "^2.7"
     },
     "homepage": "https://nimbusec.com",
     "license": "MIT",

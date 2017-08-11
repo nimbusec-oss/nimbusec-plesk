@@ -45,7 +45,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $this->server = $server;
     }
 
-    public function testAPICredentials()
+    public function areValidAPICredentials()
     {
         $api = new API($this->key, $this->secret, $this->server);
 
@@ -65,6 +65,16 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             return false;
         }
         return true;
+    }
+
+    public function getRegisteredHostDomains()
+    {
+        $host_domains = array_keys(Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains());
+        $config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
+
+        return array_filter($host_domains, function($domain) use ($config) {
+            return in_array($domain, array_keys($config["domains"]));
+        });       
     }
 
     public function registerDomain($domain, $bundle)
@@ -170,10 +180,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             }, $fetched));
 			
             pm_Log::err(sprintf(
-			
 			    "not all domain in Plesk were found by the API. exceptions are [%s]",
 							join(", ", $difference)
-			
 			));
             return;
         }
@@ -452,7 +460,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
     public function markAsFalsePositive($domain, $resultId, $file)
     {
-        return $this->updateResultStatus($domain, $resultId) && $this->sendToShellray($file);
+        $success = $this->sendToShellray($file);
+        if (!$success) {
+            return false;
+        }
+
+        return $this->updateResultStatus($domain, $resultId);
     }
 
     private function updateResultStatus($domain, $resultId)
@@ -474,7 +487,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
     private function sendToShellray($file)
     {
-        $handler = curl_init(pm_Settings::get("shellray"));
+        $handler = curl_init(pm_Settings::get("shellray_url"));
 		
         curl_setopt_array($handler, array(
 			CURLOPT_CONNECTTIMEOUT 	=> 10,

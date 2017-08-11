@@ -47,7 +47,7 @@
             update(response);
         }
 
-        xhr.open ("post", "", false);
+        xhr.open ("post", "<?= $this->h->url('fetch', 'quarantine'); ?>", false);
         xhr.send (form);
     }
 

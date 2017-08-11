@@ -12,7 +12,7 @@ $messages = array(
 	"fourTimes" => "4x per day at 1:30 AM, 7:30 AM, 1:30 PM and 7:30 PM" ,
 	"agentExecution" => "Within these settings, you can configure the Nimbusec Agent for a specific schedule as well as enabling or disabling the agent at all." .
 						"<br>Please note that the Nimbusec Agent will not start until a schedule is set.",
-	"apiInfo" => "Enter your Nimbusec API credentials in order to download the Nimbusec Server Agent. " .
+	"setupInfoText" => "Enter your Nimbusec API credentials in order to download the Nimbusec Server Agent. " .
 	  			 "Leave the API Server field unchanged for preserving the stability of the extension. " .
 				 "<br>For more information about getting API credentials, please contact us at <a href=\"mailto:plesk@nimbusec.com\">plesk@nimbusec.com</a>." .
 				 "<br>The plesk extension documentation can be found at <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",

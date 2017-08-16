@@ -13,7 +13,8 @@ class AgentController extends pm_Controller_Action
     }
 
 	// shortcut for calling the PleskHelper Module
-	private function createHTMLR($msg, $level) {
+	private function createHTMLR($msg, $level) 
+	{
 		return Modules_NimbusecAgentIntegration_PleskHelper::createMessage($msg, $level);
 	}
 

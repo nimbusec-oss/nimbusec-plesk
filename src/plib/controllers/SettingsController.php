@@ -13,7 +13,8 @@ class SettingsController extends pm_Controller_Action
     }
 
 	// shortcut for calling the PleskHelper Module
-	private function createHTMLR($msg, $level) {
+	private function createHTMLR($msg, $level) 
+	{
 		return Modules_NimbusecAgentIntegration_PleskHelper::createMessage($msg, $level);
 	}
 
@@ -29,41 +30,9 @@ class SettingsController extends pm_Controller_Action
 
 			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-			// domains found in Plesk
-            $domains = Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains();
-            $keys = array_keys($domains);
+			$this->view->registered_domains = $nimbusec->groupByBundle($nimbusec->getRegisteredPleskDomains());;
+			$this->view->nonregistered_domains = $nimbusec->getNonRegisteredPleskDomains();
 
-            $string = file_get_contents(pm_Settings::get("agent_config"));
-            $config = json_decode($string, true);
-            $config["domains"] = new ArrayObject();
-
-            // domains grouped by bundle from API
-            $fetched = $nimbusec->getBundlesWithDomains();
-            foreach ($fetched as $id => $element) {
-
-				// allow only Plesk domains which are already in the API to be seen
-                $element["domains"] = array_filter($element["domains"], function ($domain) use ($keys) {
-                    return in_array($domain["name"], $keys);
-                });
-
-                foreach ($element["domains"] as $domain) {
-                    // remove already registered domains from the set of Plesk ones
-                    // $domains = unregistered from Plesk
-                    // $fetched = registered by API
-                    unset($domains[$domain["name"]]);
-
-                    $directory = Modules_NimbusecAgentIntegration_PleskHelper::getDomainDir($domain["name"]);
-                    // add registered to agent config
-                    $config["domains"][$domain["name"]] = (string) $directory;
-                }
-
-                $fetched[$id]["domains"] = $element["domains"];
-            }
-
-            $this->view->domains = $domains;
-            $this->view->fetched = $fetched;
-
-            file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
         } catch (Exception $e) {
             $this->view->response = $this->createHTMLR($e->getMessage(), "error");
         }
@@ -132,6 +101,9 @@ class SettingsController extends pm_Controller_Action
 				return;	
 			}
 
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
+
 		} catch (Exception $e) {
 			$this->_forward("view", "settings", null, array(
 				"response" => $this->createHTMLR($e->getMessage(), "error")
@@ -191,6 +163,9 @@ class SettingsController extends pm_Controller_Action
 				));
 				return;	
 			}
+
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
 
 		} catch (Exception $e) {
 			$this->_forward("view", "settings", null, array(

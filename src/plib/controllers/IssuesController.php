@@ -13,7 +13,8 @@ class IssuesController extends pm_Controller_Action
     }
 
 	// shortcut for calling the PleskHelper Module
-	private function createHTMLR($msg, $level) {
+	private function createHTMLR($msg, $level) 
+	{
 		return Modules_NimbusecAgentIntegration_PleskHelper::createMessage($msg, $level);
 	}
 
@@ -24,10 +25,13 @@ class IssuesController extends pm_Controller_Action
 		// try to fetch passed parameters (e.g from forwards)
         $this->view->response = $this->getRequest()->getParam("response");
 
-		// fetch issues
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-		$domain_names = $nimbusec->getRegisteredHostDomains();
+		// get registered plesk domains
+		$domains = $nimbusec->getRegisteredPleskDomains();
+		$domains_names = array_keys($domains);
+
+		// get issues
         $issues = $nimbusec->getWebshellIssuesByDomain($domain_names);
 
         // filter by quarantined files

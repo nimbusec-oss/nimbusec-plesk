@@ -67,14 +67,78 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
 
-    public function getRegisteredHostDomains()
+    // Syncs the registered domains within plesk with the agent config
+    public function syncDomainInAgentConfig() 
     {
-        $host_domains = array_keys(Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains());
-        $config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
+        $registered = $this->getRegisteredPleskDomains();
 
-        return array_filter($host_domains, function($domain) use ($config) {
-            return in_array($domain, array_keys($config["domains"]));
-        });       
+        // update config
+        $config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
+        $config["domains"] = new ArrayObject();
+
+        foreach ($registered as $domain => $directory) {
+            $config["domains"][$domain] = $directory;
+        }
+
+        file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
+
+    public function getRegisteredPleskDomains()
+    {
+        // domains in Nimbusec
+        $api = new API($this->key, $this->secret, $this->server);
+        $fetched = $api->findDomains();
+
+        // array flip swtiches values to keys
+        $nimbusec_domains = array_flip(array_map(function($domain) {
+            return $domain["name"];
+        }, $fetched));
+
+        // domains in plesk
+        $plesk_domains = Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains();
+
+        // intersect = registered
+        return array_intersect_key($plesk_domains, $nimbusec_domains);
+    }
+
+    public function getNonRegisteredPleskDomains() 
+    {
+        // registered domains
+        $registered_plesk_domains = $this->getRegisteredPleskDomains();
+
+        // domains in plesk
+        $plesk_domains = Modules_NimbusecAgentIntegration_PleskHelper::getHostDomains();
+
+        return array_diff_key($plesk_domains, $registered_plesk_domains);
+    }
+
+    public function groupByBundle($domains)
+    {
+        $api = new API($this->key, $this->secret, $this->server);
+
+        $bundles = array();
+        foreach ($this->getBundles() as $bundle) {
+            $bundles[$bundle["id"]]["bundle"] = $bundle;
+            $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
+            $bundles[$bundle["id"]]["domains"] = array();
+        }
+
+        foreach ($domains as $name => $directory) {
+            $fetched = $api->findDomains("name=\"{$name}\"");
+            if (count($fetched) != 1) {
+                pm_Log::err("found more than one domain in the API for {$name}: " . count($fetched));
+                return false;
+            }
+
+            // append
+            $domain = $fetched[0];
+            array_push($bundles[$domain["bundle"]]["domains"], array(
+                "name" => $name,
+                "directory" => $directory
+            ));
+        }
+
+        return $bundles;
     }
 
     public function registerDomain($domain, $bundle)
@@ -108,34 +172,6 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $api->deleteDomain($domains[0]["id"]);
         return true;
-    }
-
-    /**
-     * query all active bundles from the api
-     * @return array list of all active bundles
-     */
-    public function getBundles()
-    {
-        $api = new API($this->key, $this->secret, $this->server);
-        $bundles = $api->findBundles();
-		
-        return $bundles;
-    }
-
-    public function getBundlesWithDomains()
-    {
-        $fetched = $this->getBundles();
-
-        $api = new API($this->key, $this->secret, $this->server);
-
-        $bundles = array();
-        foreach ($fetched as $bundle) {
-            $bundles[$bundle["id"]]["bundle"] = $bundle;
-            $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
-            $bundles[$bundle["id"]]["domains"] = $api->findDomains("bundle=\"{$bundle['id']}\"");
-        }
-
-        return $bundles;
     }
 
     /**

@@ -24,17 +24,17 @@
                     
                     <div class="field-name" style="width: 250px;">
                         <select name="bundle" style="width: 250px;">
-                            <?php foreach ($this->fetched as $id => $element): ?>
+                            <?php foreach ($this->registered_domains as $bundle_id => $bundle_element): ?>
 
-                                <?php $value = "{$id}__{$element['bundle']['name']}"; ?>
-                                <option value="<?= $value ?>"><?= $element['bundle']['display']; ?></option>
+                                <?php $value = "{$bundle_id}__{$bundle_element['bundle']['name']}"; ?>
+                                <option value="<?= $value ?>"><?= $bundle_element['bundle']['display']; ?></option>
 
                             <?php endforeach; ?>
                         </select>
                     </div>
                     
                     <div class="field-value">
-                        <?php if (count($this->domains) > 0): ?>
+                        <?php if (count($this->nonregistered_domains) > 0): ?>
                             <span id="btn-send" class="btn action" style="margin-left: 20px;">
                                 <button type="submit" name="submit" value="registerSelected">Register the selected domains</button>
                             </span>
@@ -43,7 +43,7 @@
                     <br>
                     
                     <div class="list">
-                        <?php if (count($this->domains) == 0): ?>
+                        <?php if (count($this->nonregistered_domains) == 0): ?>
                             <span class="hint">
                                 No domains found.
                             </span>
@@ -60,7 +60,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach($this->domains as $domain => $directory): ?>
+                                    <?php foreach($this->nonregistered_domains as $domain => $directory): ?>
                                     <tr class=" odd" data-row-id="">
                                         <td class="">
                                             <input name="active0[]" value="<?= $domain; ?>" type="checkbox"> <?= $domain; ?>
@@ -100,18 +100,18 @@
             <br>
 
             <?php $i = 1; ?>
-            <?php foreach ($this->fetched as $id => $element): ?>
+            <?php foreach ($this->registered_domains as $bundle_element): ?>
 
                 <form method="post" action="<?= $this->h->url('unregister', 'settings'); ?>">
-                    <input type="hidden" name="bundle" value="<?= $element["bundle"]["name"]; ?>"/>
+                    <input type="hidden" name="bundle" value="<?= $bundle_element["bundle"]["name"]; ?>"/>
                     <div class="form-row">
                         
                         <div class="field-name">
-                            <h5><b><?= $element["bundle"]["name"]; ?></b></h5>
+                            <h5><b><?= $bundle_element["bundle"]["name"]; ?></b></h5>
                         </div>
                         
                         <div class="field-value">
-                            <?php if (count($element["domains"]) > 0): ?>
+                            <?php if (count($bundle_element["domains"]) > 0): ?>
                                 <span id="btn-send" class="btn action">
                                     <button type="submit" name="submit" value="removeSelected<?= $i; ?>">Remove selected domains</button>
                                 </span>
@@ -119,7 +119,7 @@
                         </div>
 
                         <div class="list">
-                            <?php if (count($element["domains"]) == 0): ?>
+                            <?php if (count($bundle_element["domains"]) == 0): ?>
                                 <span class="hint">
                                     No registered domains found for this bundle.
                                 </span>
@@ -136,13 +136,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach($element["domains"] as $domain): ?>
+                                        <?php foreach($bundle_element["domains"] as $domain): ?>
                                             <tr>
                                                 <td>
                                                     <input name="active<?= $i; ?>[]" value="<?= $domain['name']; ?>" type="checkbox"> <?= $domain['name']; ?>
                                                 </td>
                                                 <td>
-                                                    <?= Modules_NimbusecAgentIntegration_PleskHelper::getDomainDir($domain["name"]); ?>
+                                                    <?= $domain["directory"]; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -154,7 +154,7 @@
                     </div>
                 </form>
                 
-                <?php if ($i == count($this->fetched)): ?>
+                <?php if ($i == count($this->registered_domains)): ?>
                     <br>
                     <br>
                     <div class="btns-box" style="border-top: 3px solid #ddd;"></div>

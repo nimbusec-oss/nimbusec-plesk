@@ -13,7 +13,8 @@ class SetupController extends pm_Controller_Action
     }
 
 	// shortcut for calling the PleskHelper Module
-	private function createHTMLR($msg, $level) {
+	private function createHTMLR($msg, $level) 
+	{
 		return Modules_NimbusecAgentIntegration_PleskHelper::createMessage($msg, $level);
 	}
 
@@ -102,7 +103,7 @@ class SetupController extends pm_Controller_Action
 		}
 
 		// store signature key
-		pm_Settings::set('signaturekey', $signatureKey);
+		pm_Settings::set("signaturekey", $signatureKey);
 
 		// retrieving agent token
 		$token = array();
@@ -118,23 +119,26 @@ class SetupController extends pm_Controller_Action
 		}
 
 		// store agent credentials
-		pm_Settings::set('agent_key', $token['key']);
-		pm_Settings::set('agent_secret', $token['secret']);
-		pm_Settings::set('agent_tokenid', $token['id']);
+		pm_Settings::set("agent_key", $token["key"]);
+		pm_Settings::set("agent_secret", $token["secret"]);
+		pm_Settings::set("agent_tokenid", $token["id"]);
 
 		// write agent config
 		$config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
 		
-		$config['key'] = pm_Settings::get('agent_key');
-		$config['secret'] = pm_Settings::get('agent_secret');
-		$config['apiserver'] = $api_server;
+		$config["key"] = pm_Settings::get("agent_key");
+		$config["secret"] = pm_Settings::get("agent_secret");
+		$config["apiserver"] = $api_server;
 		$config["domains"] = new ArrayObject();
 		file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
+		// sync domains in config
+		$nimbusec->syncDomainInAgentConfig();
+
 		// store api credentials
-		pm_Settings::set('api_key', $api_key);
-		pm_Settings::set('api_secret', $api_secret);
-		pm_Settings::set('api_server', $api_server);
+		pm_Settings::set("api_key", $api_key);
+		pm_Settings::set("api_secret", $api_secret);
+		pm_Settings::set("api_server", $api_server);
 
 		pm_Settings::set("extension_installed", "true");
 

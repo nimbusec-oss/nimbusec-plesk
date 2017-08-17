@@ -236,16 +236,16 @@
                     </div>
                     <div class="field-value">
                         <select name="interval"> 
-                            <option value="0" <?php if (pm_Settings::get("schedule-interval") == "0"): ?> selected <?php endif; ?>>
+                            <option value="0" <?php if (pm_Settings::get("agent_schedule_interval") == "0"): ?> selected <?php endif; ?>>
                                 <?= pm_Locale::lmsg("once"); ?>
                             </option>
-                            <option value="12" <?php if (pm_Settings::get("schedule-interval") == "12"): ?> selected <?php endif; ?>>
+                            <option value="12" <?php if (pm_Settings::get("agent_schedule_interval") == "12"): ?> selected <?php endif; ?>>
                                 <?= pm_Locale::lmsg("twice"); ?>
                             </option>
-                            <option value="8" <?php if (pm_Settings::get("schedule-interval") == "8"): ?> selected <?php endif; ?>>
+                            <option value="8" <?php if (pm_Settings::get("agent_schedule_interval") == "8"): ?> selected <?php endif; ?>>
                                 <?= pm_Locale::lmsg("threeTimes"); ?>
                             </option>
-                            <option value="6" <?php if (pm_Settings::get("schedule-interval") == "6"): ?> selected <?php endif; ?>>
+                            <option value="6" <?php if (pm_Settings::get("agent_schedule_interval") == "6"): ?> selected <?php endif; ?>>
                                 <?= pm_Locale::lmsg("fourTimes"); ?>
                             </option>
                         </select>

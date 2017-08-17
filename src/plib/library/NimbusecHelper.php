@@ -117,7 +117,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $api = new API($this->key, $this->secret, $this->server);
 
         $bundles = array();
-        foreach ($this->getBundles() as $bundle) {
+        foreach ($api->findBundles() as $bundle) {
             $bundles[$bundle["id"]]["bundle"] = $bundle;
             $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
             $bundles[$bundle["id"]]["domains"] = array();
@@ -196,22 +196,22 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
     }
 
-    public function appendDomainIds($domainNames)
+    public function appendDomainIds($domain_names)
     {
         $api = new API($this->key, $this->secret, $this->server);
 
         $query = "";
-        foreach ($domainNames as $index => $domain) {
+        foreach ($domain_names as $index => $domain) {
             $query .= "name=\"{$domain}\"";
 
-            if (($index + 1) < count($domainNames)) {
+            if (($index + 1) < count($domain_names)) {
                 $query .= " or ";
             }
         }
         $fetched = $api->findDomains($query);
 
-        if (count($fetched) != count($domainNames)) {
-            $difference = array_diff($domainNames, array_map(function ($domain) {
+        if (count($fetched) != count($domain_names)) {
+            $difference = array_diff($domain_names, array_map(function ($domain) {
                 return $domain["name"];
             }, $fetched));
 			
@@ -223,7 +223,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
 
         // sort both array to prevent wrong associations
-        sort($domainNames);
+        sort($domain_names);
         usort($fetched, function ($a, $b) {
             if ($a["name"] == $b["name"]) {
                 return 0;
@@ -231,15 +231,15 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             return ($a["name"] < $b["name"]) ? -1 : 1;
         });
 
-        return array_combine($domainNames, array_map(function ($fetchedDomain) {
+        return array_combine($domain_names, array_map(function ($fetchedDomain) {
             return array("domainId" => $fetchedDomain["id"]);
         }, $fetched));
     }
 
-    public function getWebshellIssuesByDomain($domainNames)
+    public function getWebshellIssuesByDomain($domain_names)
     {
         $api = new API($this->key, $this->secret, $this->server);
-        $issues = $this->appendDomainIds($domainNames);
+        $issues = $this->appendDomainIds($domain_names);
 
         foreach ($issues as $domain => $value) {
             $results = $api->findResults($value["domainId"], "event=\"webshell\" and status=\"1\"");
@@ -251,6 +251,40 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             }
 
             $issues[$domain]["results"] = $results;
+        }
+
+        return $issues;
+    }
+
+    public function filterByQuarantined($issues) 
+    {
+        // filter by quarantined files
+        $quarantine = json_decode(pm_Settings::get("quarantine"), true);
+        if ($quarantine == null) {
+            $quarantine = array();
+        }
+
+        foreach ($quarantine as $domain => $files) {
+            // filter only quarantined domain which has been detected as issues
+            if (!array_key_exists($domain, $issues)) {
+                continue;
+            }
+
+            // save the indices of the issues
+            $indices = array();
+            foreach ($files as $key => $value) {
+                $index = array_search($value["old"], array_column($issues[$domain]["results"], "path"));
+                array_push($indices, $index);
+            }
+
+            foreach ($indices as $index) {
+                unset($issues[$domain]["results"][$index]);
+				
+                // if the domain has no results, delete it
+                if (count($issues[$domain]["results"]) == 0) {
+                    unset($issues[$domain]);
+                }
+            }
         }
 
         return $issues;

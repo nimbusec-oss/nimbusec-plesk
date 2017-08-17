@@ -11,10 +11,13 @@ fi
 current=${instances[0]}
 
 # libraries
-docker cp ../src/plib/library/  $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/
+docker cp ../src/plib/library/ $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/
+
+# scripts
+docker cp ../src/plib/scripts/ $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/
 
 # controller
-docker cp ../src/plib/controllers/  $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/
+docker cp ../src/plib/controllers/ $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/
 
 # views
 docker cp ../src/plib/views/scripts/ $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/views/

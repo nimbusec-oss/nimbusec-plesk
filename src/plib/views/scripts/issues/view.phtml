@@ -14,6 +14,20 @@
             </div>
         </div>
         <div class="content">
+            
+            <div class="msg-box msg-error">
+                <div class="msg-content">
+                    <span>
+                        <div>
+                            <b>Beware:</b> This is a warning text indicating that this section should be inspected carefully before clicking a button.
+                        </div>
+                        <div id="confirmation">
+
+                        </div>
+                    </span>
+                </div>
+            </div>
+
             <div class="form-row">
 
                 <div class="field-name">
@@ -50,23 +64,29 @@
                 </div>
 
                 <div class="field-value">
-                    <span style="margin-right: 2px;">
-                        <span>None</span>
-                        <input type="checkbox" name="quarantine-state" checked="checked"/>
-                        <span style="color: #303030;">|</span>
-                    </span>
-                    <span style="margin-right: 2px;">
-                        <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
-                        <span>Yellow</span>
-                        <input type="checkbox" name="quarantine-state"/>
-                        <span style="color: #303030;">|</span>
-                    </span>
-                    <span style="margin-right: 2px;">
-                        <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
-                        <span>Red</span>
-                        <input type="checkbox" name="quarantine-state"/>
-                    </span>
-                </div>
+                    <form method="post" action="<?= $this->h->url('schedule-quarantine', 'issues'); ?>">
+                        <input name="action" value="scheduleQuarantine" type="hidden"/>
+                        <span style="margin-right: 2px;">
+                            <span>None</span>
+                            <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
+                            <span style="color: #303030;">|</span>
+                        </span>
+                        <span style="margin-right: 2px;">
+                            <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
+                            <span>Yellow</span>
+                            <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, array("3", "9"))): ?> checked="checked" <?php endif; ?>/>
+                            <span style="color: #303030;">|</span>
+                        </span>
+                        <span style="margin-right: 2px;">
+                            <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
+                            <span>Red</span>
+                            <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, array("6", "9"))): ?> checked="checked" <?php endif; ?>/>
+                        </span>
+                        <a onclick="sendForm(this);" class="btn action">
+                            <span>Apply</span>
+                        </a>
+                    </div>
+                </form>
 
             </div>
             

@@ -29,42 +29,15 @@ class IssuesController extends pm_Controller_Action
 
 		// get registered plesk domains
 		$domains = $nimbusec->getRegisteredPleskDomains();
-		$domains_names = array_keys($domains);
+		$domain_names = array_keys($domains);
 
 		// get issues
         $issues = $nimbusec->getWebshellIssuesByDomain($domain_names);
-
-        // filter by quarantined files
-        $quarantine = json_decode(pm_Settings::get("quarantine"), true);
-        if ($quarantine == null) {
-            $quarantine = array();
-        }
-
-        foreach ($quarantine as $domain => $files) {
-            // filter only quarantined domain which has been detected as issues
-            if (!array_key_exists($domain, $issues)) {
-                continue;
-            }
-
-            // save the indices of the issues
-            $indices = array();
-            foreach ($files as $key => $value) {
-                $index = array_search($value["old"], array_column($issues[$domain]["results"], "path"));
-                array_push($indices, $index);
-            }
-
-            foreach ($indices as $index) {
-                unset($issues[$domain]["results"][$index]);
-				
-                // if the domain has no results, delete it
-                if (count($issues[$domain]["results"]) == 0) {
-                    unset($issues[$domain]);
-                }
-            }
-        }
+		$filtered = $nimbusec->filterByQuarantined($issues);
 
         $this->view->colors = array("#bbb", "#fdd835", "#f44336");
-        $this->view->issues = $issues;
+        $this->view->issues = $filtered;
+		$this->view->quarantine_state = pm_Settings::get("quarantine_state", "1");
 	}
 
 	public function falsePositiveAction() 
@@ -172,6 +145,93 @@ class IssuesController extends pm_Controller_Action
 		$this->_status->addMessage("info", "Successfully moved {$file} into Quarantine.");
 		$this->_helper->redirector("view", "issues");
 		return;
+	}
 
+	public function scheduleQuarantineAction() 
+	{
+		$request = $this->getRequest(); 
+		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "scheduleQuarantine");
+		if (!$valid) {
+			$this->_forward("view", "issues");
+			return;
+		}
+
+		$states = $request->getPost("quarantine-state");
+
+		// validate states
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($states)) {
+			$this->_forward("view", "issues", null, array(
+				"response" => $this->createHTMLR("Quarantine: Invalid schedule.", "error")
+			));
+			return;	
+		}
+
+		// calc state
+		$state = array_reduce($states, function($acc, $curr) { return $acc + intval($curr); }, 0);
+
+		// 1 == none
+		// 3 == yellow
+		// 6 == red
+		// 9 == red & yellow
+		if (!in_array($state, array(1, 3, 6, 9))) {
+			$this->_forward("view", "issues", null, array(
+				"response" => $this->createHTMLR("Quarantine: Invalid schedule.", "error")
+			));
+			return;
+		}
+
+		// get plesk scheduler
+		$scheduler = pm_Scheduler::getInstance();
+
+		// prevention: remove the task if existing
+		$id = pm_Settings::get("quarantine_schedule_id");
+		$validator = new Zend\I18n\Validator\Alnum();
+
+		if ($validator->isValid($id)) {
+			$task = $scheduler->getTaskById($id);
+
+			if ($task !== null) {
+				$scheduler->removeTask($task);
+			}
+		}
+
+		// disable quarantine
+		if ($state == 1) {
+			pm_Settings::set("quarantine_schedule_id", false);
+			pm_Settings::set("quarantine_level", "0");
+
+			$this->_status->addMessage("info", "Automatic issue quarantining disabled");
+			$this->_helper->redirector("view", "issues");
+			return;
+		}
+
+		// 1 == yellow
+		// 3 == red
+		// 1_3 == red & yellow
+		$quarantine_level = "";
+		switch ($state) {
+			case 3: 
+				$quarantine_leqvel = "1"; break;
+			case 6: 
+				$quarantine_level = "3"; break;
+			case 9: 
+				$quarantine_level = "1_3"; break;
+		}
+
+		// schedule quarantining
+		$task = new pm_Scheduler_Task();
+		$task->setCmd("quarantine.php");
+		$task->setSchedule(pm_Scheduler::$EVERY_5_MIN);
+
+		$scheduler->putTask($task);
+
+		pm_Settings::set("quarantine_schedule_id", $task->getId());
+		pm_Settings::set("quarantine_level", $quarantine_level);
+		pm_Settings::set("quarantine_state", $state);
+
+		$this->_status->addMessage("info", "Automatic issue quarantining enabled");
+		$this->_helper->redirector("view", "issues");
+		return;
 	}
 }

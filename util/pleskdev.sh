@@ -102,6 +102,15 @@ else
     exit 1
 fi
 
+# set alias - viewing panel
+docker exec $id bash -c "echo \"alias panel='less /var/log/plesk/panel.log'\" >> /root/.bashrc"
+
+# set alias - query key val store
+rest="\"select * from ModuleSettings;\""
+docker exec $id bash -c "printf \"alias store='mysql -uadmin -p\\\`cat /etc/psa/.psa.shadow\\\` psa -e \" >> /root/.bashrc"
+docker exec $id bash -c "printf '$rest' >> /root/.bashrc"
+docker exec $id bash -c "echo \"'\" >> /root/.bashrc"
+
 # copy extension
 docker cp $extension_zipped_path "$id:/tmp"
 

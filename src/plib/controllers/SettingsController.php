@@ -219,7 +219,7 @@ class SettingsController extends pm_Controller_Action
 		$scheduler = pm_Scheduler::getInstance();
 
 		// prevention: remove the task if existing
-		$id = pm_Settings::get("agent-schedule-id");
+		$id = pm_Settings::get("agent_schedule_id");
 		$validator = new Zend\I18n\Validator\Alnum();
 
 		if ($validator->isValid($id)) {
@@ -232,8 +232,8 @@ class SettingsController extends pm_Controller_Action
 
 		// stop agent
 		if ($status === "false") {
-			pm_Settings::set("agent-schedule-id", false);
-			pm_Settings::set("schedule-interval", "0");
+			pm_Settings::set("agent_schedule_id", false);
+			pm_Settings::set("agent_schedule_interval", "0");
 
 			pm_Settings::set("agent_scheduled", $status);
 			pm_Settings::set("agent_yara", $yara);
@@ -270,8 +270,8 @@ class SettingsController extends pm_Controller_Action
 
 		$scheduler->putTask($task);
 
-		pm_Settings::set("agent-schedule-id", $task->getId());
-		pm_Settings::set("schedule-interval", $interval);
+		pm_Settings::set("agent_schedule_id", $task->getId());
+		pm_Settings::set("agent_schedule_interval", $interval);
 
 		pm_Settings::set("agent_scheduled", $status);
 		pm_Settings::set("agent_yara", $yara);

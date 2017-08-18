@@ -65,9 +65,9 @@ fi
 # check root of project
 root=$1
 if [[ ! $root ]]; then
-    root=$(pwd)
+    root=../
 fi
-root=$(readlink -f $root)
+root=$(realpath $root)
 
 if [[ ! -d $root/src ]]; then
     >&2 printf "$root is not a valid plesk extension project\n"
@@ -126,3 +126,7 @@ for subdomain in "${subdomains[@]}"
 do
     docker exec $id "plesk" "bin" "subdomain" "-c" "$subdomain" "-domain" "$domain"
 done
+
+function realpath () {
+    echo $(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $1)
+}

@@ -65,9 +65,9 @@ fi
 # check root of project
 root=$1
 if [[ ! $root ]]; then
-    root=$(pwd)
+    root=../
 fi
-root=$(readlink -f $root)
+root=$(realpath $root)
 
 if [[ ! -d $root/src ]]; then
     >&2 printf "$root is not a valid plesk extension project\n"
@@ -102,15 +102,6 @@ else
     exit 1
 fi
 
-# set alias - viewing panel
-docker exec $id bash -c "echo \"alias panel='less /var/log/plesk/panel.log'\" >> /root/.bashrc"
-
-# set alias - query key val store
-rest="\"select * from ModuleSettings;\""
-docker exec $id bash -c "printf \"alias store='mysql -uadmin -p\\\`cat /etc/psa/.psa.shadow\\\` psa -e \" >> /root/.bashrc"
-docker exec $id bash -c "printf '$rest' >> /root/.bashrc"
-docker exec $id bash -c "echo \"'\" >> /root/.bashrc"
-
 # copy extension
 docker cp $extension_zipped_path "$id:/tmp"
 
@@ -135,3 +126,7 @@ for subdomain in "${subdomains[@]}"
 do
     docker exec $id "plesk" "bin" "subdomain" "-c" "$subdomain" "-domain" "$domain"
 done
+
+function realpath () {
+    echo $(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $1)
+}

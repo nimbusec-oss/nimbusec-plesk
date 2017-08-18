@@ -21,9 +21,9 @@ destination=$2
 
 # check root of project
 if [[ ! $root ]]; then
-    root=$(pwd)
+    root=../
 fi
-root=$(readlink -f $root)
+root=$(realpath $root)
 
 if [[ ! -d $root/src ]]; then
     >&2 printf "$root is not a valid plesk extension project\n"
@@ -34,7 +34,7 @@ fi
 if [[ ! $destination ]]; then
     destination="$HOME/tmp"
 fi
-destination=$(readlink -f $destination)
+destination=$(realpath $destination)
 
 if [[ ! -d $destination ]]; then
     >&2 printf "$destination is not a valid directory\n"
@@ -47,3 +47,7 @@ zip -rq $destination/$extension_name.zip ./
 cd - > /dev/null
 
 printf "$destination/$extension_name.zip"
+
+function realpath () {
+    echo $(python -c 'import os,sys;print(os.path.realpath(sys.argv[1]))' $1)
+}

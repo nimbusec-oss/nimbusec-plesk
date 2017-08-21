@@ -547,13 +547,147 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             pm_Log::err("found " . count($domains) . " domains for {$domain}");
             return false;
         }
-		
+
         $api->updateResult($domains[0]["id"], $resultId, array(
 			"status" => 3
 		));
 
         return true;
-    }
+	}
+
+	public function unquarantine($path) 
+    {
+		$fragments = array_filter(explode("/", $path));
+		if (count($fragments) == 0) {
+			pm_Log::err("Invalid path: {$path}");
+			return;
+		}
+
+		$quarantine_root = pm_Settings::get("quarantine_root");
+		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
+
+		$fileManager = new pm_ServerFileManager();
+
+		if (count($fragments) == 2) {
+			$domain = $fragments[1];
+
+			$files = $quarantine[$domain];
+			foreach ($files as $file => $value) {
+				try {
+					$fileManager->moveFile($value["path"], $value["old"]);
+				} catch (Exception $e) {
+					pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
+					return false;
+				}
+
+				unset($quarantine[$domain][$file]);
+			}
+
+			// remove folder
+			unset($quarantine[$domain]);
+			$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+
+			// update quarantine store
+			pm_Settings::set("quarantine", json_encode($quarantine));
+
+			return true;
+		}
+
+		// file
+		if (count($fragments) == 3) {
+			$domain = $fragments[1];
+			$file = $fragments[2];
+
+			$value = $quarantine[$domain][$file];
+			
+			try {
+				$fileManager->moveFile($value["path"], $value["old"]);
+			} catch (Exception $e) {
+				pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
+				return false;
+			}
+
+			unset($quarantine[$domain][$file]);
+
+			// clean up when no files left
+			if (count($quarantine[$domain]) == 0) {
+				$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+				unset($quarantine[$domain]);
+			}
+
+			// update quarantine store
+			pm_Settings::set("quarantine", json_encode($quarantine));
+
+			return true;
+		}
+	}
+
+	public function deleteQuarantined($path) 
+    {
+		$fragments = array_filter(explode("/", $path));
+		if (count($fragments) == 0) {
+			pm_Log::err("Invalid path: {$path}");
+			return;
+		}
+
+		$quarantine_root = pm_Settings::get("quarantine_root");
+		$quarantine = json_decode(pm_Settings::get("quarantine"), true);
+
+		$fileManager = new pm_ServerFileManager();
+
+		if (count($fragments) == 2) {
+			$domain = $fragments[1];
+
+			$files = $quarantine[$domain];
+			foreach ($files as $file => $value) {
+				try {
+					$fileManager->removeFile($value["path"]);
+				} catch (Exception $e) {
+					pm_Log::err("Couldn't delete {$value['path']} from quarantine: {$e->getMessage()}");
+					return false;
+				}
+
+				unset($quarantine[$domain][$file]);
+			}
+
+			// remove folder
+			unset($quarantine[$domain]);
+			$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+
+			// update quarantine store
+			pm_Settings::set("quarantine", json_encode($quarantine));
+
+			return true;
+		}
+
+		// file
+		if (count($fragments) == 3) {
+			$domain = $fragments[1];
+			$file = $fragments[2];
+
+			$value = $quarantine[$domain][$file];
+			
+			try {
+				$fileManager->removeFile($value["path"]);
+			} catch (Exception $e) {
+				pm_Log::err("Couldn't delete {$value['path']}: {$e->getMessage()}");
+				return false;
+			}
+
+			unset($quarantine[$domain][$file]);
+
+			// clean up when no files left
+			if (count($quarantine[$domain]) == 0) {
+				$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+				unset($quarantine[$domain]);	
+			}
+
+			// update quarantine store
+			pm_Settings::set("quarantine", json_encode($quarantine));
+
+			return true;
+		}
+	}
 
     private function sendToShellray($file)
     {

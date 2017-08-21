@@ -85,7 +85,7 @@
             <div class="btns-box"></div>
 
             <?php if (count($this->issues) == 0): ?>
-                <h5>Congratulations! No issues found.</h5>
+                <h4>Congratulations! No issues found.</h4>
             <?php endif; ?>
 
             <?php foreach ($this->issues as $name => $domain): ?>
@@ -115,7 +115,7 @@
                                             </div>
                                             <div style="margin-left: -246px; display: inline-block;">
 
-                                                <form method="post" action="<?= $this->h->url('false-positive', 'issues'); ?>">
+                                                <form id="falsePositive" method="post" action="<?= $this->h->url('false-positive', 'issues'); ?>">
                                                     <input name="action" value="falsePositive" type="hidden"/>
                                                     <input name="domain" value="<?= $name; ?>" type="hidden"/>
                                                     <input name="resultId" value="<?= $result['id']; ?>" type="hidden"/>
@@ -129,7 +129,7 @@
                                             </div>
                                             <div style="margin-left: -256px; margin-top: 2px;display: inline-block;">
 
-                                                <form method="post" action="<?= $this->h->url('quarantine', 'issues'); ?>">
+                                                <form id="moveToQuarantine" method="post" action="<?= $this->h->url('quarantine', 'issues'); ?>">
                                                     <input name="action" value="moveToQuarantine" type="hidden">
                                                     <input name="domain" value="<?= $name; ?>" type="hidden">
                                                     <input name="file" value="<?= $result['resource'];?>" type="hidden">
@@ -365,10 +365,16 @@
         var nodeName = toggle.nodeName.toLowerCase();
 
         // expanding issue panel
-        if (hasParent(toggle, ".panel-heading")) {
+        if (hasParent(toggle, ".panel-heading")) { 
 
             // open panel only if necessary
             if (nodeName == "input" || nodeName == "a") {
+                return;
+            }
+
+            // exclude the action links for moving to quarantine
+            // and false positive 
+            if (hasParent(toggle, "#moveToQuarantine") || hasParent(toggle, "#falsePositive")) {
                 return;
             }
 
@@ -401,6 +407,7 @@
                 });
             });
 
+            // send ajax request
             var form = new FormData();
             form.append("action", "bulk-quarantine");
             form.append("issues", JSON.stringify(payload));
@@ -422,26 +429,6 @@
 
             xhr.open ("POST", "<?= $this->h->url('bulk-quarantine', 'issues'); ?>", false);
             xhr.send (form);
-
-            /*new Ajax.Request("<?= $this->h->url('bulk-quarantine', 'issues') ?>", {
-                method: "POST",
-                postBody: JSON.stringify(payload),
-                sanitizeJSON: true,
-                asynchronous: false,
-
-                onSuccess: function (response) {
-
-                    var response = JSON.parse(response.responseText);
-                    
-                    // something went wrong
-                    if (response.hasOwnProperty("error")) {
-                        document.getElementById("response").innerHTML = response.error;
-                        return;
-                    }
-
-                    document.innerHTML = response.html;
-                }
-            });*/
         }
 
         if (nodeName === "span") {

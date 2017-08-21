@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ad85000e3bf097b2bb90cbd1144f313",
+    "content-hash": "18caae4ea72cc8c9a5f8b3c2880f3a47",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -430,6 +430,57 @@
                 "response"
             ],
             "time": "2016-08-06T14:39:51+00:00"
+        },
+        {
+            "name": "sabre/uri",
+            "version": "1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fruux/sabre-uri.git",
+                "reference": "ada354d83579565949d80b2e15593c2371225e61"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fruux/sabre-uri/zipball/ada354d83579565949d80b2e15593c2371225e61",
+                "reference": "ada354d83579565949d80b2e15593c2371225e61",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.7"
+            },
+            "require-dev": {
+                "phpunit/phpunit": ">=4.0,<6.0",
+                "sabre/cs": "~1.0.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "lib/functions.php"
+                ],
+                "psr-4": {
+                    "Sabre\\Uri\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Evert Pot",
+                    "email": "me@evertpot.com",
+                    "homepage": "http://evertpot.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Functions for making sense out of URIs.",
+            "homepage": "http://sabre.io/uri/",
+            "keywords": [
+                "rfc3986",
+                "uri",
+                "url"
+            ],
+            "time": "2017-02-20T19:59:28+00:00"
         },
         {
             "name": "webmozart/assert",

@@ -8,7 +8,8 @@
         "zendframework/zend-validator": "^2.9",
         "zendframework/zend-uri": "^2.5",
         "zendframework/zend-i18n": "^2.7",
-        "zendframework/zend-filter": "^2.7"
+        "zendframework/zend-filter": "^2.7",
+        "sabre/uri": "^1"
     },
     "homepage": "https://nimbusec.com",
     "license": "MIT",

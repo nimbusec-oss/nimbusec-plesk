@@ -189,51 +189,79 @@ DATA;
         }
 
         $title = ucfirst($title);
-        return "<div class='msg-box msg-{$level}'>
-					<div class='msg-content'>
-						<span class='title'>
-							{$title}:
-						</span>
-						{$msg}
-					</div>
-				</div>";
+
+        return "
+        <div class='msg-box msg-{$level}'>
+            <div class='msg-content'>
+                <span class='title'>
+                    {$title}:
+                </span>
+
+                {$msg}
+            </div>
+        </div>";
     }
 
-    public static function createJSONR($msg)
-    {
-        return array("msg" => $msg);
-    }
-
-    public static function createQNavigationBar($path)
+    public static function createQNavigationBar($path, $display_name = "")
     {
         $subpaths = array_filter(explode("/", $path));
-        $html = "<div class='pathbar'>
-					<ul>";
+        $html = "
+        <div class='pathbar'>
+            <ul>";
 
         $partial_path = "";
-        foreach ($subpaths as $subpath) {
+        for ($i = 0; $i < count($subpaths); $i++) {
+            $subpath = $subpaths[$i];
             $partial_path .= "{$subpath}/";
 
-            $html .= "<li>
-						<a id='subpath' path='{$partial_path}'>
-							<span>
-								{$subpath}
-							</span>
-						</a>
-					</li>";
+            // for the last layer, take the replacement
+            if ($i === 2) {
+                $subpath = $display_name;
+            }
+
+            $html .= "
+            <li>
+                <a id='subpath' path='{$partial_path}'>
+                    <span>
+                        {$subpath}
+                    </span>
+                </a>
+            </li>";
         }
 
-        $html .= "	</ul>
-				</div>";
+        $html .= "
+
+            </ul>
+        </div>";
 
         return $html;
     }
 
-    public static function createQTreeView($path, $files)
+	public static function createQOptions($path, $helper) 
     {
-        if (count($files) == 0) {
-            return "";
-        }
+		return "
+        <div class='form-row'>
+            <div class='field-name' style='margin-left: .6%;'>
+                Bulk options
+            </div>
+
+            <div class='field-value' style='margin-bottom: .5%;'>
+                <a onclick='bulk_request(\"{$path}\", \"unquarantine-bulk\", updateHandler, \"" . $helper->url("unquarantine-bulk", "quarantine") . "\");' 
+                        style='color: #353535;'>
+
+                    <i class='mdi mdi-bug'></i>
+                    <span>Unquarantine</span>
+                </a>
+            </div>
+
+        </div>";
+	}
+
+	public static function createQTreeView($path, $files, $helper)
+    {
+		if (count($files) == 0) {
+			return "";
+		}
 
         $type = $files[0]["type"];
 
@@ -246,9 +274,9 @@ DATA;
 					<table>";
 		
         if ($type == 0) {
-            $html .= self::createQTreeViewDir($path, $files);
+            $html .= self::createQTreeViewDir($path, $files, $helper);
         } elseif ($type == 1) {
-            $html .= self::createQTreeViewDomain($path, $files);
+            $html .= self::createQTreeViewDomain($path, $files, $helper);
         }
 
         $html .= "	</table>
@@ -257,29 +285,38 @@ DATA;
         return $html;
     }
 
-    private static function createQTreeViewDir($path, $files)
+    private static function createQTreeViewDir($path, $files, $helper)
     {
-        $html = "<thead>
-					<tr>
-						<th><input type='checkbox' id='select-all'/> Name</th>
-						<th>Number of files</th>
-						<th>Action</th>
-					</tr>
-				</thead>";
+        $html = "
+        <thead>
+            <tr>
+                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
+                <th>Number of files</th>
+                <th>Action</th>
+            </tr>
+        </thead>";
 
         $html .= "<tbody>";
+
         foreach ($files as $file) {
-            $html .= "<tr>
-						<td>
-							<input type='checkbox' id='select'/>
-							<a id='subpath' path='{$path}/{$file['name']}'>
-								<i class='mdi mdi-folder'></i>
-								<span>{$file['name']}</span>
-							</a>
-						</td>
-						<td>{$file['count']}</td>
-						<td>Button</td>
-					 </tr>";
+            $html .= "
+            <tr>
+                <td>
+                    <input type='checkbox' id='select'/>
+                    <a id='subpath' path='{$path}/{$file['name']}'>
+                        <i class='mdi mdi-folder'></i>
+                        <span>{$file['name']}</span>
+                    </a>
+                </td>
+                <td>{$file['count']}</td>
+                <td>
+                    <a onclick='request_wrapper(\"{$path}/{$file['name']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
+
+                        <i class='mdi mdi-bug'></i>
+                        <span>Unquarantine</span>
+                    </a>
+                </td>
+            </tr>";
         }
 
         $html .= "</tbody>";
@@ -287,39 +324,47 @@ DATA;
         return $html;
     }
 
-    private static function createQTreeViewDomain($path, $files)
+    private static function createQTreeViewDomain($path, $files, $helper)
     {
-        $html = "<thead>
-					<tr>
-						<th><input type='checkbox' id='select-all'/> Name</th>
-						<th>Quarantined on</th>
-						<th>Old path</th>
-						<th>Filesize</th>
-						<th>Permissions</th>
-						<th>User</th>
-						<th>Group</th>
-						<th>Action</th>
-					</tr>
-				</thead>";
+        $html = "
+        <thead>
+            <tr>
+                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
+                <th>Quarantined on</th>
+                <th>Old path</th>
+                <th>Filesize</th>
+                <th>Permissions</th>
+                <th>User</th>
+                <th>Group</th>
+                <th>Action</th>
+            </tr>
+        </thead>";
 
         $html .= "<tbody>";
         foreach ($files as $file) {
-            $html .= "<tr>
-						<td>
-							<input type='checkbox' id='select'/>
-							<a id='subpath' path='{$path}/{$file['id']}'>
-								<i class='mdi mdi-file-outline'></i>
-								<span>{$file['name']}</span>
-							</a>
-						</td>
-						<td>{$file['create_date']}</td>
-						<td>{$file['old']}</td>
-						<td>{$file['filesize']}</td>
-						<td>{$file['permission']}</td>
-						<td>{$file['owner']}</td>
-						<td>{$file['group']}</td>
-						<td>Button</td>
-					 </tr>";
+            $html .= "
+            <tr>
+                <td>
+                    <input type='checkbox' id='select'/>
+                    <a id='subpath' path='{$path}/{$file['id']}'>
+                        <i class='mdi mdi-file-outline'></i>
+                        <span>{$file['name']}</span>
+                    </a>
+                </td>
+                <td>{$file['create_date']}</td>
+                <td>{$file['old']}</td>
+                <td>{$file['filesize']}</td>
+                <td>{$file['permission']}</td>
+                <td>{$file['owner']}</td>
+                <td>{$file['group']}</td>
+                <td>
+                    <a onclick='request_wrapper(\"{$path}/{$file['id']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
+
+                        <i class='mdi mdi-bug'></i>
+                        <span>Unquarantine</span>
+                    </a>
+                </td>
+            </tr>";
         }
 
         $html .= "</tbody>";
@@ -329,9 +374,13 @@ DATA;
 
     private static function createQTreeViewFile($path, $files)
     {
-        $html = "<pre><code class='html'>";
-        $html .= htmlentities(file_get_contents($files[0]["path"]));
-        $html .= "</code></pre>";
+        $html = "
+        <pre>
+            <code class='html'>";
+            $html .= htmlentities(file_get_contents($files[0]["path"]));
+        $html .= "
+            </code>
+        </pre>";
 
         return $html;
     }

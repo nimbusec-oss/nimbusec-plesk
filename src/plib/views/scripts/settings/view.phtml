@@ -52,7 +52,7 @@
                                 <thead>
                                     <tr>
                                         <th>
-                                            <input name="act0" onclick="updateState(0)" id="act0" type="checkbox"> Register domain 
+                                            <input name="act0" id="act0" type="checkbox" setter> Register domain 
                                         </th>
                                         <th>
                                             <a>Directory</a>
@@ -128,7 +128,7 @@
                                     <thead>
                                         <tr>
                                             <th>
-                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" onclick="updateState(<?= $i; ?>)"> Unregister domain 
+                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" setter> Unregister domain 
                                             </th>
                                             <th>
                                                 Directory
@@ -270,28 +270,51 @@
 <!-- ========================================= [ JS ] ===================================================================== -->
 
 <script>
-    document.getElementsByName("submit").forEach((node) => { 
-        node.addEventListener("click", function(obj) { 
-            obj.target.style.display = "None";
+
+    var setLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "None";
+
+        // disable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+
+        // rotating loading spinner
+        var spinner = document.createElement("span");
+        spinner.classList.toggle("wait");
+        spinner.appendChild(document.createTextNode("Please wait"));
+
+        parent.appendChild(spinner);
+    } 
+
+    var eventHandler = function (event) {
+
+        // get the clicked element
+        var toggle = event.target;
+
+        if (toggle.nodeName.toLowerCase() === "button") {
             
-            var parent = obj.target.parentNode;
-            parent.classList.add("disabled");
+            // for all submit buttons
+            if (toggle.type === "submit") {
 
-            var wait = document.createElement("span");
-            wait.classList.add("wait");
-            wait.appendChild(document.createTextNode("Please wait"));
-
-            parent.appendChild(wait);
-        }); 
-    });
-    document.getElementById("configuration").readOnly = true;
-
-    function updateState(id) {
-        var elements = document.getElementsByName("active" + id + "[]");
-        var target = document.getElementById("act" + id).checked;
-
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].checked = target;
+                // init loading
+                setLoading(toggle);
+            }
         }
-    }
+
+        if (toggle.nodeName.toLowerCase() === "input") {
+
+            // toggle all checkboxes
+            if (toggle.type === "checkbox" && toggle.hasAttribute ("setter")) {
+
+                var index = toggle.name.slice(-1);
+                document.getElementsByName("active" + index + "[]").forEach(function(element) {
+                    element.checked = toggle.checked;
+                });
+            }
+        }
+    };
+
+    document.addEventListener("click", eventHandler);
 </script>

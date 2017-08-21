@@ -1,5 +1,7 @@
-<?= $this->renderTabs($this->tabs); ?> 
-<?= $this->response; ?>
+<?= $this->renderTabs($this->tabs); ?>
+<div id="response">
+    <?= $this->response; ?>
+</div>
 
 <link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
@@ -36,20 +38,10 @@
             
                 <div class="field-value">
                     <div style="display: inline-block; margin-right: 10px;">
-                        <div id="issue-dropdown" class="dropdown">
-                            <a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false" style="color: black;">
-                                <span>Select action</span>
-                                <i class="mdi mdi-menu-down"></i>
-                            </a>
-                            <ul class="dropdown-menu" style="background-color: #fafafa; box-shadow: 0 1px 4px 0px rgb(0, 0, 0, 0.3);">
-                                <li><!-- <form method="post" action="/domain/result-id"> -->
-                                    <a>
-                                        <i class="mdi mdi-bug"></i>
-                                        <span>Move to Quarantine</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                        <a id="bulk-quarantine" style="color: #353535;">
+                            <i class="mdi mdi-bug"></i>
+                            <span>Move to Quarantine</span>
+                        </a>
                     </div>
                     <div style="display: inline-block;">
                         <a id="issue-link">Select / Deselect all issues</a></div>
@@ -82,9 +74,9 @@
                             <span>Red</span>
                             <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, array("6", "9"))): ?> checked="checked" <?php endif; ?>/>
                         </span>
-                        <a onclick="sendForm(this);" class="btn action">
-                            <span>Apply</span>
-                        </a>
+                        <span id="btn-send" class="btn action" style="margin-left: 5px;">
+                            <span class="submit-button" sender>Apply</span>
+                        </span>
                     </div>
                 </form>
 
@@ -121,7 +113,7 @@
                                             <div style="margin-left: -140px; color: #303030; margin-top: 2px;display: inline-block;">
                                                     <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
                                             </div>
-                                            <div style="margin-left: -236px; display: inline-block;">
+                                            <div style="margin-left: -246px; display: inline-block;">
 
                                                 <form method="post" action="<?= $this->h->url('false-positive', 'issues'); ?>">
                                                     <input name="action" value="falsePositive" type="hidden"/>
@@ -135,7 +127,7 @@
                                                 </form>
 
                                             </div>
-                                            <div style="margin-left: -246px; margin-top: 2px;display: inline-block;">
+                                            <div style="margin-left: -256px; margin-top: 2px;display: inline-block;">
 
                                                 <form method="post" action="<?= $this->h->url('quarantine', 'issues'); ?>">
                                                     <input name="action" value="moveToQuarantine" type="hidden">
@@ -280,16 +272,16 @@
                                         </div>
 
                                         <div class="source-code">
-                                            <a>View source code <i id="source-code-icon" class="mdi mdi-arrow-down-drop-circle"></i></a>
-                                        </div>
+                                            <a>View source code <i class="mdi mdi-arrow-down-drop-circle source-code-icon"></i></a>
                                         
-                                        <div class="panel panel-collapsible panel-collapsed" style="margin: 0px; border: 0px">
-                                            <div class="panel-wrap">
-                                                <div class="panel-content">
-                                                    <div class="panel-content-wrap">
-                                                        <pre><code class="html">
-                                                            <?= htmlentities(file_get_contents($result["resource"])); ?>
-                                                        </code></pre>
+                                            <div class="panel panel-collapsible panel-collapsed source-code-panel" style="margin: 0px; border: 0px">
+                                                <div class="panel-wrap">
+                                                    <div class="panel-content">
+                                                        <div class="panel-content-wrap">
+                                                            <pre><code class="html">
+                                                                <?= htmlentities(file_get_contents($result["resource"])); ?>
+                                                            </code></pre>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -314,61 +306,255 @@
 
 <script>
 
+    // clean up localstorage key
+    localStorage.removeItem("disclaimer");
+
     function sendForm(element) {
         element.closest("form").submit();
     }
 
-    // show issue dropdown
-    document.querySelectorAll("[id='issue-dropdown']").forEach(function(menu) { 
-        menu.querySelector(".dropdown-toggle").addEventListener("click", function(triggered) {
-            triggered.target.closest("#issue-dropdown").classList.toggle("open");
-        });
-    });
+    var setLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "None";
 
-    // checking / unchecking domains
-    document.querySelectorAll("[id^='issue-link']").forEach(function(link) { 
-        link.addEventListener("click", function(triggered) { 
-            var parts = triggered.target.id.split("-"); 
-            if (parts.length < 3) {
+        // disable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+
+        // rotating loading spinner
+        var spinner = document.createElement("span");
+        spinner.classList.toggle("wait");
+        spinner.appendChild(document.createTextNode("Please wait"));
+
+        parent.appendChild(spinner);
+    }
+
+    var removeLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "";
+
+        // enable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+        
+        // remove loading spinner
+        toggle.nextElementSibling.remove();
+    } 
+
+    var hasParent = function (child, parentSelector) {
+        
+        // iterate over all parents
+        for (; child && child !== document; child = child.parentNode) {
+
+            if (child.matches(parentSelector)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    var eventHandler = function (event) {
+
+        // get the clicked element
+        var toggle = event.target;
+
+        // get the nodename
+        var nodeName = toggle.nodeName.toLowerCase();
+
+        // expanding issue panel
+        if (hasParent(toggle, ".panel-heading")) {
+
+            // open panel only if necessary
+            if (nodeName == "input" || nodeName == "a") {
+                return;
+            }
+
+            toggle.closest(".panel").classList.toggle("panel-collapsed");
+            toggle.closest(".panel").classList.toggle("panel-expanded");
+        }
+
+        // bulk quarantine action
+        if (hasParent(toggle, "#bulk-quarantine")) {
+
+            // filter issue which are checked
+            var issues = Array.from(document.querySelectorAll("input[id^='issue-']")).filter(function (issue) { 
+                return issue.checked; 
+            });
+
+            var payload = [];
+
+            // append information of each issue to the payload
+            issues.forEach(function (issue) {
+                
+                // navigate top
+                var heading = issue.closest(".panel-heading");
+
+                // get quarantine form
+                var form = heading.querySelectorAll("form")[1];
+
+                payload.push({
+                    domain: form.elements.domain.value,
+                    file: form.elements.file.value
+                });
+            });
+
+            var form = new FormData();
+            form.append("action", "bulk-quarantine");
+            form.append("issues", JSON.stringify(payload));
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function(){ 
+
+                var response = JSON.parse(xhr.responseText);
+                    
+                // something went wrong
+                if (response.hasOwnProperty("error")) {
+                    document.getElementById("response").innerHTML = response.error;
+                    return;
+                }
+
+                document.getElementById("response").innerHTML = response.html;
+                window.location.reload(true);
+            }
+
+            xhr.open ("POST", "<?= $this->h->url('bulk-quarantine', 'issues'); ?>", false);
+            xhr.send (form);
+
+            /*new Ajax.Request("<?= $this->h->url('bulk-quarantine', 'issues') ?>", {
+                method: "POST",
+                postBody: JSON.stringify(payload),
+                sanitizeJSON: true,
+                asynchronous: false,
+
+                onSuccess: function (response) {
+
+                    var response = JSON.parse(response.responseText);
+                    
+                    // something went wrong
+                    if (response.hasOwnProperty("error")) {
+                        document.getElementById("response").innerHTML = response.error;
+                        return;
+                    }
+
+                    document.innerHTML = response.html;
+                }
+            });*/
+        }
+
+        if (nodeName === "span") {
+            
+            // for the apply button
+            if (toggle.hasAttribute("sender")) {
+
+                // skip disabled
+                if (toggle.parentNode.classList.contains("disabled")) {
+                    return;
+                }
+
+                // init loading
+                setLoading(toggle);
+
+                // check whether the disclaimer has been accepted
+                var disclaimer = localStorage.getItem("disclaimer");
+                if (disclaimer === null) {
+
+                    // remove confirmation element
+                    var confirmation = document.getElementById("confirmation");
+                    while (confirmation.firstChild) {
+                        confirmation.removeChild(confirmation.firstChild);
+                    }
+
+                    // create confirmation element
+                    // parent node
+                    var disclaimerParent = document.createElement("span");
+
+                    // confirmation message
+                    var message = document.createTextNode(" Click the checkbox if you have read the disclaimer.");
+
+                    // confirmation checkbox
+                    var checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+
+                    checkbox.addEventListener("change", function() {
+
+                        // when previously unset
+                        if (localStorage.getItem("disclaimer") === null) {
+                            localStorage.setItem("disclaimer", "true");
+                        } else {
+                            localStorage.removeItem("disclaimer");
+                        }
+                        
+                        // enable button
+                        toggle.parentNode.classList.toggle("disabled");
+                    });
+
+                    // append to DOM
+                    disclaimerParent.appendChild(checkbox);
+                    disclaimerParent.appendChild(message);
+                    confirmation.appendChild(disclaimerParent);
+
+                    // remove animation but disable the button
+                    removeLoading(toggle);
+                    toggle.parentNode.classList.toggle("disabled");
+
+                } else {
+
+                    // submit form
+                    toggle.closest("form").submit();
+                }
+            }
+        }
+        
+        if (nodeName === "a") {
+
+            // expanding source code in issue panel
+            if (hasParent(toggle, ".source-code")) {
+
+                // querying from parent element
+                var panel = toggle.parentElement.querySelector(".source-code-panel");
+                var icon = toggle.parentElement.querySelector(".source-code-icon");
+
+                panel.classList.toggle("panel-collapsed");
+                panel.classList.toggle("panel-expanded");
+
+                icon.classList.toggle("mdi-arrow-down-drop-circle");
+                icon.classList.toggle("mdi-arrow-up-drop-circle");
+            }
+
+            // selecting and (un)checking issues by domain
+            if (toggle.id.startsWith("issue-link-")) {
+
+                // split between e.g issue-link-test.com
+                var parts = toggle.id.split("-");
+
+                var domain = parts[parts.length - 1];
+
+                // select the checked state of the first issue
+                var checked = document.querySelector("[id='issue-" + domain + "']").checked;
+
+                // apply to all
+                document.querySelectorAll("[id='issue-" + domain + "']").forEach(function(issue) { 
+                    issue.checked = !checked; 
+                });
+            }
+
+            // selecting and (un)checking all issues 
+            if (toggle.id === "issue-link") {
+
+                // select the checked state of the first issue
                 var checked = document.querySelector("input[id^='issue-']").checked;
-                checked = !checked;
 
-                document.querySelectorAll("input[id^='issue-']").forEach(function (issue) { issue.checked = checked; });
-                return;
+                // apply to all 
+                document.querySelectorAll("input[id^='issue-']").forEach(function (issue) { 
+                    issue.checked = !checked; 
+                });
             }
+        }
+    };
 
-            var domain = parts[parts.length - 1];
-            var checked = document.querySelector("[id='issue-" + domain + "']").checked;
-            checked = !checked;
-
-            document.querySelectorAll("[id='issue-" + domain + "']").forEach(function(issue) { issue.checked = checked; });
-        }); 
-    });
-
-    // expand issue panel
-    Array.from(document.getElementsByClassName("panel-heading")).forEach(function(panel) { 
-        panel.addEventListener("click", function(triggered) {
-            if (triggered.target.parentElement.tagName == "A") {
-                return;
-            }
-
-            triggered.target.closest(".panel").classList.toggle("panel-collapsed");
-            triggered.target.closest(".panel").classList.toggle("panel-expanded");
-        });
-    });
-
-    // source-code expanding / collapsing
-    Array.from(document.getElementsByClassName("source-code")).forEach(function(item) { 
-        item.addEventListener("click", function(triggered) {
-            var panel = triggered.target.parentElement.nextElementSibling;
-            var icon = triggered.target.querySelector("#source-code-icon");
-
-            panel.classList.toggle("panel-collapsed");
-            panel.classList.toggle("panel-expanded");
-
-            icon.classList.toggle("mdi-arrow-down-drop-circle");
-            icon.classList.toggle("mdi-arrow-up-drop-circle");
-        });
-    });
+    document.addEventListener("click", eventHandler);
 
 </script>

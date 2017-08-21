@@ -8,7 +8,9 @@ class IndexController extends pm_Controller_Action
         $this->initPleskStore();
 
         $this->view->pageTitle = pm_Settings::get("extension_title");
+
 		$this->view->e = new Zend\Escaper\Escaper();
+        $this->view->h = $this->_helper;
     }
 
     private function initPleskStore()

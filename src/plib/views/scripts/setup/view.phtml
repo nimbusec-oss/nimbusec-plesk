@@ -76,18 +76,40 @@
 <!-- ========================================= [ JS ] ===================================================================== -->
 
 <script>
-    document.getElementsByName("submit").forEach((node) => { 
-        node.addEventListener("click", function(obj) { 
-            obj.target.style.display = "None";
+
+    var setLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "None";
+
+        // disable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+
+        // rotating loading spinner
+        var spinner = document.createElement("span");
+        spinner.classList.toggle("wait");
+        spinner.appendChild(document.createTextNode("Please wait"));
+
+        parent.appendChild(spinner);
+    } 
+
+    var eventHandler = function (event) {
+
+        // get the clicked element
+        var toggle = event.target;
+
+        if (toggle.nodeName.toLowerCase() === "button") {
             
-            var parent = obj.target.parentNode;
-            parent.classList.add("disabled");
+            // for all submit buttons
+            if (toggle.type === "submit") {
 
-            var wait = document.createElement("span");
-            wait.classList.add("wait");
-            wait.appendChild(document.createTextNode("Please wait"));
+                // init loading
+                setLoading(toggle);
+            }
+        }
+    };
 
-            parent.appendChild(wait);
-        }); 
-    });
+    document.addEventListener("click", eventHandler);
+
 </script>

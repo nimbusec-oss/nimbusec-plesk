@@ -147,6 +147,55 @@ class IssuesController extends pm_Controller_Action
 		return;
 	}
 
+	public function bulkQuarantineAction()
+	{
+		$request = $this->getRequest(); 
+		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "bulk-quarantine");
+		if (!$valid) {
+			$this->_helper->json(array(
+				"error" => $this->createHTMLR("Bulk quarantine: Invalid request.", "error")
+			));
+			return;
+		}
+
+		$issues = $request->getPost("issues");
+
+		// validate given issues
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($issues)) {
+			$this->_helper->json(array(
+				"error" => $this->createHTMLR("Bulk quarantine: No issues selected. Please select a issues in order to quarantine.", "error")
+			));
+			return;
+		}
+
+		$issues = json_decode($issues, true);
+		if (count($issues) === 0) {
+			$this->_helper->json(array(
+				"error" => $this->createHTMLR("Bulk quarantine: No issues selected. Please select a issues in order to quarantine.", "error")
+			));
+			return;
+		}
+
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+
+		foreach ($issues as $issue) {
+			$success = $nimbusec->moveToQuarantine($issue["domain"], $issue["file"]);
+			
+			if (!$success) {
+				$this->_helper->json(array(
+					"error" => $this->createHTMLR("Bulk quarantine: Something went wrong while quarantining {$issue['file']} for {$issue['domain']}.", "error")
+				));
+				return;
+			}
+		}
+
+		$this->_helper->json(array(
+			"html" => $this->createHTMLR("Bulk quarantine: Successfully moved the selected domains into quarantine.", "info")
+		));
+		return;
+	}
+
 	public function scheduleQuarantineAction() 
 	{
 		$request = $this->getRequest(); 

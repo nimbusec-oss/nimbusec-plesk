@@ -130,16 +130,17 @@ class IssuesController extends pm_Controller_Action
             $this->_forward("view", "issues", null, array(
 				"response" => $this->createHTMLR("Quarantine: given file does not exist.", "error")
 			));
-			return;	
+			return;
         }
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
-		$success = $nimbusec->moveToQuarantine($domain, $file);
-		if (!$success) {
+		try {
+			$nimbusec->moveToQuarantine($domain, $file);
+		} catch (Exception $e) {
 			$this->_forward("view", "issues", null, array(
-				"response" => $this->createHTMLR("Quarantine: An error occurred. Please check the log files.", "error")
+				"response" => $this->createHTMLR("Quarantine: {$e->getMessage()}", "error")
 			));
-			return;	
+			return;
 		}
 
 		$this->_status->addMessage("info", "Successfully moved {$file} into Quarantine.");
@@ -180,11 +181,11 @@ class IssuesController extends pm_Controller_Action
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
 		foreach ($issues as $issue) {
-			$success = $nimbusec->moveToQuarantine($issue["domain"], $issue["file"]);
-			
-			if (!$success) {
+			try {
+				$nimbusec->moveToQuarantine($issue["domain"], $issue["file"]);
+			} catch (Exception $e) {
 				$this->_helper->json(array(
-					"error" => $this->createHTMLR("Bulk quarantine: Something went wrong while quarantining {$issue['file']} for {$issue['domain']}.", "error")
+					"error" => $this->createHTMLR("Bulk quarantine: Something went wrong while quarantining {$issue['file']} for {$issue['domain']}: {$e->getMessage()}", "error")
 				));
 				return;
 			}

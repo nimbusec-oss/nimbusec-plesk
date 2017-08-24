@@ -41,9 +41,10 @@ foreach ($filtered as $name => $domain) {
     foreach ($results as $result) {
 
         // quarantine - hijyaaa
-        $success = $nimbusec->moveToQuarantine($name, $result["resource"]);
-        if (!$success) {
-            pm_Log::err("Automatic quarantining: something went wrong a result of {$name}.");
+        try {
+            $nimbusec->moveToQuarantine($name, $result["resource"]);
+        } catch(Exception $e) {
+            pm_Log::err("Automatic quarantining: something went wrong while trying to quarantine {$name}: {$e->getMessage()}");
             exit(1);
         }
 

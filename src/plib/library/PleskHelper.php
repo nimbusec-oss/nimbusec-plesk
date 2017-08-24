@@ -21,6 +21,61 @@ class Modules_NimbusecAgentIntegration_PleskHelper
 		);
     }
 
+    public static function setQuarantine($quarantine_store)
+    {
+        $encoded = json_encode($quarantine_store);
+        
+        // Plesk allowes the store to have a maximum length of 2000 chars.
+        // To prevent this, cut the store into multiple parts, each of length 1980. 
+        // Use the rest 20 chars for referencing to the next store.
+        $splitted = str_split($encoded, 1980);
+
+        for ($i = 0; $i < count($splitted); $i++) {
+            $store_part = $splitted[$i];
+
+            // only append reference if there is a next store
+            if (($i + 1) < count($splitted)) {
+                $store_part .= "_qref_" . strval($i + 1);
+            }
+
+            $key = "quarantine_{$i}";
+            if ($i === 0) {
+                $key = "quarantine";
+            }
+
+            pm_Settings::set($key, $store_part);
+        }
+    }
+
+    public static function getQuarantine()
+    {
+        $quarantine_store = pm_Settings::get("quarantine", "");
+        if ($quarantine_store === "") {
+            return array();
+        }
+
+        return json_decode(Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($quarantine_store), true);
+    }
+
+    // fetch all stores with their references
+    private static function getFullQuarantineStore($quarantine_store) 
+    {
+        // are there references to other stores?
+        $stores = explode("_qref_", $quarantine_store);
+        if (count($stores) === 1) {
+            return $stores[0];
+        }
+
+        $ref_index = $stores[1];
+        $next = pm_Settings::get("quarantine_{$ref_index}", "");
+        if ($next === "") {
+            pm_Log::err("Quarantine: invalid store: quarantine_{$ref_index}");
+            throw new Exception("Could not fetch quarantine store.");
+        }
+
+        return $stores[0] . Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($next);
+    }
+
     public static function isValidPostRequest($request, $form_event = "action", $expected_action, $dynamic_action = false) 
     {
 		if (!$request->isPost()) {

@@ -1,7 +1,7 @@
-<?= $this->renderTabs($this->tabs); ?>
 <div id="response">
     <?= $this->response; ?>
 </div>
+<?= $this->renderTabs($this->tabs); ?>
 
 <link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
@@ -40,7 +40,13 @@
                     <div style="display: inline-block; margin-right: 10px;">
                         <a id="bulk-quarantine" style="color: #353535;">
                             <i class="mdi mdi-bug"></i>
-                            <span>Move to Quarantine</span>
+                            <span class="button-text">    
+                                <span>Move to Quarantine</span>
+                            </span>
+                            <span class="button-loading" style="display: none;">
+                                <span style="margin-right: 5px;">Please Wait</span>
+                                <i class="fa fa-refresh fa-fw fa-spin"></i>
+                            </span>
                         </a>
                     </div>
                     <div style="display: inline-block;">
@@ -99,9 +105,9 @@
                             <a id="issue-link-<?= $name; ?>">Select / Deselect all issues</a>
                         </div>
                     </div>
-
                     <div class="field-value" style="margin-bottom: 15px;"></div>
 
+                    <div style="margin-left: 10px;">
                     <?php foreach ($domain["results"] as $result): ?>
                         <div class="panel panel-collapsible p-promo panel-collapsed">
                             <div class="panel-wrap">
@@ -122,7 +128,13 @@
                                                     <input name="file" value="<?= $result['resource'];?>" type="hidden">
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-flag"></i>
-                                                        <span>False positive</span>
+                                                        <span class="button-text">    
+                                                            <span>False Positive</span>
+                                                        </span>
+                                                        <span class="button-loading" style="display: none;">
+                                                            <span style="margin-right: 5px;">Please Wait</span>
+                                                            <i class="fa fa-refresh fa-fw fa-spin"></i>
+                                                        </span>
                                                     </a>
                                                 </form>
 
@@ -135,7 +147,13 @@
                                                     <input name="file" value="<?= $result['resource'];?>" type="hidden">
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-bug"></i>
-                                                        <span>Move to Quarantine</span>
+                                                        <span class="button-text">    
+                                                            <span>Move to Quarantine</span>
+                                                        </span>
+                                                        <span class="button-loading" style="display: none;">
+                                                            <span style="margin-right: 5px;">Please Wait</span>
+                                                            <i class="fa fa-refresh fa-fw fa-spin"></i>
+                                                        </span>
                                                     </a>
                                                 </form>
 
@@ -292,7 +310,8 @@
                             </div>
                         </div>
                     <?php endforeach; ?>
-                    
+                    </div>
+
                 </div>
                 <br/>
             <?php endforeach; ?> 
@@ -304,12 +323,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 
+<script src="https://use.fontawesome.com/92fc1c4617.js"></script>
+
 <script>
 
     // clean up localstorage key
     localStorage.removeItem("disclaimer");
 
     function sendForm(element) {
+
+        setLoadingMdi(element);
         element.closest("form").submit();
     }
 
@@ -330,9 +353,22 @@
         parent.appendChild(spinner);
     }
 
+    var setLoadingMdi = function (toggle) {
+
+        var replacement = document.createElement("span");
+        replacement.innerHTML = toggle.innerHTML;
+
+        // enable button loading animation
+        replacement.querySelector(".button-text").style.display = "None";
+        replacement.querySelector(".button-loading").style.display = "";
+        toggle.parentNode.insertBefore(replacement, toggle.nextSibling);
+
+        toggle.style.display = "None";
+    }
+
     var removeLoading = function (toggle) {
         
-        // hide button
+        // show button
         toggle.style.display = "";
 
         // enable parent
@@ -341,7 +377,16 @@
         
         // remove loading spinner
         toggle.nextElementSibling.remove();
-    } 
+    }
+
+    var removeLoadingMdi = function (toggle) {
+
+        // show button
+        toggle.style.display = "";
+
+        // remove replacement
+        toggle.nextElementSibling.remove();
+    }
 
     var hasParent = function (child, parentSelector) {
         
@@ -385,6 +430,12 @@
         // bulk quarantine action
         if (hasParent(toggle, "#bulk-quarantine")) {
 
+            // get parent for setting animation
+            var parent = toggle.closest("#bulk-quarantine");
+
+            // set loading
+            setLoadingMdi(parent);
+
             // filter issue which are checked
             var issues = Array.from(document.querySelectorAll("input[id^='issue-']")).filter(function (issue) { 
                 return issue.checked; 
@@ -420,6 +471,7 @@
                 // something went wrong
                 if (response.hasOwnProperty("error")) {
                     document.getElementById("response").innerHTML = response.error;
+                    removeLoadingMdi(parent);
                     return;
                 }
 

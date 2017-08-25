@@ -72,13 +72,20 @@ class QuarantineController extends pm_Controller_Action
 
 		$html .= Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($path, $fetched, $this->_helper);
 
-		$this->_helper->json(array(
+		$response = array(
 			"files" => $fetched,
 			"html" 	=> $html,
 			"path" 	=> $path,
 			"action" => $action,
 			"error" => false
-		));
+		);
+
+		// add success message, if there are no files in quarantine
+		if (count($fetched) === 0) {
+			$response["success"] = $this->createHTMLR("No files were found in Quarantine.", "info");
+		}
+
+		$this->_helper->json($response);
 		return;
 	}
 
@@ -120,15 +127,15 @@ class QuarantineController extends pm_Controller_Action
 		list($dirname, ) = Sabre\Uri\split($path);
 		$fetched = $nimbusec->fetchQuarantine($dirname);
 
-		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($path) .
-					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($path, $this->_helper) .
-					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($path, $fetched, $this->_helper);
+		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($dirname) .
+					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .
+					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($dirname, $fetched, $this->_helper);
 
 		$this->_helper->json(
 			array(
 				"files"   => $fetched,
 				"html" 	  => $html,
-				"path" 	  => $path,
+				"path" 	  => $dirname,
 				"action"  => $action,
 				"error"   => false,
 				"success" => $this->createHTMLR("Quarantine: Successfully unquarantined {$path}.", "info")
@@ -197,15 +204,14 @@ class QuarantineController extends pm_Controller_Action
 		list($dirname, ) = Sabre\Uri\split($path);
 		$fetched = $nimbusec->fetchQuarantine($dirname);
 
-		$fetched = $nimbusec->fetchQuarantine($path);
-		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($path) .
-					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($path, $this->_helper) .
-					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($path, $fetched, $this->_helper);
+		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($dirname) .
+					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .
+					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($dirname, $fetched, $this->_helper);
 
 		$this->_helper->json(array(
 			"files"   => $fetched,
 			"html" 	  => $html,
-			"path" 	  => $path,
+			"path" 	  => $dirname,
 			"action"  => $action,
 			"error"   => false,
 			"success" => $this->createHTMLR("Quarnatine: Successfully unquarantined your selection.", "info")

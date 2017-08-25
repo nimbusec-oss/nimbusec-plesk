@@ -38,6 +38,10 @@ class IssuesController extends pm_Controller_Action
         $this->view->colors = array("#bbb", "#fdd835", "#f44336");
         $this->view->issues = $filtered;
 		$this->view->quarantine_state = pm_Settings::get("quarantine_state", "1");
+
+		if (count($filtered) === 0) {
+			$this->_status->addMessage("info", "No issues were found for your domains.");
+		}
 	}
 
 	public function falsePositiveAction() 

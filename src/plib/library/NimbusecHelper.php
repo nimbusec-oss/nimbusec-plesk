@@ -417,6 +417,16 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         // domain
         if (count($fragments) == 2) {
             $domain = $fragments[1];
+
+            // fetch root directory of domain
+            $root = "/";
+            try {
+                $root = pm_Domain::getByName($domain)->getDocumentRoot();
+            } catch (Exception $e) {
+                pm_Log::err("Domain {$domain} not found: {$e->getMessage()}");
+                return array();
+            }
+
             foreach ($quarantine[$domain] as $id => $value) {
                 array_push($fetched, array(
 					"id"			=> $id,
@@ -424,7 +434,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 					"name" 			=> pathinfo($value["path"], PATHINFO_BASENAME),
 
 					// path with domain as root
-					"old" 			=> pathinfo(explode($domain, $value["old"])[1], PATHINFO_DIRNAME),
+					"old" 			=> pathinfo(explode($root, $value["old"])[1], PATHINFO_DIRNAME),
 					"create_date" 	=> date("M d, Y h:i A", $value["create_date"]),
 					"filesize" 		=> Modules_NimbusecAgentIntegration_PleskHelper::formatBytes($value["filesize"]),
 					"owner" 		=> $value["owner"],

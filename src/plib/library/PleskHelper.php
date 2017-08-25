@@ -6,19 +6,19 @@ class Modules_NimbusecAgentIntegration_PleskHelper
     {
         $installed = pm_Settings::get("extension_installed");
         if ($installed !== "true") {
-            return array(
-				array("title" => "Setup", "action" => "view", "controller" => "setup"),
-			);
+            return [
+				["title" => "Setup", "action" => "view", "controller" => "setup"],
+            ];
         }
 
-        return array(
-			array("title" => "Login to Nimbusec",   "action" => "login", "controller" => "index"),
-			array("title" => "Issues",              "action" => "view", "controller" => "issues"),
-			array("title" => "Quarantine",          "action" => "view", "controller" => "quarantine"),
-			array("title" => "Settings",            "action" => "view", "controller" => "settings"),
-			array("title" => "Update Agent",        "action" => "view", "controller" => "agent"),
-			array("title" => "Setup",               "action" => "view", "controller" => "setup"),
-		);
+        return [
+			["title" => "Login to Nimbusec",   "action" => "login", "controller" => "index"],
+			["title" => "Issues",              "action" => "view", "controller" => "issues"],
+			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
+			["title" => "Settings",            "action" => "view", "controller" => "settings"],
+			["title" => "Update Agent",        "action" => "view", "controller" => "agent"],
+			["title" => "Setup",               "action" => "view", "controller" => "setup"],
+        ];
     }
 
     public static function setQuarantine($quarantine_store)
@@ -51,7 +51,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
     {
         $quarantine_store = pm_Settings::get("quarantine", "");
         if ($quarantine_store === "") {
-            return array();
+            return [];
         }
 
         return json_decode(Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($quarantine_store), true);
@@ -143,7 +143,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
     public static function formatBytes($size, $precision = 2)
     {
         $base = log($size, 1024);
-        $suffixes = array("B", "KB", "MB", "GB", "TB");
+        $suffixes = ["B", "KB", "MB", "GB", "TB"];
 
         return round(pow(1024, $base - floor($base)), $precision) . " " . $suffixes[floor($base)];
     }
@@ -207,7 +207,7 @@ DATA;
 
     public static function getHostDomains()
     {
-        $domains = array();
+        $domains = [];
 
         $fetched = pm_Domain::getAllDomains();
         $filtered = array_filter($fetched, function ($domain) {

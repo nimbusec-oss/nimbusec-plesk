@@ -1,6 +1,6 @@
 <?php
 
-$messages = array(
+$messages = [
 	"downloadError" => "could not create agent",
 	"invalidAPICredentials" => "The specified key and secret are invalid for the given API server",
 	"invalidAgentVersion" => "Our Server Agent does not seem to support your OS. If you see this message on a Windows or Linux Server please feel free to contact us at office@cumulo.at",
@@ -25,4 +25,4 @@ $messages = array(
 	"agentStatus" => "Scheduled (please check or uncheck to enable or disable the agent execution)",
 	"agentYara" => "Activate Yara",
 	"agentYaraNotSupported32Bit" => "(not supported with 32bit agent)",
-);
+];

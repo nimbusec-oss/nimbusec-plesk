@@ -56,18 +56,18 @@ class SettingsController extends pm_Controller_Action
 		// validate given domains
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Domain registration: No domains selected. Please select a domain in order to register it.", "error")
-			));
+			]);
 			return;	
 		}
 		
 		// validate bundle
 		$bundle_elements = split("__", $bundle);
 		if (count($bundle_elements) !== 2) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Domain registration: Invalid bundle chosen.", "error")
-			));
+			]);
 			return;	
 		}
 
@@ -79,9 +79,9 @@ class SettingsController extends pm_Controller_Action
 		if (!$validator->isValid($bundle_id)) {
 			pm_Log::err("Domain registration: invalid bundle id");
 
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Domain registration: " . current($validator->getMessages()) . ".", "error")
-			));
+			]);
 			return;	
 		}
 		
@@ -95,9 +95,9 @@ class SettingsController extends pm_Controller_Action
 			}
 
 			if (!$success) {
-				$this->_forward("view", "settings", null, array(
+				$this->_forward("view", "settings", null, [
 					"response" => $this->createHTMLR("Domain registration: An unexpected error occurred. Please check the log.", "error")
-				));
+				]);
 				return;	
 			}
 
@@ -105,9 +105,9 @@ class SettingsController extends pm_Controller_Action
 			$nimbusec->syncDomainInAgentConfig();
 
 		} catch (Exception $e) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR($e->getMessage(), "error")
-			));
+			]);
 			return;	
 		}
 
@@ -133,18 +133,18 @@ class SettingsController extends pm_Controller_Action
 		// validate given domains
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Domain unregistration: No domains selected. Please select a domain in order to unregister it.", "error")
-			));
+			]);
 			return;	
 		}
 
 		// validate bundle
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($bundle)) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Domain unregistration: Invalid bundle chosen.", "error")
-			));
+			]);
 			return;	
 		}
 
@@ -158,9 +158,9 @@ class SettingsController extends pm_Controller_Action
 			}
 
 			if (!$success) {
-				$this->_forward("view", "settings", null, array(
+				$this->_forward("view", "settings", null, [
 					"response" => $this->createHTMLR("Domain unregistration: An unexpected error occurred. Please check the log.", "error")
-				));
+				]);
 				return;	
 			}
 
@@ -168,9 +168,9 @@ class SettingsController extends pm_Controller_Action
 			$nimbusec->syncDomainInAgentConfig();
 
 		} catch (Exception $e) {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR($e->getMessage(), "error")
-			));
+			]);
 			return;	
 		}
 
@@ -194,9 +194,9 @@ class SettingsController extends pm_Controller_Action
 
 		// validate interval
 		if ($interval !== "0" && $interval !== "12" && $interval !== "8" && $interval !== "6") {
-			$this->_forward("view", "settings", null, array(
+			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR("Scheduling: invalid interval given", "error")
-			));
+			]);
 			return;	
 		}
 
@@ -244,13 +244,13 @@ class SettingsController extends pm_Controller_Action
 		}
 
 		// start agent
-		$cron = array(
+		$cron = [
 			"minute" 	=> "30",
 			"hour" 		=> "13",
 			"dom" 		=> "*",
 			"month" 	=> "*",
 			"dow" 		=> "*",
-		);
+		];
 
 		switch ($interval) {
 			case "0": 

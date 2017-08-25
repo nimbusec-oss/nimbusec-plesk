@@ -116,11 +116,11 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $api = new API($this->key, $this->secret, $this->server);
 
-        $bundles = array();
+        $bundles = [];
         foreach ($api->findBundles() as $bundle) {
             $bundles[$bundle["id"]]["bundle"] = $bundle;
             $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
-            $bundles[$bundle["id"]]["domains"] = array();
+            $bundles[$bundle["id"]]["domains"] = [];
         }
 
         foreach ($domains as $name => $directory) {
@@ -132,10 +132,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
             // append
             $domain = $fetched[0];
-            array_push($bundles[$domain["bundle"]]["domains"], array(
+            array_push($bundles[$domain["bundle"]]["domains"], [
                 "name" => $name,
                 "directory" => $directory
-            ));
+            ]);
         }
 
         return $bundles;
@@ -146,15 +146,15 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $api = new API($this->key, $this->secret, $this->server);
 
         $scheme = "http";
-        $domain = array(
+        $domain = [
 			"scheme" 	=> $scheme,
 			"name" 		=> $domain,
 			"deepScan" 	=> "{$scheme}://{$domain}",
-			"fastScans" => array(
+			"fastScans" => [
 				"{$scheme}://{$domain}"
-			),
+            ],
 			"bundle" 	=> $bundle
-		);
+        ];
 
         $api->createDomain($domain);
         return true;
@@ -188,9 +188,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         if (count($storedToken) > 0) {
             return $storedToken[0];
         } else {
-            $token = array(
+            $token = [
 				'name' => (string) $name,
-			);
+            ];
 
             return $api->createAgentToken($token);
         }
@@ -232,7 +232,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         });
 
         return array_combine($domain_names, array_map(function ($fetchedDomain) {
-            return array("domainId" => $fetchedDomain["id"]);
+            return ["domainId" => $fetchedDomain["id"]];
         }, $fetched));
     }
 
@@ -268,7 +268,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             }
 
             // save the indices of the issues
-            $indices = array();
+            $indices = [];
             foreach ($files as $key => $value) {
                 $index = array_search($value["old"], array_column($issues[$domain]["results"], "resource"));
                 if ($index === false) {
@@ -326,12 +326,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             return;
         }
 
-        $user = array(
+        $user = [
 			"login" 		=> $mail,
 			"mail" 			=> $mail,
 			"role" 			=> "admin",
 			"signatureKey" 	=> $signatureKey
-		);
+        ];
         $api->createUser($user);
     }
 
@@ -339,7 +339,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $subpaths = array_filter(explode("/", $path));
         if (!in_array("quarantine", $subpaths)) {
-            array_splice($subpaths, 0, 0, array("quarantine"));
+            array_splice($subpaths, 0, 0, ["quarantine"]);
         }
 
         return implode("/", $subpaths);
@@ -395,20 +395,20 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $fragments = array_filter(explode("/", $path));
         $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
 
-        $fetched = array();
+        $fetched = [];
         if (count($fragments) == 0) {
             pm_Log::err("Invalid path given: {$path}");
-            return array();
+            return [];
         }
 
         // root
         if (count($fragments) == 1 && $fragments[0] == "quarantine") {
             foreach ($quarantine as $domain => $files) {
-                array_push($fetched, array(
+                array_push($fetched, [
 					"type" 	=> 0,
 					"name" 	=> $domain,
 					"count" => count($files)
-				));
+                ]);
             }
 
             return $fetched;
@@ -424,11 +424,11 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
                 $root = pm_Domain::getByName($domain)->getDocumentRoot();
             } catch (Exception $e) {
                 pm_Log::err("Domain {$domain} not found: {$e->getMessage()}");
-                return array();
+                return [];
             }
 
             foreach ($quarantine[$domain] as $id => $value) {
-                array_push($fetched, array(
+                array_push($fetched, [
 					"id"			=> $id,
 					"type" 			=> 1,
 					"name" 			=> pathinfo($value["path"], PATHINFO_BASENAME),
@@ -440,7 +440,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 					"owner" 		=> $value["owner"],
 					"group" 		=> $value["group"],
 					"permission" 	=> Modules_NimbusecAgentIntegration_PleskHelper::formatPermission($value["permission"])
-				));
+                ]);
             }
         }
 
@@ -451,12 +451,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
             $value = $quarantine[$domain][$file];
 			
-            array_push($fetched, array(
+            array_push($fetched, [
 				"id" 	=> $file,
 				"type" 	=> 2,
 				"name" 	=> pathinfo($value["path"], PATHINFO_BASENAME),
 				"path" 	=> $value["path"]
-			));
+            ]);
         }
 
         return $fetched;
@@ -502,7 +502,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
 
         if (!array_key_exists($domain, $quarantine)) {
-            $quarantine[$domain] = array();
+            $quarantine[$domain] = [];
         }
 
         $owner = fileowner($dst) != false ? posix_getpwuid(fileowner($dst))["name"] : "unknown";
@@ -518,7 +518,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $filesize = filesize($dst) != false ? filesize($dst) : "unknown";
 
         $fileId = Modules_NimbusecAgentIntegration_PleskHelper::uuidv4();
-        $quarantine[$domain][$fileId] = array(
+        $quarantine[$domain][$fileId] = [
 			"old" 			=> $file,
 			"path" 			=> $dst,
 			"create_date" 	=> time(),
@@ -526,7 +526,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			"owner" 		=> $owner,
 			"group" 		=> $group,
 			"permission" 	=> decoct(fileperms($dst) & 0777)
-		);
+        ];
 
         try {
             Modules_NimbusecAgentIntegration_PleskHelper::setQuarantine($quarantine);
@@ -564,9 +564,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             return false;
         }
 
-        $api->updateResult($domains[0]["id"], $resultId, array(
+        $api->updateResult($domains[0]["id"], $resultId, [
 			"status" => 3
-		));
+        ]);
 
         return true;
 	}
@@ -697,19 +697,19 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $handler = curl_init(pm_Settings::get("shellray_url"));
 		
-        curl_setopt_array($handler, array(
+        curl_setopt_array($handler, [
 			CURLOPT_CONNECTTIMEOUT 	=> 10,
 			CURLOPT_FRESH_CONNECT 	=> true,
 			CURLOPT_HEADER 			=> true,
 			CURLOPT_RETURNTRANSFER 	=> true,
 			CURLOPT_POST 			=> true,
-				CURLOPT_POSTFIELDS 	=> array(
+				CURLOPT_POSTFIELDS 	=> [
 					"file" => new CURLFile($file)
-				),
+                ],
 			CURLOPT_VERBOSE 		=> true
-		));
+        ]);
 
-        $header 		= array();
+        $header 		= [];
         $content 		= curl_exec($handler);
         $error 			= curl_errno($handler);
         $errorMsg 		= curl_error($handler);

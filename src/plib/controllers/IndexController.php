@@ -46,9 +46,9 @@ class IndexController extends pm_Controller_Action
         if ($this->getRequest()->isPost()) {
             $admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();
 
-            $this->_helper->json(array(
+            $this->_helper->json([
 				"link" => Modules_NimbusecAgentIntegration_PleskHelper::getSignedLoginURL((string) $admin->admin_email, pm_Settings::get('signaturekey'))
-			));
+            ]);
         }
     }
 }

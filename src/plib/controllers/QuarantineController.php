@@ -32,9 +32,9 @@ class QuarantineController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch");
 		if (!$valid) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid request"
-			));
+			]);
 			return;
 		}
 
@@ -43,9 +43,9 @@ class QuarantineController extends pm_Controller_Action
 		// valdiate path
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid path given"
-			));
+			]);
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -72,13 +72,13 @@ class QuarantineController extends pm_Controller_Action
 
 		$html .= Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($path, $fetched, $this->_helper);
 
-		$response = array(
+		$response = [
 			"files" => $fetched,
 			"html" 	=> $html,
 			"path" 	=> $path,
 			"action" => $action,
 			"error" => false
-		);
+		];
 
 		// add success message, if there are no files in quarantine
 		if (count($fetched) === 0) {
@@ -94,9 +94,9 @@ class QuarantineController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine");
 		if (!$valid) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid request"
-			));
+			]);
 			return;
 		}
 
@@ -105,9 +105,9 @@ class QuarantineController extends pm_Controller_Action
 		// valdiate path
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid path given"
-			));
+			]);
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -116,9 +116,9 @@ class QuarantineController extends pm_Controller_Action
 		// try out unquarantining
 		$success = $nimbusec->unquarantine($path);
 		if (!$success) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => $this->createHTMLR("Quarantine: An error occured while trying to unquarantine.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -131,16 +131,14 @@ class QuarantineController extends pm_Controller_Action
 					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .
 					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($dirname, $fetched, $this->_helper);
 
-		$this->_helper->json(
-			array(
-				"files"   => $fetched,
-				"html" 	  => $html,
-				"path" 	  => $dirname,
-				"action"  => $action,
-				"error"   => false,
-				"success" => $this->createHTMLR("Quarantine: Successfully unquarantined {$path}.", "info")
-			)
-		);
+		$this->_helper->json([
+			"files"   => $fetched,
+			"html" 	  => $html,
+			"path" 	  => $dirname,
+			"action"  => $action,
+			"error"   => false,
+			"success" => $this->createHTMLR("Quarantine: Successfully unquarantined {$path}.", "info")
+		]);
 		return;		
 	}
 
@@ -149,9 +147,9 @@ class QuarantineController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine-bulk");
 		if (!$valid) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid request"
-			));
+			]);
 			return;
 		}
 
@@ -161,17 +159,17 @@ class QuarantineController extends pm_Controller_Action
 		// valdiate path
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: Invalid path given"
-			));
+			]);
 		}
 
 		// valdiate paths
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($paths)) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => "Quarantine: No files selected for unquarantining."
-			));
+			]);
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -180,9 +178,9 @@ class QuarantineController extends pm_Controller_Action
 		$paths = json_decode($paths, true);
 
 		if (count($paths) == 0) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => $this->createHTMLR("Quarantine: No files selected for unquarantining.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -192,9 +190,9 @@ class QuarantineController extends pm_Controller_Action
 
 			$success = $nimbusec->unquarantine($subpath);
 			if (!$success) {
-				$this->_helper->json(array(
+				$this->_helper->json([
 					"error" => $this->createHTMLR("Quarantine: An error occured while trying to unquarantine.", "error")
-				));
+				]);
 				return;
 			}
 		}
@@ -208,14 +206,14 @@ class QuarantineController extends pm_Controller_Action
 					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .
 					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($dirname, $fetched, $this->_helper);
 
-		$this->_helper->json(array(
+		$this->_helper->json([
 			"files"   => $fetched,
 			"html" 	  => $html,
 			"path" 	  => $dirname,
 			"action"  => $action,
 			"error"   => false,
 			"success" => $this->createHTMLR("Quarnatine: Successfully unquarantined your selection.", "info")
-		));
+		]);
 		return;
 	}
 }

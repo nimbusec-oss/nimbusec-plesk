@@ -38,16 +38,16 @@ class AgentController extends pm_Controller_Action
 		$version = $nimbusec->getNewestAgentVersion($agent["os"], $agent["arch"]);
 
 		if ($version > $agent["version"]) {
-			$form->addControlButtons(array(
+			$form->addControlButtons([
 				"sendTitle" => "Update to version {$version}",
 				"cancelLink" => pm_Context::getModulesListUrl(),
-			));
+			]);
 			$this->_status->addMessage("warning", "Your current Nimbusec Agent is outdated. Please download the newest update as soon as possible");
 		} else {
-			$form->addControlButtons(array(
+			$form->addControlButtons([
 				"sendHidden" => true,
 				"cancelLink" => pm_Context::getModulesListUrl(),
-			));
+			]);
 			$this->_status->addMessage("info", "You have the newest version of the Nimbusec Agent installed");
 		}
 

@@ -1,6 +1,6 @@
 <?php
 
-$messages = array(
+$messages = [
 	"downloadError" => "Agent konnte nicht heruntergeladen werden",
 	"invalidAPICredentials" => "Die angegebenen Zugangsdaten (Key & Secret) sind für diesen API Server nicht gültig",
 	"invalidAgentVersion" => "Für Ihr Betriebssystem konnte kein passender Server Agent gefunden werden. Wenn Sie diese Nachricht auf einem Windows oder Linux Host sehen können Sie sich gerne an office@cumulo.at wenden.",
@@ -25,4 +25,4 @@ $messages = array(
 	"agentStatus" => "Geplant zum Laufen im Hintergrund (klicken Sie, um den Agent zu aktivieren bzw. zu deaktivieren)",
 	"agentYara" => "Yara aktivieren",
 	"agentYaraNotSupported32Bit" => "(wird mit 32bit agent nicht unterstützt)",
-);
+];

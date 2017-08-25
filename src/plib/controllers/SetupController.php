@@ -48,27 +48,27 @@ class SetupController extends pm_Controller_Action
 		// validate credentials (zend i18n has extended validators)
 		$validator = new Zend\I18n\Validator\Alnum();
 		if (!$validator->isValid($api_key) || !$validator->isValid($api_secret)) {
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Invalid credentials: " . current($validator->getMessages()) . ".", "error")
-			));
+			]);
 			return;	
 		}
 
 		// validate url
 		$validator = new Zend\Validator\Uri();
 		if (!$validator->isValid($api_server)) {
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Invalid server url: " . current($validator->getMessages()) . ".", "error")
-			));
+			]);
 			return;	
 		}
 
 		// test credentials
 		$nimbusec = Modules_NimbusecAgentIntegration_NimbusecHelper::withCred($api_key, $api_secret, $api_server);
 		if (!$nimbusec->areValidAPICredentials()) {
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Invalid credentials: Please make sure you have the right credentials entered and try again. For more information, please check the log.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -78,9 +78,9 @@ class SetupController extends pm_Controller_Action
 		} catch (Exception $e) {
 			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
 			
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Nimbusec Agent: an error occurred while downloading. For more information, please check the log.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -96,9 +96,9 @@ class SetupController extends pm_Controller_Action
 		} catch (Exception $e) {
 			pm_Log::err("Upserting administrator failed: {$e->getMessage()}");
 
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Nimbusec Agent: could not set SSO connection. For more information, please check the log.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -106,15 +106,15 @@ class SetupController extends pm_Controller_Action
 		pm_Settings::set("signaturekey", $signatureKey);
 
 		// retrieving agent token
-		$token = array();
+		$token = [];
 		try {
 			$token = $nimbusec->getAgentCredentials("{$host['0']}-plesk");
 		} catch (Exception $e) {
 			pm_Log::err("Retrieving agent token failed: {$e->getMessage()}");
 
-			$this->_forward("view", "setup", null, array(
+			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR("Nimbusec Agent: could not retrieve agent token. For more information, please check the log.", "error")
-			));
+			]);
 			return;
 		}
 

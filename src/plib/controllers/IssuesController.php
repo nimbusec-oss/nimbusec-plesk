@@ -35,7 +35,7 @@ class IssuesController extends pm_Controller_Action
         $issues = $nimbusec->getWebshellIssuesByDomain($domain_names);
 		$filtered = $nimbusec->filterByQuarantined($issues);
 
-        $this->view->colors = array("#bbb", "#fdd835", "#f44336");
+        $this->view->colors = ["#bbb", "#fdd835", "#f44336"];
         $this->view->issues = $filtered;
 		$this->view->quarantine_state = pm_Settings::get("quarantine_state", "1");
 
@@ -60,27 +60,27 @@ class IssuesController extends pm_Controller_Action
 		// validate domain
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("False positive: " . current($validator->getMessages()) . ".", "error")
-			));
+			]);
 			return;	
 		}
 
 		// validate result id
 		$validator = new Zend\Validator\Digits();
 		if (!$validator->isValid($result_id)) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("False positive: invalid result id.", "error")
-			));
+			]);
 			return;	
 		}
 
 		// validate file
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "issues", null, array(
+            $this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("False positive: given file does not exist.", "error")
-			));
+			]);
 			return;	
         }
 
@@ -89,9 +89,9 @@ class IssuesController extends pm_Controller_Action
 		try {
 			$success = $nimbusec->markAsFalsePositive($domain, $result_id, $file);
 			if (!$success) {
-				$this->_forward("view", "issues", null, array(
+				$this->_forward("view", "issues", null, [
 					"response" => $this->createHTMLR("False positive: An error occurred. Please check the log files.", "error")
-				));
+				]);
 				return;	
 			}
 
@@ -100,9 +100,9 @@ class IssuesController extends pm_Controller_Action
 			return;
 
 		} catch (Exception $e) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("False positive: {$e->getMessage()}", "error")
-			));
+			]);
 			return;	
 		}
 	}
@@ -122,18 +122,18 @@ class IssuesController extends pm_Controller_Action
 		// validate domain
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("Quarantine: " . current($validator->getMessages()) . ".", "error")
-			));
+			]);
 			return;	
 		}
 
 		// validate file
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "issues", null, array(
+            $this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("Quarantine: given file does not exist.", "error")
-			));
+			]);
 			return;
         }
 
@@ -141,9 +141,9 @@ class IssuesController extends pm_Controller_Action
 		try {
 			$nimbusec->moveToQuarantine($domain, $file);
 		} catch (Exception $e) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("Quarantine: {$e->getMessage()}", "error")
-			));
+			]);
 			return;
 		}
 
@@ -157,9 +157,9 @@ class IssuesController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "bulk-quarantine");
 		if (!$valid) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => $this->createHTMLR("Bulk quarantine: Invalid request.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -168,17 +168,17 @@ class IssuesController extends pm_Controller_Action
 		// validate given issues
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($issues)) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => $this->createHTMLR("Bulk quarantine: No issues selected. Please select a issues in order to quarantine.", "error")
-			));
+			]);
 			return;
 		}
 
 		$issues = json_decode($issues, true);
 		if (count($issues) === 0) {
-			$this->_helper->json(array(
+			$this->_helper->json([
 				"error" => $this->createHTMLR("Bulk quarantine: No issues selected. Please select a issues in order to quarantine.", "error")
-			));
+			]);
 			return;
 		}
 
@@ -188,16 +188,16 @@ class IssuesController extends pm_Controller_Action
 			try {
 				$nimbusec->moveToQuarantine($issue["domain"], $issue["file"]);
 			} catch (Exception $e) {
-				$this->_helper->json(array(
+				$this->_helper->json([
 					"error" => $this->createHTMLR("Bulk quarantine: Something went wrong while quarantining {$issue['file']} for {$issue['domain']}: {$e->getMessage()}", "error")
-				));
+				]);
 				return;
 			}
 		}
 
-		$this->_helper->json(array(
+		$this->_helper->json([
 			"html" => $this->createHTMLR("Bulk quarantine: Successfully moved the selected domains into quarantine.", "info")
-		));
+		]);
 		return;
 	}
 
@@ -215,9 +215,9 @@ class IssuesController extends pm_Controller_Action
 		// validate states
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($states)) {
-			$this->_forward("view", "issues", null, array(
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("Quarantine: Invalid schedule.", "error")
-			));
+			]);
 			return;	
 		}
 
@@ -228,10 +228,10 @@ class IssuesController extends pm_Controller_Action
 		// 3 == yellow
 		// 6 == red
 		// 9 == red & yellow
-		if (!in_array($state, array(1, 3, 6, 9))) {
-			$this->_forward("view", "issues", null, array(
+		if (!in_array($state, [1, 3, 6, 9])) {
+			$this->_forward("view", "issues", null, [
 				"response" => $this->createHTMLR("Quarantine: Invalid schedule.", "error")
-			));
+			]);
 			return;
 		}
 

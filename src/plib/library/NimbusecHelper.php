@@ -64,6 +64,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             pm_Log::err("Failed while trying to connect to API: {$message}. {$reason}");
             return false;
         }
+        
         return true;
     }
 

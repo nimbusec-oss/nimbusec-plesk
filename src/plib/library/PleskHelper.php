@@ -12,7 +12,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         }
 
         return [
-			["title" => "Login to Nimbusec",   "action" => "login", "controller" => "index"],
+			["title" => "Login to Nimbusec",   "action" => "view", "controller" => "index"],
 			["title" => "Issues",              "action" => "view", "controller" => "issues"],
 			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
 			["title" => "Settings",            "action" => "view", "controller" => "settings"],
@@ -151,7 +151,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
     public static function uuidv4()
     {
         return sprintf(
-		    '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+		    "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
 
 		// 32 bits for "time_low"
 		mt_rand(0, 0xffff),
@@ -259,10 +259,10 @@ DATA;
 
     public static function createQNavigationBar($path, $display_name = "")
     {
+        // template variable
+        $navigation_bar = "";
+
         $subpaths = array_filter(explode("/", $path));
-        $html = "
-        <div class='pathbar'>
-            <ul>";
 
         $partial_path = "";
         for ($i = 0; $i < count($subpaths); $i++) {
@@ -274,7 +274,7 @@ DATA;
                 $subpath = $display_name;
             }
 
-            $html .= "
+            $navigation_bar .= "
             <li>
                 <a id='subpath' path='{$partial_path}'>
                     <span>
@@ -284,16 +284,18 @@ DATA;
             </li>";
         }
 
-        $html .= "
-
+        // return html template
+        return "
+        <div class='pathbar'>
+            <ul>
+                {$navigation_bar}
             </ul>
         </div>";
-
-        return $html;
     }
 
 	public static function createQOptions($path, $helper) 
     {
+        // return html template
 		return "
         <div class='form-row'>
             <div class='field-name' style='margin-left: .6%;'>
@@ -318,43 +320,36 @@ DATA;
 			return "";
 		}
 
+        // detect type
         $type = $files[0]["type"];
 
         // file view
         if ($type == 2) {
             return self::createQTreeViewFile($path, $files);
         }
-
-        $html = "<div class='list'>
-					<table>";
-		
-        if ($type == 0) {
-            $html .= self::createQTreeViewDir($path, $files, $helper);
-        } elseif ($type == 1) {
-            $html .= self::createQTreeViewDomain($path, $files, $helper);
+        
+        // build tree view
+        $tree_view = "";
+        if ($type === 0) {
+            $tree_view = self::createQTreeViewDir($path, $files, $helper);
+        } elseif ($type === 1) {
+            $tree_view = self::createQTreeViewDomain($path, $files, $helper);
         }
 
-        $html .= "	</table>
-				</div>";
-
-        return $html;
+        // return html template
+        return "
+        <div class='list'>
+            <table>
+                {$tree_view}
+            </table>
+        </div>";
     }
 
     private static function createQTreeViewDir($path, $files, $helper)
     {
-        $html = "
-        <thead>
-            <tr>
-                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
-                <th>Number of files</th>
-                <th>Action</th>
-            </tr>
-        </thead>";
-
-        $html .= "<tbody>";
-
+        $table_body = "";
         foreach ($files as $file) {
-            $html .= "
+            $table_body .= "
             <tr>
                 <td>
                     <input type='checkbox' id='select'/>
@@ -366,7 +361,6 @@ DATA;
                 <td>{$file['count']}</td>
                 <td>
                     <a onclick='request_wrapper(\"{$path}/{$file['name']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
-
                         <i class='mdi mdi-bug'></i>
                         <span>Unquarantine</span>
                     </a>
@@ -374,30 +368,25 @@ DATA;
             </tr>";
         }
 
-        $html .= "</tbody>";
-
-        return $html;
+        // return html template
+        return "
+        <thead>
+            <tr>
+                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
+                <th>Number of files</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {$table_body}
+        </tbody>";
     }
 
     private static function createQTreeViewDomain($path, $files, $helper)
     {
-        $html = "
-        <thead>
-            <tr>
-                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
-                <th>Quarantined on</th>
-                <th>Old path</th>
-                <th>Filesize</th>
-                <th>Permissions</th>
-                <th>User</th>
-                <th>Group</th>
-                <th>Action</th>
-            </tr>
-        </thead>";
-
-        $html .= "<tbody>";
+        $table_body = "";
         foreach ($files as $file) {
-            $html .= "
+            $table_body .= "
             <tr>
                 <td>
                     <input type='checkbox' id='select'/>
@@ -414,7 +403,6 @@ DATA;
                 <td>{$file['group']}</td>
                 <td>
                     <a onclick='request_wrapper(\"{$path}/{$file['id']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
-
                         <i class='mdi mdi-bug'></i>
                         <span>Unquarantine</span>
                     </a>
@@ -422,21 +410,35 @@ DATA;
             </tr>";
         }
 
-        $html .= "</tbody>";
-
-        return $html;
+        // return html template
+        return "
+        <thead>
+            <tr>
+                <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
+                <th>Quarantined on</th>
+                <th>Old path</th>
+                <th>Filesize</th>
+                <th>Permissions</th>
+                <th>User</th>
+                <th>Group</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {$table_body}
+        </tbody>";
     }
 
     private static function createQTreeViewFile($path, $files)
     {
-        $html = "
+        $code = htmlentities(file_get_contents($files[0]["path"]));
+        
+        // return html template
+        return "
         <pre>
-            <code class='html'>";
-            $html .= htmlentities(file_get_contents($files[0]["path"]));
-        $html .= "
+            <code class='html'>
+                {$code}
             </code>
         </pre>";
-
-        return $html;
     }
 }

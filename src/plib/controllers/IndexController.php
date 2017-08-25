@@ -35,10 +35,10 @@ class IndexController extends pm_Controller_Action
             return;
         }
 
-        $this->_forward("login");
+        $this->_forward("view");
     }
 
-    public function loginAction()
+    public function viewAction()
     {
         $this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
         $this->view->login = pm_Locale::lmsg('login');

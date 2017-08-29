@@ -5,12 +5,12 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Login
+                    <?= pm_Locale::lmsg("index.view.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= $this->login; ?>
+            <?= pm_Locale::lmsg("index.view.description"); ?>
 
             <div class="btns-box">
                 <div class="box-area">
@@ -18,7 +18,11 @@
 
                         <div class="field-name">
                             <span class="btn action">
-                                <button id="button" name="login" value="Login to portal">Login to portal</button>
+
+                                <button id="button" name="login">
+                                    <?= pm_Locale::lmsg("index.view.login"); ?>
+                                </button>
+                            
                             </span>
                         </div>
                     

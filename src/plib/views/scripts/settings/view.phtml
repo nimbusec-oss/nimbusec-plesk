@@ -8,14 +8,12 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Unregistered Domains
+                    <?= pm_Locale::lmsg("settings.view.unreg.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            Below you can find your domains inside of plesk which has not been registered with Nimbusec. In order to register a domain, select the domain you want to register
-            along with the bundle<br>
-            and click on the button "Register the selected domains" to complete the registration.
+            <?= pm_Locale::lmsg("settings.view.unreg.description"); ?>
             <br>
             <br>
 
@@ -36,7 +34,11 @@
                     <div class="field-value">
                         <?php if (count($this->nonregistered_domains) > 0): ?>
                             <span id="btn-send" class="btn action" style="margin-left: 20px;">
-                                <button type="submit" name="submit" value="registerSelected">Register the selected domains</button>
+                            
+                                <button type="submit" name="submit" value="registerSelected">
+                                    <?= pm_Locale::lmsg("settings.view.unreg.register"); ?>
+                                </button>
+                            
                             </span>
                         <?php endif; ?>
                     </div>
@@ -44,18 +46,20 @@
                     
                     <div class="list">
                         <?php if (count($this->nonregistered_domains) == 0): ?>
+                        
                             <span class="hint">
-                                No domains found.
+                                <?= pm_Locale::lmsg("settings.view.unreg.no_domains"); ?>
                             </span>
+                        
                         <?php else: ?>
                             <table width="100%" cellspacing="0">
                                 <thead>
                                     <tr>
                                         <th>
-                                            <input name="act0" id="act0" type="checkbox" setter> Register domain 
+                                            <input name="act0" id="act0" type="checkbox" setter> <?= pm_Locale::lmsg("settings.view.unreg.domain"); ?>
                                         </th>
                                         <th>
-                                            <a>Directory</a>
+                                            <a><?= pm_Locale::lmsg("msg.directory"); ?></a>
                                         </th>
                                     </tr>
                                 </thead>
@@ -89,13 +93,13 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Registered domains
+                    <?= pm_Locale::lmsg("settings.view.reg.title"); ?>
                 </h3>
             </div>
         </div>
         
         <div class="content">
-            Below you can find your registered domains with their corresponding bundle. To unregister a bundle, select it on the checkbox and click on the button to complete the unregistration.
+            <?= pm_Locale::lmsg("settings.view.reg.description"); ?>
             <br>
             <br>
 
@@ -113,25 +117,31 @@
                         <div class="field-value">
                             <?php if (count($bundle_element["domains"]) > 0): ?>
                                 <span id="btn-send" class="btn action">
-                                    <button type="submit" name="submit" value="removeSelected<?= $i; ?>">Remove selected domains</button>
+                                
+                                    <button type="submit" name="submit" value="removeSelected<?= $i; ?>">
+                                        <?= pm_Locale::lmsg("settings.view.reg.unregister"); ?>
+                                    </button>
+                                
                                 </span>
                             <?php endif; ?>
                         </div>
 
                         <div class="list">
                             <?php if (count($bundle_element["domains"]) == 0): ?>
+                            
                                 <span class="hint">
-                                    No registered domains found for this bundle.
+                                    <?= pm_Locale::lmsg("settings.view.reg.no_domains"); ?>
                                 </span>
+                            
                             <?php else: ?>
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>
-                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" setter> Unregister domain 
+                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" setter> <?= pm_Locale::lmsg("settings.view.reg.domain"); ?> 
                                             </th>
                                             <th>
-                                                Directory
+                                                <a><?= pm_Locale::lmsg("msg.directory"); ?></a>
                                             </th>
                                         </tr>
                                     </thead>
@@ -177,16 +187,17 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Agent Configuration
+                    <?= pm_Locale::lmsg("settings.view.conf.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("agentConfiguration"); ?>
-            <br><br>
+            <?= pm_Locale::lmsg("settings.view.conf.description"); ?>
+            <br>
+            <br>
             <div class="form-row">
                 <div class="field-name">
-                    Configuration
+                    <?= pm_Locale::lmsg("settings.view.conf.configuration"); ?>
                 </div>
                 <div class="field-value">
                     <textarea style="margin-right: 5px; height: 400px; width: 400px" readonly><?= $this->configuration; ?></textarea>
@@ -196,19 +207,19 @@
     </div>
 </div>
 
-<!-- ========================================= [ RUN SETTINGS ] ===================================================================== -->
+<!-- ========================================= [ SCHEDULE SETTINGS ] ===================================================================== -->
 
 <div class="form-box">
     <div class="box-area">
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Run Settings
+                    <?= pm_Locale::lmsg("settings.view.schedule.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("agentExecution"); ?>
+            <?= pm_Locale::lmsg("settings.view.schedule.description"); ?>
             <br>
             <br>
             
@@ -217,7 +228,7 @@
                 <!-- scheduled -->
                 <?php $agent_scheduled = pm_Settings::get("agent_scheduled"); ?>
                 <input name="status" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
-                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= pm_Locale::lmsg("agentStatus"); ?>    
+                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= pm_Locale::lmsg("settings.view.schedule.status"); ?>    
                 <br>
                 
                 <!-- yara -->
@@ -227,26 +238,26 @@
                 <input name="yara" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
                     <?php if ($agent_arch === "32bit"): ?> disabled="disabled" <?php endif ?>
                     <?php if ($agent_yara === "true"): ?> checked="checked" <?php endif ?> /> 
-                    <?= pm_Locale::lmsg("agentYara"); ?> <?php if ($agent_arch === "32bit"): ?><?= pm_Locale::lmsg("agentYaraNotSupported32Bit"); ?><?php endif ?>
+                    <?= pm_Locale::lmsg("settings.view.schedule.yara"); ?> <?php if ($agent_arch === "32bit"): ?><?= pm_Locale::lmsg("settings.view.schedule.yara_not_supported"); ?><?php endif ?>
 
                 <!-- interval -->
                 <div class="form-row">
                     <div class="field-name">
-                        Agent Scan Interval
+                        <?= pm_Locale::lmsg("settings.view.schedule.interval"); ?>
                     </div>
                     <div class="field-value">
                         <select name="interval"> 
                             <option value="0" <?php if (pm_Settings::get("agent_schedule_interval") == "0"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("once"); ?>
+                                <?= pm_Locale::lmsg("settings.view.schedule.interval.once"); ?>
                             </option>
                             <option value="12" <?php if (pm_Settings::get("agent_schedule_interval") == "12"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("twice"); ?>
+                                <?= pm_Locale::lmsg("settings.view.schedule.interval.twice"); ?>
                             </option>
                             <option value="8" <?php if (pm_Settings::get("agent_schedule_interval") == "8"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("threeTimes"); ?>
+                                <?= pm_Locale::lmsg("settings.view.schedule.interval.three_times"); ?>
                             </option>
                             <option value="6" <?php if (pm_Settings::get("agent_schedule_interval") == "6"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("fourTimes"); ?>
+                                <?= pm_Locale::lmsg("settings.view.schedule.interval.four_times"); ?>
                             </option>
                         </select>
                     </div>
@@ -256,7 +267,9 @@
                         <div class="form-row">
                             <div class="field-name">
                                 <span id="btn-send" class="btn action">
-                                    <button type="submit" name="submit" value="schedule">Save settings</button>
+                                    <button type="submit" name="submit" value="schedule">
+                                        <?= pm_Locale::lmsg("settings.view.schedule.update"); ?>    
+                                    </button>
                                 </span>
                             </div>
                         </div>

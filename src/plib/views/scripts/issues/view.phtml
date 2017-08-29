@@ -11,7 +11,7 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Issues
+                    <?= pm_Locale::lmsg("issues.view.title"); ?>
                 </h3>
             </div>
         </div>
@@ -33,15 +33,18 @@
             <div class="form-row">
 
                 <div class="field-name">
-                    Bulk actions
+                    <?= pm_Locale::lmsg("issues.view.bulk_actions"); ?>
                 </div>
             
                 <div class="field-value">
+                    
                     <div style="display: inline-block; margin-right: 10px;">
                         <a id="bulk-quarantine" style="color: #353535;">
                             <i class="mdi mdi-bug"></i>
                             <span class="button-text">    
-                                <span>Move to Quarantine</span>
+                                <span>
+                                    <?= pm_Locale::lmsg("issues.view.quarantine"); ?>
+                                </span>
                             </span>
                             <span class="button-loading" style="display: none;">
                                 <span style="margin-right: 5px;">Please Wait</span>
@@ -49,8 +52,11 @@
                             </span>
                         </a>
                     </div>
+                    
                     <div style="display: inline-block;">
-                        <a id="issue-link">Select / Deselect all issues</a></div>
+                        <a id="issue-link">
+                            <?= pm_Locale::lmsg("issues.view.select_issues"); ?>
+                        </a>
                     </div>
                 </div>
 
@@ -58,30 +64,38 @@
             <div class="form-row">
 
                 <div class="field-name">
-                    Automatically move domains to quarantine
+                    <?= pm_Locale::lmsg("issues.view.automatic_quarantine"); ?>
                 </div>
 
                 <div class="field-value">
                     <form method="post" action="<?= $this->h->url('schedule-quarantine', 'issues'); ?>">
                         <input name="action" value="scheduleQuarantine" type="hidden"/>
                         <span style="margin-right: 2px;">
-                            <span>None</span>
+                            <span>
+                                <?= pm_Locale::lmsg("msg.issues.none"); ?>
+                            </span>
                             <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
                             <span style="color: #303030;">|</span>
                         </span>
                         <span style="margin-right: 2px;">
                             <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
-                            <span>Yellow</span>
+                            <span>
+                                <?= pm_Locale::lmsg("msg.issues.yellow"); ?>
+                            </span>
                             <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, array("3", "9"))): ?> checked="checked" <?php endif; ?>/>
                             <span style="color: #303030;">|</span>
                         </span>
                         <span style="margin-right: 2px;">
                             <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
-                            <span>Red</span>
+                            <span>
+                                <?= pm_Locale::lmsg("msg.issues.red") ?>
+                            </span>
                             <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, array("6", "9"))): ?> checked="checked" <?php endif; ?>/>
                         </span>
                         <span id="btn-send" class="btn action" style="margin-left: 5px;">
-                            <span class="submit-button" sender>Apply</span>
+                            <span class="submit-button" sender>
+                                <?= pm_Locale::lmsg("issues.view.apply"); ?>
+                            </span>
                         </span>
                     </div>
                 </form>
@@ -91,7 +105,9 @@
             <div class="btns-box"></div>
 
             <?php if (count($this->issues) == 0): ?>
-                <h4>Congratulations! No issues found.</h4>
+                <h4>
+                    <?= pm_Locale::lmsg("issues.view.no_issues"); ?>
+                </h4>
             <?php endif; ?>
 
             <?php foreach ($this->issues as $name => $domain): ?>
@@ -102,7 +118,9 @@
                             <h4><b><?= $name ?></b></h4>
                         </div>
                         <div style="display: inline-block; margin-left: 5px;">
-                            <a id="issue-link-<?= $name; ?>">Select / Deselect all issues</a>
+                            <a id="issue-link-<?= $name; ?>">
+                                <?= pm_Locale::lmsg("issues.view.select_issues"); ?>
+                            </a>
                         </div>
                     </div>
                     <div class="field-value" style="margin-bottom: 15px;"></div>
@@ -129,7 +147,9 @@
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-flag"></i>
                                                         <span class="button-text">    
-                                                            <span>False Positive</span>
+                                                            <span>
+                                                                <?= pm_Locale::lmsg("issues.view.false_positive"); ?>
+                                                            </span>
                                                         </span>
                                                         <span class="button-loading" style="display: none;">
                                                             <span style="margin-right: 5px;">Please Wait</span>
@@ -148,7 +168,9 @@
                                                     <a onclick="sendForm(this);">
                                                         <i class="mdi mdi-bug"></i>
                                                         <span class="button-text">    
-                                                            <span>Move to Quarantine</span>
+                                                            <span>
+                                                                <?= pm_Locale::lmsg("issues.view.quarantine"); ?>
+                                                            </span>
                                                         </span>
                                                         <span class="button-loading" style="display: none;">
                                                             <span style="margin-right: 5px;">Please Wait</span>
@@ -185,10 +207,13 @@
                                 <div class="panel-content">
                                     <div class="panel-content-wrap">
 
+                                        <!-- occured on -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Occured on</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.occured_on"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -198,10 +223,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- known since -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Known since</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.known_since"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -211,10 +239,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- path -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Path</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.path"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -224,10 +255,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- name -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Name</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.name"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -237,10 +271,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- md5 -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>MD5</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.md5"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -250,10 +287,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- owner -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Owner</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.owner"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -263,10 +303,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- group -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Group</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.group"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -276,10 +319,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- permission -->
                                         <div class="box-area">
                                             <div class="form-row">
                                                 <div class="field-name">
-                                                    <span>Permission</span>
+                                                    <span>
+                                                        <?= pm_Locale::lmsg("issues.view.permission"); ?>
+                                                    </span>
                                                 </div>
                                                 <div class="field-value">
                                                     <span style="vertical-align: middle;">
@@ -290,7 +336,9 @@
                                         </div>
 
                                         <div class="source-code">
-                                            <a>View source code <i class="mdi mdi-arrow-down-drop-circle source-code-icon"></i></a>
+                                            <a>
+                                                <?= pm_Locale::lmsg("issues.view.source_code"); ?> <i class="mdi mdi-arrow-down-drop-circle source-code-icon"></i>
+                                            </a>
                                         
                                             <div class="panel panel-collapsible panel-collapsed source-code-panel" style="margin: 0px; border: 0px">
                                                 <div class="panel-wrap">

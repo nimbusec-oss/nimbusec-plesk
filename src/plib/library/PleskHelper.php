@@ -16,7 +16,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
 			["title" => "Issues",              "action" => "view", "controller" => "issues"],
 			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
 			["title" => "Settings",            "action" => "view", "controller" => "settings"],
-			["title" => "Update Agent",        "action" => "view", "controller" => "agent"],
+			["title" => "Agent Overview",      "action" => "view", "controller" => "agent"],
 			["title" => "Setup",               "action" => "view", "controller" => "setup"],
         ];
     }
@@ -70,7 +70,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         $next = pm_Settings::get("quarantine_{$ref_index}", "");
         if ($next === "") {
             pm_Log::err("Quarantine: invalid store: quarantine_{$ref_index}");
-            throw new Exception("Could not fetch quarantine store.");
+            throw new Exception(pm_Locale::lmsg("quarantine.controller.invalid_store"));
         }
 
         return $stores[0] . Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($next);
@@ -245,6 +245,7 @@ DATA;
 
         $title = ucfirst($title);
 
+        // return html template
         return "
         <div class='msg-box msg-{$level}'>
             <div class='msg-content'>
@@ -299,7 +300,7 @@ DATA;
 		return "
         <div class='form-row'>
             <div class='field-name' style='margin-left: .6%;'>
-                Bulk options
+                " . pm_Locale::lmsg("issues.view.bulk_actions") . "
             </div>
 
             <div class='field-value' style='margin-bottom: .5%;'>
@@ -307,7 +308,7 @@ DATA;
                         style='color: #353535;'>
 
                     <i class='mdi mdi-bug'></i>
-                    <span>Unquarantine</span>
+                    <span>" . pm_Locale::lmsg("quarantine.controller.unquarantine") . "</span>
                 </a>
             </div>
 
@@ -362,7 +363,7 @@ DATA;
                 <td>
                     <a onclick='request_wrapper(\"{$path}/{$file['name']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
                         <i class='mdi mdi-bug'></i>
-                        <span>Unquarantine</span>
+                        <span>" . pm_Locale::lmsg("quarantine.controller.unquarantine") . "</span>
                     </a>
                 </td>
             </tr>";
@@ -373,8 +374,8 @@ DATA;
         <thead>
             <tr>
                 <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
-                <th>Number of files</th>
-                <th>Action</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.no_files") . "</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.action") . "</th>
             </tr>
         </thead>
         <tbody>
@@ -404,7 +405,7 @@ DATA;
                 <td>
                     <a onclick='request_wrapper(\"{$path}/{$file['id']}\", \"unquarantine\", updateHandler, \"" . $helper->url("unquarantine", "quarantine") . "\");'>
                         <i class='mdi mdi-bug'></i>
-                        <span>Unquarantine</span>
+                        <span>" . pm_Locale::lmsg("quarantine.controller.unquarantine") . "</span>
                     </a>
                 </td>
             </tr>";
@@ -415,13 +416,13 @@ DATA;
         <thead>
             <tr>
                 <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
-                <th>Quarantined on</th>
-                <th>Old path</th>
-                <th>Filesize</th>
-                <th>Permissions</th>
-                <th>User</th>
-                <th>Group</th>
-                <th>Action</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.quarantined_on") . "</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.old_path") . "</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.filesize") . "</th>
+                <th>" . pm_Locale::lmsg("issues.view.permission") . "</th>
+                <th>" . pm_Locale::lmsg("issues.view.owner") . "</th>
+                <th>" . pm_Locale::lmsg("issues.view.group") . "</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.action") . "</th>
             </tr>
         </thead>
         <tbody>

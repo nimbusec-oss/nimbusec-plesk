@@ -468,7 +468,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $fileManager = new pm_ServerFileManager();
 
         if (!$fileManager->fileExists($file)) {
-            throw new Exception("File {$file} not existing. Cannot be moved into quarantine.");
+            throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.file"), $file));
         }
 
         // create quarantine directory
@@ -477,7 +477,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $fileManager->mkdir($src);
             } catch (Exception $e) {
-                throw new Exception("Creating a quarantine directory failed: {$e->getMessage()}");
+                throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.directory"), $e->getMessage()));
             }
         }
 
@@ -487,7 +487,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $fileManager->mkdir($domainDir);
             } catch (Exception $e) {
-                throw new Exception("Creating a quarantine directory failed: {$e->getMessage()}");
+                throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.directory"), $e->getMessage()));
             }
         }
 
@@ -496,7 +496,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $fileManager->moveFile($file, $dst);
         } catch (Exception $e) {
-            throw new Exception("Couldn't move {$file} into quarantine {$dst}: {$e->getMessage()}");
+            throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine"), $file, $dst, $e->getMessage()));
         }
 
         // save in store
@@ -537,7 +537,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $fileManager->moveFile($dst, $file);
             } catch (Exception $e) {
-                throw new Exception("Couldn't move {$dst} back from quarantine {$file}: {$e->getMessage()}");
+                throw new Exception(sprintf(pm_Locale::lmsg("error.unquarantine"), $dst, $file, $e->getMessage()));
             }
 
             // pass exception

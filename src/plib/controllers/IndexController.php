@@ -41,7 +41,6 @@ class IndexController extends pm_Controller_Action
     public function viewAction()
     {
         $this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
-        $this->view->login = pm_Locale::lmsg('login');
 
         if ($this->getRequest()->isPost()) {
             $admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();

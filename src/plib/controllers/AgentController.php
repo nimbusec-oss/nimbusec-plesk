@@ -39,16 +39,16 @@ class AgentController extends pm_Controller_Action
 
 		if ($version > $agent["version"]) {
 			$form->addControlButtons([
-				"sendTitle" => "Update to version {$version}",
+				"sendTitle" => sprintf(pm_Locale::lmsg("agent.controller.update"), $version),
 				"cancelLink" => pm_Context::getModulesListUrl(),
 			]);
-			$this->_status->addMessage("warning", "Your current Nimbusec Agent is outdated. Please download the newest update as soon as possible");
+			$this->_status->addMessage("warning", pm_Locale::lmsg("agent.controller.outdated"));
 		} else {
 			$form->addControlButtons([
 				"sendHidden" => true,
 				"cancelLink" => pm_Context::getModulesListUrl(),
 			]);
-			$this->_status->addMessage("info", "You have the newest version of the Nimbusec Agent installed");
+			$this->_status->addMessage("info", pm_Locale::lmsg("agent.controller.not_outdated"));
 		}
 
 		$this->view->form = $form;
@@ -62,22 +62,22 @@ class AgentController extends pm_Controller_Action
 		}
 
 		$err = false;
-		$msg = pm_Locale::lmsg("agentUpdated");
+		$msg = pm_Locale::lmsg("agent.controller.updated");
 	
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		try {
 			if (!$nimbusec->fetchAgent(pm_Context::getVarDir())) {
 				$err = true;
-				$msg = pm_Locale::lmsg("downloadError");
+				$msg = pm_Locale::lmsg("error.download_agent");
 			}
 		} catch (Exception $e) {
 			$err = true;
 			$message = $e->getMessage();
 
 			if (strpos($message, "400") !== false || strpos($message, "401") !== false || strpos($message, "403") !== false) {
-				$msg = pm_Locale::lmsg("invalidAPICredentials");
+				$msg = pm_Locale::lmsg("error.api_credentials");
 			} elseif (strpos($message, "404") !== false) {
-				$msg = pm_Locale::lmsg("invalidAgentVersion");
+				$msg = pm_Locale::lmsg("error.agent_not_supported");
 			}
 		}
 

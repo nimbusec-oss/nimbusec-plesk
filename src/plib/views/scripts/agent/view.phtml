@@ -5,13 +5,13 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Update Agent
+                    <?= pm_Locale::lmsg("agent.view.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
             <div>
-                <?= pm_Locale::lmsg("updateAgent") ?>
+                <?= pm_Locale::lmsg("agent.view.description"); ?>
                 <br>
                 <br>
 
@@ -19,16 +19,16 @@
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span>Current agent status: </span>
+                            <span><?= pm_Locale::lmsg("agent.view.installed.title"); ?>: </span>
                         </div>
                         <div class="field-value">
-                            <span><?= pm_Locale::lmsg("agentInstalled"); ?></span>
+                            <span><?= pm_Locale::lmsg("msg.installed"); ?></span>
                         </div>
                     </div>
                         
                     <div class="form-row">
                         <div class="field-name">
-                            <span>Current agent version: </span>
+                            <span><?= pm_Locale::lmsg("agent.view.version.title"); ?>: </span>
                         </div>
                         <div class="field-value">
                             <span><?= $this->agent_version; ?></span>
@@ -37,7 +37,7 @@
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span>Current agent operating system: </span>
+                            <span><?= pm_Locale::lmsg("agent.view.os.title"); ?>: </span>
                         </div>
                         <div class="field-value">
                             <span><?= $this->agent_os; ?></span>
@@ -46,7 +46,7 @@
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span>Current agent architecture: </span>
+                            <span><?= pm_Locale::lmsg("agent.view.arch.title"); ?>: </span>
                         </div>
                         <div class="field-value">
                             <span><?= $this->agent_arch; ?></span>

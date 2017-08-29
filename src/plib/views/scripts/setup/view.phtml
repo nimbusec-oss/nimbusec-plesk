@@ -6,12 +6,12 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    Setup
+                    <?= pm_Locale::lmsg("setup.view.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("setupInfoText"); ?>
+            <?= pm_Locale::lmsg("setup.view.description"); ?>
             <br>
             <br>
             
@@ -56,11 +56,15 @@
                             <div class="form-row">
                                 <div class="field-name">
                                     <span class="required">*</span>
-                                    <span> Required fields</span>
+                                    <span> <?= pm_Locale::lmsg("msg.required"); ?></span>
                                 </div>
                                 <div class="field-value">
                                     <span class="btn action">
-                                        <button type="submit" name="submit" value="downloadAgent">Download Server Agent</button> 
+                                    
+                                        <button type="submit" name="submit" value="downloadAgent">
+                                            <?= pm_Locale::lmsg("setup.view.download_agent"); ?>
+                                        </button> 
+                                    
                                     </span>
                                 </div>
                             </div>

@@ -30,7 +30,7 @@ class SettingsController extends pm_Controller_Action
 
 			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-			$this->view->registered_domains = $nimbusec->groupByBundle($nimbusec->getRegisteredPleskDomains());;
+			$this->view->registered_domains = $nimbusec->groupByBundle($nimbusec->getRegisteredPleskDomains());
 			$this->view->nonregistered_domains = $nimbusec->getNonRegisteredPleskDomains();
 
         } catch (Exception $e) {
@@ -57,7 +57,7 @@ class SettingsController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Domain registration: No domains selected. Please select a domain in order to register it.", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.no_domains"), "error")
 			]);
 			return;	
 		}
@@ -66,7 +66,7 @@ class SettingsController extends pm_Controller_Action
 		$bundle_elements = split("__", $bundle);
 		if (count($bundle_elements) !== 2) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Domain registration: Invalid bundle chosen.", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -80,7 +80,7 @@ class SettingsController extends pm_Controller_Action
 			pm_Log::err("Domain registration: invalid bundle id");
 
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Domain registration: " . current($validator->getMessages()) . ".", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -96,7 +96,7 @@ class SettingsController extends pm_Controller_Action
 
 			if (!$success) {
 				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR("Domain registration: An unexpected error occurred. Please check the log.", "error")
+					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
@@ -111,7 +111,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", "Successfully registered domains with {$bundle_name}");
+		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("settings.controller.registered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -128,22 +128,22 @@ class SettingsController extends pm_Controller_Action
 		$index = substr($request->getPost("submit"), -1);
 	
 		$domains = $request->getPost("active{$index}");	
-		$bundle = $request->getPost("bundle");
+		$bundle_name = $request->getPost("bundle");
 
 		// validate given domains
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Domain unregistration: No domains selected. Please select a domain in order to unregister it.", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.no_domains"), "error")
 			]);
 			return;	
 		}
 
 		// validate bundle
 		$validator = new Zend\Validator\NotEmpty();
-		if (!$validator->isValid($bundle)) {
+		if (!$validator->isValid($bundle_name)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Domain unregistration: Invalid bundle chosen.", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -159,7 +159,7 @@ class SettingsController extends pm_Controller_Action
 
 			if (!$success) {
 				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR("Domain unregistration: An unexpected error occurred. Please check the log.", "error")
+					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
@@ -174,7 +174,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", "Successfully unregistered domains from {$bundle}");
+		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("settings.controller.unregistered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -195,7 +195,7 @@ class SettingsController extends pm_Controller_Action
 		// validate interval
 		if ($interval !== "0" && $interval !== "12" && $interval !== "8" && $interval !== "6") {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR("Scheduling: invalid interval given", "error")
+				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_interval"), "error")
 			]);
 			return;	
 		}
@@ -238,7 +238,7 @@ class SettingsController extends pm_Controller_Action
 			pm_Settings::set("agent_scheduled", $status);
 			pm_Settings::set("agent_yara", $yara);
 
-			$this->_status->addMessage("info", "Agent successfully deactivated");
+			$this->_status->addMessage("info", pm_Locale::lmsg("settings.controller.schedule.updated"));
 			$this->_helper->redirector("view", "settings");
 			return;
 		}
@@ -276,7 +276,7 @@ class SettingsController extends pm_Controller_Action
 		pm_Settings::set("agent_scheduled", $status);
 		pm_Settings::set("agent_yara", $yara);
 
-		$this->_status->addMessage("info", "Agent successfully activated");
+		$this->_status->addMessage("info", pm_Locale::lmsg("settings.controller.schedule.updated"));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}

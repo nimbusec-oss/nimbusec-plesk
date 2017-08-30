@@ -31,6 +31,14 @@ class IssuesController extends pm_Controller_Action
 		$domains = $nimbusec->getRegisteredPleskDomains();
 		$domain_names = array_keys($domains);
 
+		/*// get infected nimbusec domain
+		$infected = $nimbusec->getInfectedWebshellDomains();
+
+		// filter by registered plesk domain
+		$infected = array_filter($infected, function($infect) use ($domain_names) {
+			return in_array($infect["name"], $domain_names);
+		});*/
+
 		// get issues
         $issues = $nimbusec->getWebshellIssuesByDomain($domain_names);
 		$filtered = $nimbusec->filterByQuarantined($issues);

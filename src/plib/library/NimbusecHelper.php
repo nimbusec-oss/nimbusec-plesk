@@ -142,6 +142,19 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $bundles;
     }
 
+    public function getInfectedWebshellDomains()
+    {
+        $api = new API($this->key, $this->secret, $this->server);
+        $infected = $api->findInfected("event=\"webshell\" and status=\"1\"");
+
+        return array_map(function($infect) {
+            return [
+                "id" => $infect["id"],
+                "name" => $infect["name"]
+            ];
+        }, $infected);
+    }
+
     public function registerDomain($domain, $bundle)
     {
         $api = new API($this->key, $this->secret, $this->server);

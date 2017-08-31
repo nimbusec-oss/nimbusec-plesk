@@ -155,6 +155,78 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }, $infected);
     }
 
+    public function getIssueMetadata($domain)
+    {
+        $api = new API($this->key, $this->secret, $this->server);
+
+        $results = $api->findResults($domain["id"], "event=\"webshell\" and status=\"1\"");
+        if (count($results) === 0) {
+            throw new Exception("No issues found for apparent infected domain {$domain['id']}");
+        }
+
+        $issues_cnt = count($results);
+
+        $quarantined = $this->getQuarantined($domain["name"]);
+        $quarantined_cnt = count($quarantined);
+
+        pm_Log::err("in quarantine for {$domain['name']}: {$quarantined_cnt}");
+
+        // map quaratined to paths for easier retrieval
+        $paths = array_map(function($quarantine) { return $quarantine["old"]; }, $quarantined);
+
+        // filter results by quarantined results to determine correct max. severity
+        $filtered = array_filter($results, function($issue) use ($paths) {
+            return !in_array($issue["resource"], $paths);
+        });
+
+        $max_severity = 0;
+        if (count($filtered) > 0) {
+            $max_severity = max(array_map(function($issue) { return $issue["severity"]; }, $filtered));
+        }
+
+        $metadata_panel = 
+            Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues:", $issues_cnt) .
+            Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues in Quarantine:", $quarantined_cnt) .
+            Modules_NimbusecAgentIntegration_PleskHelper::createSelectIssuesByDomain($domain["name"]). 
+            Modules_NimbusecAgentIntegration_PleskHelper::createSeperator();
+
+        return [
+            "issues_cnt"        => $issues_cnt,
+            "quarantined_cnt"   => $quarantined_cnt,
+            "max_severity"      => $max_severity,
+            "panel"             => $metadata_panel,
+        ];
+    }
+
+    public function getIssuePanel($domain, $helper)
+    {
+        $api = new API($this->key, $this->secret, $this->server);
+        
+        $results = $api->findResults($domain["id"], "event=\"webshell\" and status=\"1\"");
+        if (count($results) === 0) {
+            throw new Exception("No issues found for apparent infected domain {$domain['id']}");
+        }
+
+        $quarantined = $this->getQuarantined($domain["name"]);
+
+        // map quaratined to paths for easier retrieval
+        $paths = array_map(function($quarantine) { return $quarantine["old"]; }, $quarantined);
+        
+        // filter results by quarantined results to determine correct max. severity
+        $filtered = array_filter($results, function($issue) use ($paths) {
+            return !in_array($issue["resource"], $paths);
+        });
+
+        $panel = [];
+        foreach ($filtered as $issue) {
+            array_push($panel, Modules_NimbusecAgentIntegration_PleskHelper::createIssuePanel($domain["name"], $issue, $helper));
+        }
+
+        return [
+            "issues" => $panel
+        ];
+    }
+
     public function registerDomain($domain, $bundle)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -210,6 +282,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
     }
 
+    // only in use by quarantine.php
     public function appendDomainIds($domain_names)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -250,6 +323,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }, $fetched));
     }
 
+    // only in use by quarantine.php
     public function getWebshellIssuesByDomain($domain_names)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -270,6 +344,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $issues;
     }
 
+    // only in use by quarantine.php
     public function filterByQuarantined($issues) 
     {
         // filter by quarantined files
@@ -556,6 +631,16 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             // pass exception
             throw $e;
         }
+    }
+
+    public function getQuarantined($domain_name)
+    {
+        $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
+        if (!array_key_exists($domain_name, $quarantine)) {
+            return [];
+        }
+
+        return $quarantine[$domain_name];
     }
 
     public function markAsFalsePositive($domain, $resultId, $file)

@@ -120,9 +120,9 @@ $messages = [
 	"issues.view.quarantine" => "Move to Quarantine",
 	"issues.view.false_positive" => "False Positive",
 	"issues.view.select_issues" => "Select / Deselect all issues",
-	"issues.view.automatic_quarantine" => "Automatically move domains to quarantine. By having an automaitic cron job running in background, " .
-										"all new issues will be moved into quarantine. The cron job will run every 5 minute on your host system. " .
-										"With the checkbox you can specify what kind of issues you want to be quarantined.",
+	"issues.view.automatic_quarantine" => "Automatically move domains to quarantine",
+	"issues.view.automatic_quarantine.hint" => "By having an automaitic cron job running in background, all new issues will be moved into quarantine. " . 
+												"The cron job will run every 5 minute on your host system. With the checkbox you can specify what kind of issues you want to be quarantined.",
 	"issues.view.apply" => "Set automatic issue quarantining",
 	"issues.view.no_issues" => "No issues found for your domains.",
 	"issues.view.source_code" => "View source code",

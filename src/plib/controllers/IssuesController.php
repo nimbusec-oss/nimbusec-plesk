@@ -31,24 +31,119 @@ class IssuesController extends pm_Controller_Action
 		$domains = $nimbusec->getRegisteredPleskDomains();
 		$domain_names = array_keys($domains);
 
-		/*// get infected nimbusec domain
+		// get infected nimbusec domain
 		$infected = $nimbusec->getInfectedWebshellDomains();
 
 		// filter by registered plesk domain
 		$infected = array_filter($infected, function($infect) use ($domain_names) {
 			return in_array($infect["name"], $domain_names);
-		});*/
+		});
 
-		// get issues
-        $issues = $nimbusec->getWebshellIssuesByDomain($domain_names);
-		$filtered = $nimbusec->filterByQuarantined($issues);
-
-        $this->view->colors = ["#bbb", "#fdd835", "#f44336"];
-        $this->view->issues = $filtered;
+		$this->view->infected = $infected;
 		$this->view->quarantine_state = pm_Settings::get("quarantine_state", "1");
+	}
 
-		if (count($filtered) === 0) {
-			$this->_status->addMessage("info", pm_Locale::lmsg("issues.view.no_issues"));
+	public function fetchMetadataAction()
+	{
+		$request = $this->getRequest(); 
+		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-metadata");
+		if (!$valid) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_request"), "error")
+			]);
+			return;
+		}
+
+		$domain_id = $request->getPost("domain_id");
+		$domain_name = $request->getPost("domain_name");
+
+		// valdiate domain_id
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($domain_id)) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR("Invalid domain id", "error")
+			]);
+			return;
+		}
+
+		// valdiate domain_name
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($domain_name)) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR("Invalid domain name", "error")
+			]);
+			return;
+		}
+
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+		$domain = [
+			"id" => $domain_id,
+			"name" => $domain_name,
+		];
+
+		try {
+			$metadata = $nimbusec->getIssueMetadata($domain);
+			$this->_helper->json($metadata);
+			return;
+		} catch (Exception $e) {
+			pm_Log::err($e->getMessage());
+
+			$this->_helper->json([
+				"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+			]);
+			return;
+		}
+	}
+
+	public function fetchIssueAction()
+	{
+		$request = $this->getRequest(); 
+		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-issue");
+		if (!$valid) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_request"), "error")
+			]);
+			return;
+		}
+
+		$domain_id = $request->getPost("domain_id");
+		$domain_name = $request->getPost("domain_name");
+
+		// valdiate domain_id
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($domain_id)) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR("Invalid domain id", "error")
+			]);
+			return;
+		}
+
+		// valdiate domain_name
+		$validator = new Zend\Validator\NotEmpty();
+		if (!$validator->isValid($domain_name)) {
+			$this->_helper->json([
+				"error" => $this->createHTMLR("Invalid domain name", "error")
+			]);
+			return;
+		}
+
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+		$domain = [
+			"id" => $domain_id,
+			"name" => $domain_name,
+		];
+
+		try {
+			$panel = $nimbusec->getIssuePanel($domain, $this->_helper);
+			$this->_helper->json($panel);
+			return;
+		} catch (Exception $e) {
+			pm_Log::err($e->getMessage());
+
+			$this->_helper->json([
+				"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+			]);
+			return;
 		}
 	}
 

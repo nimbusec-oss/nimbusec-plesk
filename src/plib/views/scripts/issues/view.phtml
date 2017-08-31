@@ -97,6 +97,9 @@
                                 <?= pm_Locale::lmsg("issues.view.apply"); ?>
                             </span>
                         </span>
+                        <span>
+                            <?= pm_Locale::lmsg("issues.view.automaitc_quarantine.hint"); ?>
+                        </span>
                     </div>
                 </form>
 
@@ -104,272 +107,99 @@
             
             <div class="btns-box"></div>
 
-            <?php if (count($this->issues) == 0): ?>
+            
+            <?php if (count($this->infected) === 0): ?>
                 <h4>
                     <?= pm_Locale::lmsg("issues.view.no_issues"); ?>
                 </h4>
-            <?php endif; ?>
+            <?php else: ?>
 
-            <?php foreach ($this->issues as $name => $domain): ?>
-                <div class="form-row">
+                
+                <div style="margin-bottom: 15px;">
+                    <span style="margin-right: 5px;">Sort Issues:</span>
+                    <span style="margin-right: 5px;">
+                        <a id="sort-issues-severity">
+                            by Severity
+                        </a>
+                    </span>
+                    <span style="margin-right: 5px;">|</span>
+                    <span style="margin-right: 5px;">
+                        <a id="sort-issues-noissues">
+                            by Number of Issues
+                        </a>
+                    </span>
+                    <span style="margin-right: 5px;">|</span>
+                    <span style="margin-right: 5px;">
+                        <a id="sort-issues-quarantined">
+                            by Number of Quarantined Issues
+                        </a>
+                    </span>
+                </div>
 
-                    <div class="field-name" style="width: 100%">
-                        <div style="display: inline-block;">
-                            <h4><b><?= $name ?></b></h4>
-                        </div>
-                        <div style="display: inline-block; margin-left: 5px;">
-                            <a id="issue-link-<?= $name; ?>">
-                                <?= pm_Locale::lmsg("issues.view.select_issues"); ?>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="field-value" style="margin-bottom: 15px;"></div>
-
-                    <div style="margin-left: 10px;">
-                    <?php foreach ($domain["results"] as $result): ?>
-                        <div class="panel panel-collapsible p-promo panel-collapsed">
+                <div id="domains-panel">
+                    <?php foreach ($this->infected as $infected): ?>
+                        <div id="domain-panel" class="panel panel-collapsible p-promo panel-collapsed">
                             <div class="panel-wrap">
 
+                                <!-- heading -->
                                 <div class="panel-heading">
                                     <div class="panel-heading-wrap">
                                         <span class="panel-control">
-
-                                            <div style="margin-left: -140px; color: #303030; margin-top: 2px;display: inline-block;">
-                                                    <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>                                           
-                                            </div>
-                                            <div style="margin-left: -246px; display: inline-block;">
-
-                                                <form id="falsePositive" method="post" action="<?= $this->h->url('false-positive', 'issues'); ?>">
-                                                    <input name="action" value="falsePositive" type="hidden"/>
-                                                    <input name="domain" value="<?= $name; ?>" type="hidden"/>
-                                                    <input name="resultId" value="<?= $result['id']; ?>" type="hidden"/>
-                                                    <input name="file" value="<?= $result['resource'];?>" type="hidden">
-                                                    <a onclick="sendForm(this);">
-                                                        <i class="mdi mdi-flag"></i>
-                                                        <span class="button-text">    
-                                                            <span>
-                                                                <?= pm_Locale::lmsg("issues.view.false_positive"); ?>
-                                                            </span>
-                                                        </span>
-                                                        <span class="button-loading" style="display: none;">
-                                                            <span style="margin-right: 5px;">Please Wait</span>
-                                                            <i class="fa fa-refresh fa-fw fa-spin"></i>
-                                                        </span>
-                                                    </a>
-                                                </form>
-
-                                            </div>
-                                            <div style="margin-left: -256px; margin-top: 2px;display: inline-block;">
-
-                                                <form id="moveToQuarantine" method="post" action="<?= $this->h->url('quarantine', 'issues'); ?>">
-                                                    <input name="action" value="moveToQuarantine" type="hidden">
-                                                    <input name="domain" value="<?= $name; ?>" type="hidden">
-                                                    <input name="file" value="<?= $result['resource'];?>" type="hidden">
-                                                    <a onclick="sendForm(this);">
-                                                        <i class="mdi mdi-bug"></i>
-                                                        <span class="button-text">    
-                                                            <span>
-                                                                <?= pm_Locale::lmsg("issues.view.quarantine"); ?>
-                                                            </span>
-                                                        </span>
-                                                        <span class="button-loading" style="display: none;">
-                                                            <span style="margin-right: 5px;">Please Wait</span>
-                                                            <i class="fa fa-refresh fa-fw fa-spin"></i>
-                                                        </span>
-                                                    </a>
-                                                </form>
-
-                                            </div>
-
+                                            <input id="domain-severity" type="hidden" value="0"/>
+                                            <input id="domain-issues" type="hidden" value="0"/>
+                                            <input id="domain-quarantined" type="hidden" value="0"/>
                                         </span>
-
                                         <div class="panel-heading-name">
-                                            
-                                            <?php
-                                                $left_bubble = $result["severity"] == 1 ? $this->colors[1] : $this->colors[0];
-                                                $right_bubble = $result["severity"] > 1 ? $this->colors[2] : $this->colors[0];
-                                            ?> 
-
                                             <span style="margin-right: 5px">
-                                                <input type="checkbox" id="issue-<?= $name;?>"/>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $left_bubble; ?>"></i>
-                                                <i class="mdi mdi-checkbox-blank-circle" style="color: <?= $right_bubble; ?>"></i>
+                                                <i id="bubble" class="mdi mdi-checkbox-blank-circle" style="color: #bbb;"></i>
+                                                <i id="bubble" class="mdi mdi-checkbox-blank-circle" style="color: #bbb;"></i>
                                             </span>
-
-                                            <span style="font-size: 13px">
-                                                <?= $result["resource"]; ?>
+                                            <span id="title">
+                                                <?= $infected["name"]; ?>
                                             </span>
+                                            <span class="subtitle" style="margin-left: 5px;">
+                                                <span class="panel-heading-loading" style="display: none; font-size: 13px;">
+                                                    <span style="margin-right: 5px;">
+                                                        (Please Wait <i class="fa fa-spinner fa-fw fa-spin"></i>)
+                                                    </span>
+                                                </span>
+                                                <span id="additional" style="font-size: 13px;">
+                                                </span>
+                                            </span>
+                                            <input type="hidden" id="domain-id" value="<?= $infected['id']; ?>"/>
+                                            <input type="hidden" id="domain-name" value="<?= $infected['name']; ?>"/>
                                         </div>
-
                                     </div>
                                 </div>
 
+                                <!-- content -->
                                 <div class="panel-content">
                                     <div class="panel-content-wrap">
-
-                                        <!-- occured on -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.occured_on"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= date("m/d/o h:i A", $result["lastDate"] / 1000); ?>
-                                                    </span>
-                                                </div>
-                                            </div>
+                                        <div class="panel-content-meta"></div>
+                                        <div class="panel-content-issue">
+                                            <span class="panel-content-loading" style="display: none; font-size: 13px;">
+                                                <span style="margin-right: 5px;">
+                                                    (Please Wait, Issues will be loaded ... <i class="fa fa-spinner fa-fw fa-spin"></i>)
+                                                </span>
+                                            </span>
                                         </div>
-
-                                        <!-- known since -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.known_since"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= date("m/d/o h:i A", $result["createDate"] / 1000); ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- path -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.path"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["resource"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- name -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.name"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["threatname"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- md5 -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.md5"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["md5"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- owner -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.owner"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["owner"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- group -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.group"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["group"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- permission -->
-                                        <div class="box-area">
-                                            <div class="form-row">
-                                                <div class="field-name">
-                                                    <span>
-                                                        <?= pm_Locale::lmsg("issues.view.permission"); ?>
-                                                    </span>
-                                                </div>
-                                                <div class="field-value">
-                                                    <span style="vertical-align: middle;">
-                                                        <?= $result["permission"]; ?>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="source-code">
-                                            <a>
-                                                <?= pm_Locale::lmsg("issues.view.source_code"); ?> <i class="mdi mdi-arrow-down-drop-circle source-code-icon"></i>
-                                            </a>
-                                        
-                                            <div class="panel panel-collapsible panel-collapsed source-code-panel" style="margin: 0px; border: 0px">
-                                                <div class="panel-wrap">
-                                                    <div class="panel-content">
-                                                        <div class="panel-content-wrap">
-                                                            <pre><code class="html">
-                                                                <?= htmlentities(file_get_contents($result["resource"])); ?>
-                                                            </code></pre>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
-                    </div>
-
                 </div>
-                <br/>
-            <?php endforeach; ?> 
+            <?php endif; ?>
 
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script>
+    hljs.configure({useBR: true});
+    hljs.initHighlightingOnLoad();
+</script>
 
 <script src="https://use.fontawesome.com/92fc1c4617.js"></script>
 
@@ -378,7 +208,7 @@
     // clean up localstorage key
     localStorage.removeItem("disclaimer");
 
-    function sendForm(element) {
+    var sendForm = function (element) {
 
         setLoadingMdi(element);
         element.closest("form").submit();
@@ -434,6 +264,96 @@
 
         // remove replacement
         toggle.nextElementSibling.remove();
+    }
+
+    var sortIssuesBySeverity = function () {
+        var domains = Array.from(document.querySelectorAll("#domain-panel"));
+
+        var sorting_order = localStorage.getItem("domains_sorted_severity");
+        if (sorting_order === null) {
+            sorting_order = "descending";
+        }
+
+        domains.sort(function(a, b) {
+            if (sorting_order == "ascending") {
+                return parseInt(a.querySelector("#domain-severity").value) - parseInt(b.querySelector("#domain-severity").value);
+            }
+
+            return parseInt(b.querySelector("#domain-severity").value) - parseInt(a.querySelector("#domain-severity").value);
+        });
+
+        var domains_panel = document.querySelector("#domains-panel");
+        domains_panel.innerHTML = "";
+
+        domains.forEach(function(domain) {
+            domains_panel.append(domain); 
+        });
+
+        if (localStorage.getItem("domains_sorted_severity") === "descending") {
+            localStorage.setItem("domains_sorted_severity", "ascending");
+        } else {
+            localStorage.setItem("domains_sorted_severity", "descending");
+        }
+    }
+
+    var sortIssuesByNumberOfIssues = function () {
+        var domains = Array.from(document.querySelectorAll("#domain-panel"));
+
+        var sorting_order = localStorage.getItem("domains_sorted_issues");
+        if (sorting_order === null) {
+            sorting_order = "descending";
+        }
+
+        domains.sort(function(a, b) {
+            if (sorting_order == "ascending") {
+                return parseInt(a.querySelector("#domain-issues").value) - parseInt(b.querySelector("#domain-issues").value);
+            }
+
+            return parseInt(b.querySelector("#domain-issues").value) - parseInt(a.querySelector("#domain-issues").value);
+        });
+
+        var domains_panel = document.querySelector("#domains-panel");
+        domains_panel.innerHTML = "";
+
+        domains.forEach(function(domain) {
+            domains_panel.append(domain); 
+        });
+
+        if (localStorage.getItem("domains_sorted_issues") === "descending") {
+            localStorage.setItem("domains_sorted_issues", "ascending");
+        } else {
+            localStorage.setItem("domains_sorted_issues", "descending");
+        }
+    }
+
+    var sortIssuesByNumberOfQuarantined = function () {
+        var domains = Array.from(document.querySelectorAll("#domain-panel"));
+
+        var sorting_order = localStorage.getItem("domains_sorted_quarantined");
+        if (sorting_order === null) {
+            sorting_order = "descending";
+        }
+
+        domains.sort(function(a, b) {
+            if (sorting_order == "ascending") {
+                return parseInt(a.querySelector("#domain-quarantined").value) - parseInt(b.querySelector("#domain-quarantined").value);
+            }
+
+            return parseInt(b.querySelector("#domain-quarantined").value) - parseInt(a.querySelector("#domain-quarantined").value);
+        });
+
+        var domains_panel = document.querySelector("#domains-panel");
+        domains_panel.innerHTML = "";
+
+        domains.forEach(function(domain) {
+            domains_panel.append(domain); 
+        });
+
+        if (localStorage.getItem("domains_sorted_quarantined") === "descending") {
+            localStorage.setItem("domains_sorted_quarantined", "ascending");
+        } else {
+            localStorage.setItem("domains_sorted_quarantined", "descending");
+        }
     }
 
     var hasParent = function (child, parentSelector) {
@@ -639,9 +559,133 @@
                     issue.checked = !checked; 
                 });
             }
+
+            // sort issues
+            if (toggle.id === "sort-issues-severity") {
+                sortIssuesBySeverity();
+            }
+
+            if (toggle.id === "sort-issues-noissues") {
+                sortIssuesByNumberOfIssues();
+            }
+
+            if (toggle.id === "sort-issues-quarantined") {
+                sortIssuesByNumberOfQuarantined();
+            }
         }
     };
 
     document.addEventListener("click", eventHandler);
+
+    // load issue information
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        var colors = ["#bbb", "#fdd835", "#f44336"];
+
+        // query issue metadata
+        document.querySelectorAll("#domain-panel").forEach(function(panel) {
+
+            panel.querySelector(".panel-heading-loading").style.display = "";
+
+            // for each domain, send a request asking for meta information and the issues
+            var form = new FormData();
+            form.append("action", "fetch-metadata");
+            form.append("domain_id", panel.querySelector("#domain-id").value);
+            form.append("domain_name", panel.querySelector("#domain-name").value);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function(){ 
+
+                var response;
+                try {
+                    response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.log("Invalid JSON: ", xhr.responseText);
+                    return;
+                }
+                    
+                // something went wrong
+                if (response.hasOwnProperty("error")) {
+                    console.log(response.error);
+                    return;
+                }
+
+                panel.querySelector(".panel-heading-loading").style.display = "None";
+
+                // update threat bubbles
+                var bubbles = panel.querySelectorAll("#bubble");
+                switch (response.max_severity) {
+                    case 1:
+                    case 2:
+                        bubbles[0].style.color = colors[1];
+                        break;
+                    case 3:
+                        bubbles[1].style.color = colors[2];
+                        break;
+                }
+
+                // add information
+                panel.querySelector("#additional").innerHTML = "(in quarantine/issues: " + response.quarantined_cnt + "/" + response.issues_cnt + ")";
+                
+                // panel for metadata
+                panel.querySelector(".panel-content-meta").innerHTML = response.panel;
+
+                // set hidden fields for js
+                panel.querySelector("#domain-severity").value = response.max_severity;
+                panel.querySelector("#domain-issues").value = response.issues_cnt;
+                panel.querySelector("#domain-quarantined").value = response.quarantined_cnt;
+            }
+
+            xhr.open ("POST", "<?= $this->h->url('fetch-metadata', 'issues'); ?>");
+            xhr.send (form);
+        });    
+
+        // query issues
+        document.querySelectorAll("#domain-panel").forEach(function(panel) {
+
+            panel.querySelector(".panel-content-loading").style.display = "";
+
+            // for each domain, send a request asking for meta information and the issues
+            var form = new FormData();
+            form.append("action", "fetch-issue");
+            form.append("domain_id", panel.querySelector("#domain-id").value);
+            form.append("domain_name", panel.querySelector("#domain-name").value);
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function(){ 
+
+                var response;
+                try {
+                    response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    console.log("Invalid JSON: ", xhr.responseText);
+                    return;
+                }
+                    
+                // something went wrong
+                if (response.hasOwnProperty("error")) {
+                    console.log(response.error);
+                    return;
+                }
+
+                panel.querySelector(".panel-content-loading").style.display = "None";
+
+                var panel_content = panel.querySelector(".panel-content-issue");
+                panel_content.innerHTML = "";
+
+                if (response.issues.length == 0) {
+                    panel_content.innerHTML = "No issues found for your domain ";
+                    panel_content.innerHTML += "<span><img style='width: 16px; height: 16px;' src='/theme/icons/16/plesk/on.png'/></span>";
+                }
+
+                response.issues.forEach(function(issue) {
+                    panel_content.innerHTML += issue;
+                });
+            }
+
+            xhr.open ("POST", "<?= $this->h->url('fetch-issue', 'issues'); ?>");
+            xhr.send (form);
+        });
+    });
 
 </script>

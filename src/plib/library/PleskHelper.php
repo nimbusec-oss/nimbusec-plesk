@@ -374,7 +374,7 @@ DATA;
         <thead>
             <tr>
                 <th style='width: 30%;'><input type='checkbox' id='select-all'/> Name</th>
-                <th>" . pm_Locale::lmsg("quarantine.controller.no_files") . "</th>
+                <th>" . pm_Locale::lmsg("quarantine.controller.no_of_files") . "</th>
                 <th>" . pm_Locale::lmsg("quarantine.controller.action") . "</th>
             </tr>
         </thead>
@@ -432,14 +432,262 @@ DATA;
 
     private static function createQTreeViewFile($path, $files)
     {
-        $code = htmlentities(file_get_contents($files[0]["path"]));
+        $code = trim(htmlentities(file_get_contents($files[0]["path"])));
         
         // return html template
+        return "<pre style='white-space: pre-wrap;'><code class='html'>{$code}</code></pre>";
+    }
+
+    public static function createFormRow($title, $value)
+    {
         return "
-        <pre>
-            <code class='html'>
-                {$code}
-            </code>
-        </pre>";
+        <div class='form-row'>
+            <div class='field-name'>
+                {$title}
+            </div>
+            <div class='field-value'>
+                {$value}
+            </div>
+        </div>";
+    }
+
+    public static function createSelectIssuesByDomain($domain)
+    {
+        return "
+        <div style='margin-top: 5px;'>
+            <a id='issue-link-{$domain}'>
+                " . pm_Locale::lmsg("issues.view.select_issues") . "
+            </a>
+        </div>";
+    }
+
+    public static function createSeperator()
+    {
+        return "<div class='btns-box'></div>";
+    }
+
+    public static function createIssuePanel($domain, $issue, $helper)
+    {
+        $colors = ["#bbb", "#fdd835", "#f44336"];
+
+        $left_bubble = $issue['severity'] == 1 ? $colors[1] : $colors[0];
+        $right_bubble = $issue['severity'] > 1 ? $colors[2] : $colors[0];
+
+        return "
+        <div class='panel panel-collapsible p-promo panel-collapsed'>
+            <div class='panel-wrap'>
+
+                <div class='panel-heading'>
+                    <div class='panel-heading-wrap'>
+                        <span class='panel-control'>
+
+                            <div style='margin-left: -140px; color: #303030; margin-top: 2px;display: inline-block;'>
+                                    " . date('m/d/o h:i A', $issue['lastDate'] / 1000) . "                                           
+                            </div>
+                            <div style='margin-left: -246px; display: inline-block;'>
+
+                                <form id='falsePositive' method='post' action='" . $helper->url('false-positive', 'issues') . "'>
+                                    <input name='action' value='falsePositive' type='hidden'/>
+                                    <input name='domain' value='{$domain}' type='hidden'/>
+                                    <input name='resultId' value='{$issue['id']}' type='hidden'/>
+                                    <input name='file' value='{$issue['resource']}' type='hidden'>
+                                    <a onclick='sendForm(this);'>
+                                        <i class='mdi mdi-flag'></i>
+                                        <span class='button-text'>    
+                                            <span>
+                                                " . pm_Locale::lmsg('issues.view.false_positive') . "
+                                            </span>
+                                        </span>
+                                        <span class='button-loading' style='display: none;'>
+                                            <span style='margin-right: 5px;'>
+                                                Please Wait <i class='fa fa-spinner fa-fw fa-spin'></i>
+                                            </span>
+                                        </span>
+                                    </a>
+                                </form>
+
+                            </div>
+                            <div style='margin-left: -256px; margin-top: 2px;display: inline-block;'>
+
+                                <form id='moveToQuarantine' method='post' action='" . $helper->url('quarantine', 'issues') . "'>
+                                    <input name='action' value='moveToQuarantine' type='hidden'>
+                                    <input name='domain' value='{$domain}' type='hidden'>
+                                    <input name='file' value='{$issue['resource']}' type='hidden'>
+                                    <a onclick='sendForm(this);'>
+                                        <i class='mdi mdi-bug'></i>
+                                        <span class='button-text'>    
+                                            <span>
+                                                " . pm_Locale::lmsg('issues.view.quarantine') . "
+                                            </span>
+                                        </span>
+                                        <span class='button-loading' style='display: none;'>
+                                            <span style='margin-right: 5px;'>
+                                                Please Wait <i class='fa fa-spinner fa-fw fa-spin'></i></span>
+                                        </span>
+                                    </a>
+                                </form>
+
+                            </div>
+
+                        </span>
+
+                        <div class='panel-heading-name'>
+                            <span style='margin-right: 5px'>
+                                <input type='checkbox' id='issue-{$domain}'/>
+                                <i class='mdi mdi-checkbox-blank-circle' style='color: {$left_bubble}'></i>
+                                <i class='mdi mdi-checkbox-blank-circle' style='color: {$right_bubble}'></i>
+                            </span>
+
+                            <span style='font-size: 13px'>
+                                {$issue['resource']}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class='panel-content'>
+                    <div class='panel-content-wrap'>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.occured_on') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        " . date('m/d/o h:i A', $issue['lastDate'] / 1000) . "
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.known_since') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        " . date('m/d/o h:i A', $issue['createDate'] / 1000) . "
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.path') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['resource']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.name') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['threatname']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.md5') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['md5']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.owner') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['owner']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.group') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['group']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='box-area'>
+                            <div class='form-row'>
+                                <div class='field-name'>
+                                    <span>
+                                        " . pm_Locale::lmsg('issues.view.permission') . "
+                                    </span>
+                                </div>
+                                <div class='field-value'>
+                                    <span style='vertical-align: middle;'>
+                                        {$issue['permission']}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class='source-code'>
+                            <a>
+                                " . pm_Locale::lmsg('issues.view.source_code') . " <i class='mdi mdi-arrow-down-drop-circle source-code-icon'></i>
+                            </a>
+                        
+                            <div class='panel panel-collapsible panel-collapsed source-code-panel' style='margin: 0px; border: 0px'>
+                                <div class='panel-wrap'>
+                                    <div class='panel-content'>
+                                        <div class='panel-content-wrap'>
+                                            <pre style='white-space: pre-wrap;'><code class='html'>" . trim(htmlentities(file_get_contents($issue['resource']))) . "</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>";
     }
 }

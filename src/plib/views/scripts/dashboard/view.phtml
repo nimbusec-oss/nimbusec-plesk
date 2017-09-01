@@ -3,9 +3,6 @@
 </div>
 <?= $this->renderTabs($this->tabs); ?>
 
-<link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
-<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet">
-
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -17,25 +14,24 @@
         </div>
         <div class="content">
             <div style="margin-bottom: 15px;">
-                The Dashboard gives an overview over all incoming and deteced issues as well as the corresponding
-                actions you can perform to handle them. 
+                <?= pm_Locale::lmsg("dashboard.view.description"); ?>
             </div>
 
             <div class="title">
                 <div class="title-area">
                     <h3>
-                        Bulk actions
+                        <?= pm_Locale::lmsg("dashboard.view.mass_quarantine"); ?>
                     </h3>
                 </div>
             </div>
             <div class="content" style="margin-bottom: 15px;">
                 <div style="margin-bottom: 15px;">
-                    Bulk actions perform on all issues you select. Please you them carefully.
+                    <?= pm_Locale::lmsg("dashboard.view.mass_quarantine.description"); ?>
                 </div>
 
                 <div class="form-row">
                     <div class="field-name">
-                        <?= pm_Locale::lmsg("dashboard.view.bulk_actions"); ?>
+                        <?= pm_Locale::lmsg("dashboard.view.mass_quarantine"); ?>
                     </div>
                 
                     <div class="field-value">
@@ -69,23 +65,19 @@
             <div class="title">
                 <div class="title-area">
                     <h3>
-                        Automatic moving into Quarantine
+                        <?= pm_Locale::lmsg("dashboard.view.automatic_quarantine.title"); ?>
                     </h3>
                 </div>
             </div>
             <div class="content" style="margin-bottom: 15px;">
                 <div style="margin-bottom: 15px;">
-                    The automatic quarantine movement allows your server to scan for issues in background and move the malicious files
-                    which were deteced automatically into the Quarantine area. 
-                    <br />Please note that this action might cause unexpected behaviour if
-                    used carelessly. Therefore you must first accept your disclaimer to active this functionality.  
                 </div>
 
                 <div class="msg-box msg-warning">
                     <div class="msg-content">
                         <span>
                             <div>
-                                <b>Beware:</b> This is a warning text indicating that this section should be inspected carefully before clicking a button.
+                                <?= pm_Locale::lmsg("dashboard.view.disclaimer"); ?>
                             </div>
                             <div id="confirmation">
 
@@ -141,14 +133,13 @@
             <div class="title">
                 <div class="title-area">
                     <h3>
-                        Issues
+                        <?= pm_Locale::lmsg("dashboard.view.issues"); ?>
                     </h3>
                 </div>
             </div>
             <div class="content" style="margin-bottom: 15px;">
                 <div>
-                    Below you can find the found issues for all domain which are registered and scanned with Nimbusec. All these Issues are
-                    brought and uploaded by the Nimbusec Server Agent.
+                <?= pm_Locale::lmsg("dashboard.view.issues.description"); ?>
                 </div>
             </div>
             
@@ -161,23 +152,23 @@
                 
                 <div style="margin-bottom: 15px;">
                     <span style="margin-right: 5px;">
-                        <strong>Sort Issues:</strong>
+                        <strong><?= pm_Locale::lmsg("dashboard.view.sort"); ?></strong>
                     </span>
                     <span style="margin-right: 5px;">
                         <a id="sort-issues-severity">
-                            by Severity
+                            <?= pm_Locale::lmsg("dashboard.view.sort.severity"); ?>
                         </a>
                     </span>
                     <span style="margin-right: 5px;">|</span>
                     <span style="margin-right: 5px;">
                         <a id="sort-issues-noissues">
-                            by Number of Issues
+                            <?= pm_Locale::lmsg("dashboard.view.sort.no_issues"); ?>
                         </a>
                     </span>
                     <span style="margin-right: 5px;">|</span>
                     <span style="margin-right: 5px;">
                         <a id="sort-issues-quarantined">
-                            by Number of Quarantined Issues
+                            <?= pm_Locale::lmsg("dashboard.view.sort.no_quarantined"); ?>
                         </a>
                     </span>
                 </div>
@@ -225,7 +216,7 @@
                                         <div class="panel-content-issue">
                                             <span class="panel-content-loading" style="display: none; font-size: 13px;">
                                                 <span style="margin-right: 5px;">
-                                                    (Please Wait, Issues will be loaded ... <i class="fa fa-spinner fa-fw fa-spin"></i>)
+                                                    <?= pm_Locale::lmsg("dashboard.view.issues.loading"); ?>
                                                 </span>
                                             </span>
                                         </div>
@@ -236,18 +227,9 @@
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
-
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-<script>
-    hljs.configure({useBR: true});
-    hljs.initHighlightingOnLoad();
-</script>
-
-<script src="https://use.fontawesome.com/92fc1c4617.js"></script>
 
 <script>
 
@@ -525,7 +507,7 @@
                     var disclaimerParent = document.createElement("span");
 
                     // confirmation message
-                    var message = document.createTextNode(" Click the checkbox if you have read the disclaimer.");
+                    var message = document.createTextNode("<?= pm_Locale::lmsg('dashboard.view.disclaimer.accept'); ?>");
 
                     // confirmation checkbox
                     var checkbox = document.createElement("input");
@@ -726,6 +708,10 @@
 
                 response.issues.forEach(function(issue) {
                     panel_content.innerHTML += issue;
+                });
+
+                panel_content.querySelectorAll("code").forEach(function(code) {
+                    hljs.highlightBlock(code);
                 });
             }
 

@@ -1,8 +1,6 @@
 <div id="responses"></div>
 <?= $this->renderTabs($this->tabs); ?> 
 
-<link href="https://cdn.materialdesignicons.com/1.9.32/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
-
 <div class="form-box">
     <div class="box-area">
         <div class="title">
@@ -16,12 +14,12 @@
         <div class="content">
             <div style="margin-bottom: 20px;">
                 <div>
-                    Here you can view all quarantined files within a directory structure.
+                    <?= pm_Locale::lmsg("quarantine.view.description"); ?>
                 </div>
 
                 <div id="no-quarantined" style="display: None; margin-top: 15px;">
                     <span>
-                        <h5>No files were found in Quarantine. <img style='width: 16px; height: 16px;' src='/theme/icons/16/plesk/on.png'/></h5>
+                        <?= pm_Locale::lmsg("quarantine.view.no_files_found"); ?>
                     </span>
                 </div>
             </div>
@@ -30,9 +28,6 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 
 <script>
 
@@ -66,6 +61,10 @@
         }
 
         container.innerHTML = response.html;
+        container.querySelectorAll("code").forEach(function(code) {
+            hljs.highlightBlock(code);
+        });
+
         setHandler();
     }
 

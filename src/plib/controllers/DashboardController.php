@@ -7,6 +7,12 @@ class DashboardController extends pm_Controller_Action
         parent::init();
 
 		$this->view->pageTitle = pm_Settings::get("extension_title");
+
+		$this->view->headLink()->appendStylesheet(pm_Context::getBaseUrl() . "/css/materialdesignicons.min.css");
+		$this->view->headLink()->appendStylesheet(pm_Context::getBaseUrl() . "/css/default.min.css");
+
+		$this->view->headScript()->appendFile(pm_Context::getBaseUrl() . "/js/highlight.min.js");
+		$this->view->headScript()->appendFile(pm_Context::getBaseUrl() . "/js/fa.min.js");
 		
 		$this->view->e = new Zend\Escaper\Escaper();
 		$this->view->h = $this->_helper;

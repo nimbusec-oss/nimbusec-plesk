@@ -46,6 +46,7 @@ class QuarantineController extends pm_Controller_Action
 			$this->_helper->json([
 				"error" => pm_Locale::lmsg("error.invalid_path")
 			]);
+			return;
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -108,10 +109,23 @@ class QuarantineController extends pm_Controller_Action
 			$this->_helper->json([
 				"error" => pm_Locale::lmsg("error.invalid_path")
 			]);
+			return;
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		$path = $nimbusec->resolvePath($path);
+
+		// for showing success message
+		$display_path = $path;
+		
+		// if last layer, replace unique path id with name of file
+		$path_fragments = explode("/", $path);
+		if (count($path_fragments) === 3) {
+			$files = $nimbusec->getQuarantined($path_fragments[1]);
+			list(, $name) = Sabre\Uri\split($files[$path_fragments[2]]["old"]);
+
+			$display_path = Sabre\Uri\resolve($path, $name);
+		}
 
 		// try out unquarantining
 		$success = $nimbusec->unquarantine($path);
@@ -127,17 +141,27 @@ class QuarantineController extends pm_Controller_Action
 		list($dirname, ) = Sabre\Uri\split($path);
 		$fetched = $nimbusec->fetchQuarantine($dirname);
 
+		// if no quarantined issue are left, fetch again one layer above
+		if (count($fetched) === 0) {
+			list($dirname, ) = Sabre\Uri\split($dirname);
+			if ($dirname == "") {
+				$dirname = "quarantine/";
+			}
+
+			$fetched = $nimbusec->fetchQuarantine($dirname);
+		}
+
 		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($dirname) .
 					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .
 					Modules_NimbusecAgentIntegration_PleskHelper::createQTreeView($dirname, $fetched, $this->_helper);
-
+		
 		$this->_helper->json([
 			"files"   => $fetched,
 			"html" 	  => $html,
 			"path" 	  => $dirname,
 			"action"  => $action,
 			"error"   => false,
-			"success" => $this->createHTMLR(sprintf(pm_Locale::lmsg("quarantine.controller.unquarantined"), $path), "info")
+			"success" => $this->createHTMLR(sprintf(pm_Locale::lmsg("quarantine.controller.unquarantined"), $display_path), "info")
 		]);
 		return;		
 	}
@@ -162,6 +186,7 @@ class QuarantineController extends pm_Controller_Action
 			$this->_helper->json([
 				"error" => pm_Locale::lmsg("error.invalid_path")
 			]);
+			return;
 		}
 
 		// valdiate paths
@@ -170,6 +195,7 @@ class QuarantineController extends pm_Controller_Action
 			$this->_helper->json([
 				"error" => pm_Locale::lmsg("quarantine.controller.no_files")
 			]);
+			return;
 		}
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
@@ -201,6 +227,16 @@ class QuarantineController extends pm_Controller_Action
 		// split e.g /quarantine/test.at to /quarantine and test.at
 		list($dirname, ) = Sabre\Uri\split($path);
 		$fetched = $nimbusec->fetchQuarantine($dirname);
+		
+		// if no quarantined issue are left, fetch again one layer above
+		if (count($fetched) === 0) {
+			list($dirname, ) = Sabre\Uri\split($dirname);
+			if ($dirname == "") {
+				$dirname = "quarantine/";
+			}
+
+			$fetched = $nimbusec->fetchQuarantine($dirname);
+		}
 
 		$html = Modules_NimbusecAgentIntegration_PleskHelper::createQNavigationBar($dirname) .
 					Modules_NimbusecAgentIntegration_PleskHelper::createQOptions($dirname, $this->_helper) .

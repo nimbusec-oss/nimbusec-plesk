@@ -1,6 +1,6 @@
 <?php
 
-class IssuesController extends pm_Controller_Action
+class DashboardController extends pm_Controller_Action
 {
     public function init()
     {
@@ -152,7 +152,7 @@ class IssuesController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "falsePositive");
 		if (!$valid) {
-			$this->_forward("view", "issues");
+			$this->_forward("view", "dashboard");
 			return;
 		}
 
@@ -163,7 +163,7 @@ class IssuesController extends pm_Controller_Action
 		// validate domain
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
-			$this->_forward("view", "issues", null, [
+			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_domain"), "error")
 			]);
 			return;	
@@ -172,7 +172,7 @@ class IssuesController extends pm_Controller_Action
 		// validate result id
 		$validator = new Zend\Validator\Digits();
 		if (!$validator->isValid($result_id)) {
-			$this->_forward("view", "issues", null, [
+			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_issue"), "error")
 			]);
 			return;
@@ -181,7 +181,7 @@ class IssuesController extends pm_Controller_Action
 		// validate file
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "issues", null, [
+            $this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(pm_Locale::lmsg("error.file_not_exist"), "error")
 			]);
 			return;	
@@ -192,18 +192,18 @@ class IssuesController extends pm_Controller_Action
 		try {
 			$success = $nimbusec->markAsFalsePositive($domain, $result_id, $file);
 			if (!$success) {
-				$this->_forward("view", "issues", null, [
+				$this->_forward("view", "dashboard", null, [
 					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
 
 			$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("issue.controller.false_positive", $file)));
-			$this->_helper->redirector("view", "issues");
+			$this->_helper->redirector("view", "dashboard");
 			return;
 
 		} catch (Exception $e) {
-			$this->_forward("view", "issues", null, [
+			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR("False positive: {$e->getMessage()}", "error")
 			]);
 			return;	
@@ -215,7 +215,7 @@ class IssuesController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "moveToQuarantine");
 		if (!$valid) {
-			$this->_forward("view", "issues");
+			$this->_forward("view", "dashboard");
 			return;
 		}
 
@@ -225,7 +225,7 @@ class IssuesController extends pm_Controller_Action
 		// validate domain
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
-			$this->_forward("view", "issues", null, [
+			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_domain"), "error")
 			]);
 			return;	
@@ -234,7 +234,7 @@ class IssuesController extends pm_Controller_Action
 		// validate file
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "issues", null, [
+            $this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(pm_Locale::lmsg("error.file_not_exist"), "error")
 			]);
 			return;
@@ -244,14 +244,14 @@ class IssuesController extends pm_Controller_Action
 		try {
 			$nimbusec->moveToQuarantine($domain, $file);
 		} catch (Exception $e) {
-			$this->_forward("view", "issues", null, [
+			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(sprintf(pm_Locale::lmsg("error.msg"), $e->getMessage()), "error")
 			]);
 			return;
 		}
 
-		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("issues.controller.quarantine"), $file));
-		$this->_helper->redirector("view", "issues");
+		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("dashboard.controller.quarantine"), $file));
+		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
 
@@ -272,7 +272,7 @@ class IssuesController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($issues)) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("issues.controller.no_issues"), "error")
+				"error" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.no_issues"), "error")
 			]);
 			return;
 		}
@@ -280,7 +280,7 @@ class IssuesController extends pm_Controller_Action
 		$issues = json_decode($issues, true);
 		if (count($issues) === 0) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("issues.controller.no_issues"), "error")
+				"error" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.no_issues"), "error")
 			]);
 			return;
 		}
@@ -299,7 +299,7 @@ class IssuesController extends pm_Controller_Action
 		}
 
 		$this->_helper->json([
-			"html" => $this->createHTMLR(pm_Locale::lmsg("issues.controller.bulk_quarantine"), "info")
+			"html" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.bulk_quarantine"), "info")
 		]);
 		return;
 	}
@@ -309,7 +309,7 @@ class IssuesController extends pm_Controller_Action
 		$request = $this->getRequest(); 
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "scheduleQuarantine");
 		if (!$valid) {
-			$this->_forward("view", "issues");
+			$this->_forward("view", "dashboard");
 			return;
 		}
 
@@ -318,8 +318,8 @@ class IssuesController extends pm_Controller_Action
 		// validate states
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($states)) {
-			$this->_forward("view", "issues", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("issues.controller.invalid_schedule"), "error")
+			$this->_forward("view", "dashboard", null, [
+				"response" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.invalid_schedule"), "error")
 			]);
 			return;	
 		}
@@ -332,8 +332,8 @@ class IssuesController extends pm_Controller_Action
 		// 6 == red
 		// 9 == red & yellow
 		if (!in_array($state, [1, 3, 6, 9])) {
-			$this->_forward("view", "issues", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("issues.controller.invalid_schedule"), "error")
+			$this->_forward("view", "dashboard", null, [
+				"response" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.invalid_schedule"), "error")
 			]);
 			return;
 		}
@@ -358,8 +358,8 @@ class IssuesController extends pm_Controller_Action
 			pm_Settings::set("quarantine_schedule_id", false);
 			pm_Settings::set("quarantine_level", "0");
 
-			$this->_status->addMessage("info", pm_Locale::lmsg("issues.controller.automatic_quarantine.disabled"));
-			$this->_helper->redirector("view", "issues");
+			$this->_status->addMessage("info", pm_Locale::lmsg("dashboard.controller.automatic_quarantine.disabled"));
+			$this->_helper->redirector("view", "dashboard");
 			return;
 		}
 
@@ -387,8 +387,8 @@ class IssuesController extends pm_Controller_Action
 		pm_Settings::set("quarantine_level", $quarantine_level);
 		pm_Settings::set("quarantine_state", $state);
 
-		$this->_status->addMessage("info", pm_Locale::lmsg("issues.controller.automatic_quarantine.enabled"));
-		$this->_helper->redirector("view", "issues");
+		$this->_status->addMessage("info", pm_Locale::lmsg("dashboard.controller.automatic_quarantine.enabled"));
+		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
 }

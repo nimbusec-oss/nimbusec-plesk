@@ -48,6 +48,7 @@ class IndexController extends pm_Controller_Action
             $this->_helper->json([
 				"link" => Modules_NimbusecAgentIntegration_PleskHelper::getSignedLoginURL((string) $admin->admin_email, pm_Settings::get('signaturekey'))
             ]);
+            return;
         }
     }
 }

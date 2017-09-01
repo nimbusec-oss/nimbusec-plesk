@@ -11,112 +11,158 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= pm_Locale::lmsg("issues.view.title"); ?>
+                    <?= pm_Locale::lmsg("dashboard.view.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            
-            <div class="msg-box msg-error">
-                <div class="msg-content">
-                    <span>
-                        <div>
-                            <b>Beware:</b> This is a warning text indicating that this section should be inspected carefully before clicking a button.
-                        </div>
-                        <div id="confirmation">
+            <div style="margin-bottom: 15px;">
+                The Dashboard gives an overview over all incoming and deteced issues as well as the corresponding
+                actions you can perform to handle them. 
+            </div>
 
+            <div class="title">
+                <div class="title-area">
+                    <h3>
+                        Bulk actions
+                    </h3>
+                </div>
+            </div>
+            <div class="content" style="margin-bottom: 15px;">
+                <div style="margin-bottom: 15px;">
+                    Bulk actions perform on all issues you select. Please you them carefully.
+                </div>
+
+                <div class="form-row">
+                    <div class="field-name">
+                        <?= pm_Locale::lmsg("dashboard.view.bulk_actions"); ?>
+                    </div>
+                
+                    <div class="field-value">
+                        
+                        <div style="display: inline-block; margin-right: 15px;">
+                            <a id="bulk-quarantine" style="color: #353535;">
+                                <i class="mdi mdi-bug"></i>
+                                <span class="button-text">    
+                                    <span>
+                                        <?= pm_Locale::lmsg("dashboard.view.quarantine"); ?>
+                                    </span>
+                                </span>
+                                <span class="button-loading" style="display: none;">
+                                    <span style="margin-right: 5px;">
+                                        Please Wait <i class="fa fa-spinner fa-fw fa-spin"></i>
+                                    </span>
+                                </span>
+                            </a>
                         </div>
-                    </span>
+                        
+                        <div style="display: inline-block;">
+                            <a id="issue-link">
+                                <?= pm_Locale::lmsg("dashboard.view.select_issues"); ?>
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="form-row">
-
-                <div class="field-name">
-                    <?= pm_Locale::lmsg("issues.view.bulk_actions"); ?>
+            <div class="title">
+                <div class="title-area">
+                    <h3>
+                        Automatic moving into Quarantine
+                    </h3>
                 </div>
-            
-                <div class="field-value">
-                    
-                    <div style="display: inline-block; margin-right: 10px;">
-                        <a id="bulk-quarantine" style="color: #353535;">
-                            <i class="mdi mdi-bug"></i>
-                            <span class="button-text">    
+            </div>
+            <div class="content" style="margin-bottom: 15px;">
+                <div style="margin-bottom: 15px;">
+                    The automatic quarantine movement allows your server to scan for issues in background and move the malicious files
+                    which were deteced automatically into the Quarantine area. 
+                    <br />Please note that this action might cause unexpected behaviour if
+                    used carelessly. Therefore you must first accept your disclaimer to active this functionality.  
+                </div>
+
+                <div class="msg-box msg-warning">
+                    <div class="msg-content">
+                        <span>
+                            <div>
+                                <b>Beware:</b> This is a warning text indicating that this section should be inspected carefully before clicking a button.
+                            </div>
+                            <div id="confirmation">
+
+                            </div>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+
+                    <div class="field-name">
+                        <?= pm_Locale::lmsg("dashboard.view.automatic_quarantine"); ?>
+                    </div>
+
+                    <div class="field-value">
+                        <form method="post" action="<?= $this->h->url('schedule-quarantine', 'issues'); ?>">
+                            <input name="action" value="scheduleQuarantine" type="hidden"/>
+                            <span style="margin-right: 2px;">
                                 <span>
-                                    <?= pm_Locale::lmsg("issues.view.quarantine"); ?>
+                                    <?= pm_Locale::lmsg("msg.issues.none"); ?>
+                                </span>
+                                <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
+                                <span style="color: #303030;">|</span>
+                            </span>
+                            <span style="margin-right: 2px;">
+                                <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
+                                <span>
+                                    <?= pm_Locale::lmsg("msg.issues.yellow"); ?>
+                                </span>
+                                <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, array("3", "9"))): ?> checked="checked" <?php endif; ?>/>
+                                <span style="color: #303030;">|</span>
+                            </span>
+                            <span style="margin-right: 2px;">
+                                <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
+                                <span>
+                                    <?= pm_Locale::lmsg("msg.issues.red") ?>
+                                </span>
+                                <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, array("6", "9"))): ?> checked="checked" <?php endif; ?>/>
+                            </span>
+                            <span id="btn-send" class="btn action" style="margin-left: 5px;">
+                                <span class="submit-button" sender>
+                                    <?= pm_Locale::lmsg("dashboard.view.apply"); ?>
                                 </span>
                             </span>
-                            <span class="button-loading" style="display: none;">
-                                <span style="margin-right: 5px;">Please Wait</span>
-                                <i class="fa fa-refresh fa-fw fa-spin"></i>
+                            <span class="hint">
+                                <?= pm_Locale::lmsg("dashboard.view.automatic_quarantine.hint"); ?>
                             </span>
-                        </a>
-                    </div>
-                    
-                    <div style="display: inline-block;">
-                        <a id="issue-link">
-                            <?= pm_Locale::lmsg("issues.view.select_issues"); ?>
-                        </a>
-                    </div>
+                        </div>
+                    </form>
                 </div>
-
-            </div>
-            <div class="form-row">
-
-                <div class="field-name">
-                    <?= pm_Locale::lmsg("issues.view.automatic_quarantine"); ?>
-                </div>
-
-                <div class="field-value">
-                    <form method="post" action="<?= $this->h->url('schedule-quarantine', 'issues'); ?>">
-                        <input name="action" value="scheduleQuarantine" type="hidden"/>
-                        <span style="margin-right: 2px;">
-                            <span>
-                                <?= pm_Locale::lmsg("msg.issues.none"); ?>
-                            </span>
-                            <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
-                            <span style="color: #303030;">|</span>
-                        </span>
-                        <span style="margin-right: 2px;">
-                            <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
-                            <span>
-                                <?= pm_Locale::lmsg("msg.issues.yellow"); ?>
-                            </span>
-                            <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, array("3", "9"))): ?> checked="checked" <?php endif; ?>/>
-                            <span style="color: #303030;">|</span>
-                        </span>
-                        <span style="margin-right: 2px;">
-                            <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
-                            <span>
-                                <?= pm_Locale::lmsg("msg.issues.red") ?>
-                            </span>
-                            <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, array("6", "9"))): ?> checked="checked" <?php endif; ?>/>
-                        </span>
-                        <span id="btn-send" class="btn action" style="margin-left: 5px;">
-                            <span class="submit-button" sender>
-                                <?= pm_Locale::lmsg("issues.view.apply"); ?>
-                            </span>
-                        </span>
-                        <span>
-                            <?= pm_Locale::lmsg("issues.view.automaitc_quarantine.hint"); ?>
-                        </span>
-                    </div>
-                </form>
-
             </div>
             
-            <div class="btns-box"></div>
-
+            <div class="title">
+                <div class="title-area">
+                    <h3>
+                        Issues
+                    </h3>
+                </div>
+            </div>
+            <div class="content" style="margin-bottom: 15px;">
+                <div>
+                    Below you can find the found issues for all domain which are registered and scanned with Nimbusec. All these Issues are
+                    brought and uploaded by the Nimbusec Server Agent.
+                </div>
+            </div>
             
             <?php if (count($this->infected) === 0): ?>
                 <h4>
-                    <?= pm_Locale::lmsg("issues.view.no_issues"); ?>
+                    <?= pm_Locale::lmsg("dashboard.view.no_issues"); ?>
                 </h4>
             <?php else: ?>
 
                 
                 <div style="margin-bottom: 15px;">
-                    <span style="margin-right: 5px;">Sort Issues:</span>
+                    <span style="margin-right: 5px;">
+                        <strong>Sort Issues:</strong>
+                    </span>
                     <span style="margin-right: 5px;">
                         <a id="sort-issues-severity">
                             by Severity
@@ -447,7 +493,7 @@
                 window.location.reload(true);
             }
 
-            xhr.open ("POST", "<?= $this->h->url('bulk-quarantine', 'issues'); ?>", false);
+            xhr.open ("POST", "<?= $this->h->url('bulk-quarantine', 'dashboard'); ?>", false);
             xhr.send (form);
         }
 
@@ -636,7 +682,7 @@
                 panel.querySelector("#domain-quarantined").value = response.quarantined_cnt;
             }
 
-            xhr.open ("POST", "<?= $this->h->url('fetch-metadata', 'issues'); ?>");
+            xhr.open ("POST", "<?= $this->h->url('fetch-metadata', 'dashboard'); ?>");
             xhr.send (form);
         });    
 
@@ -683,7 +729,7 @@
                 });
             }
 
-            xhr.open ("POST", "<?= $this->h->url('fetch-issue', 'issues'); ?>");
+            xhr.open ("POST", "<?= $this->h->url('fetch-issue', 'dashboard'); ?>");
             xhr.send (form);
         });
     });

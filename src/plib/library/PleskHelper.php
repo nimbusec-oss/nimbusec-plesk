@@ -13,7 +13,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
 
         return [
 			["title" => "Login to Nimbusec",   "action" => "view", "controller" => "index"],
-			["title" => "Issues",              "action" => "view", "controller" => "issues"],
+			["title" => "Dashboard",           "action" => "view", "controller" => "dashboard"],
 			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
 			["title" => "Settings",            "action" => "view", "controller" => "settings"],
 			["title" => "Agent Overview",      "action" => "view", "controller" => "agent"],
@@ -300,7 +300,7 @@ DATA;
 		return "
         <div class='form-row'>
             <div class='field-name' style='margin-left: .6%;'>
-                " . pm_Locale::lmsg("issues.view.bulk_actions") . "
+                " . pm_Locale::lmsg("dashboard.view.bulk_actions") . "
             </div>
 
             <div class='field-value' style='margin-bottom: .5%;'>
@@ -419,9 +419,9 @@ DATA;
                 <th>" . pm_Locale::lmsg("quarantine.controller.quarantined_on") . "</th>
                 <th>" . pm_Locale::lmsg("quarantine.controller.old_path") . "</th>
                 <th>" . pm_Locale::lmsg("quarantine.controller.filesize") . "</th>
-                <th>" . pm_Locale::lmsg("issues.view.permission") . "</th>
-                <th>" . pm_Locale::lmsg("issues.view.owner") . "</th>
-                <th>" . pm_Locale::lmsg("issues.view.group") . "</th>
+                <th>" . pm_Locale::lmsg("dashboard.view.permission") . "</th>
+                <th>" . pm_Locale::lmsg("dashboard.view.owner") . "</th>
+                <th>" . pm_Locale::lmsg("dashboard.view.group") . "</th>
                 <th>" . pm_Locale::lmsg("quarantine.controller.action") . "</th>
             </tr>
         </thead>
@@ -435,7 +435,7 @@ DATA;
         $code = trim(htmlentities(file_get_contents($files[0]["path"])));
         
         // return html template
-        return "<pre style='white-space: pre-wrap;'><code class='html'>{$code}</code></pre>";
+        return "<pre style='white-space: pre-wrap;'><code class='php'>{$code}</code></pre>";
     }
 
     public static function createFormRow($title, $value)
@@ -456,7 +456,7 @@ DATA;
         return "
         <div style='margin-top: 5px;'>
             <a id='issue-link-{$domain}'>
-                " . pm_Locale::lmsg("issues.view.select_issues") . "
+                " . pm_Locale::lmsg("dashboard.view.select_issues") . "
             </a>
         </div>";
     }
@@ -495,7 +495,7 @@ DATA;
                                         <i class='mdi mdi-flag'></i>
                                         <span class='button-text'>    
                                             <span>
-                                                " . pm_Locale::lmsg('issues.view.false_positive') . "
+                                                " . pm_Locale::lmsg('dashboard.view.false_positive') . "
                                             </span>
                                         </span>
                                         <span class='button-loading' style='display: none;'>
@@ -517,7 +517,7 @@ DATA;
                                         <i class='mdi mdi-bug'></i>
                                         <span class='button-text'>    
                                             <span>
-                                                " . pm_Locale::lmsg('issues.view.quarantine') . "
+                                                " . pm_Locale::lmsg('dashboard.view.quarantine') . "
                                             </span>
                                         </span>
                                         <span class='button-loading' style='display: none;'>
@@ -553,7 +553,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.occured_on') . "
+                                        " . pm_Locale::lmsg('dashboard.view.occured_on') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -568,7 +568,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.known_since') . "
+                                        " . pm_Locale::lmsg('dashboard.view.known_since') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -583,7 +583,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.path') . "
+                                        " . pm_Locale::lmsg('dashboard.view.path') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -598,7 +598,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.name') . "
+                                        " . pm_Locale::lmsg('dashboard.view.name') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -613,7 +613,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.md5') . "
+                                        " . pm_Locale::lmsg('dashboard.view.md5') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -628,7 +628,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.owner') . "
+                                        " . pm_Locale::lmsg('dashboard.view.owner') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -643,7 +643,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.group') . "
+                                        " . pm_Locale::lmsg('dashboard.view.group') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -658,7 +658,7 @@ DATA;
                             <div class='form-row'>
                                 <div class='field-name'>
                                     <span>
-                                        " . pm_Locale::lmsg('issues.view.permission') . "
+                                        " . pm_Locale::lmsg('dashboard.view.permission') . "
                                     </span>
                                 </div>
                                 <div class='field-value'>
@@ -671,14 +671,14 @@ DATA;
 
                         <div class='source-code'>
                             <a>
-                                " . pm_Locale::lmsg('issues.view.source_code') . " <i class='mdi mdi-arrow-down-drop-circle source-code-icon'></i>
+                                " . pm_Locale::lmsg('dashboard.view.source_code') . " <i class='mdi mdi-arrow-down-drop-circle source-code-icon'></i>
                             </a>
                         
                             <div class='panel panel-collapsible panel-collapsed source-code-panel' style='margin: 0px; border: 0px'>
                                 <div class='panel-wrap'>
                                     <div class='panel-content'>
                                         <div class='panel-content-wrap'>
-                                            <pre style='white-space: pre-wrap;'><code class='html'>" . trim(htmlentities(file_get_contents($issue['resource']))) . "</code></pre>
+                                            <pre style='white-space: pre-wrap;'><code class='php'>" . trim(htmlentities(file_get_contents($issue['resource']))) . "</code></pre>
                                         </div>
                                     </div>
                                 </div>

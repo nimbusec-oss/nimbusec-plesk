@@ -13,9 +13,20 @@
             </div>
         </div>
 
-        <br>
-        
-        <div id="content" class="content">
+        <div class="content">
+            <div style="margin-bottom: 20px;">
+                <div>
+                    Here you can view all quarantined files within a directory structure.
+                </div>
+
+                <div id="no-quarantined" style="display: None; margin-top: 15px;">
+                    <span>
+                        <h5>No files were found in Quarantine. <img style='width: 16px; height: 16px;' src='/theme/icons/16/plesk/on.png'/></h5>
+                    </span>
+                </div>
+            </div>
+
+            <div id="tree-view"></div>
         </div>
     </div>
 </div>
@@ -46,9 +57,11 @@
     }
 
     function update(response) {
-        var container = document.getElementById("content");
+        var container = document.getElementById("tree-view");
+        container.innerHTML = "";
+
         if (response.files.length == 0) {
-            container.innerHTML = "No quarantined files found.";
+            document.getElementById("no-quarantined").style.display = "";
             return;
         }
 

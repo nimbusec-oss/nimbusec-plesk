@@ -369,7 +369,7 @@ class DashboardController extends pm_Controller_Action
 		$quarantine_level = "";
 		switch ($state) {
 			case 3: 
-				$quarantine_leqvel = "1"; break;
+				$quarantine_level = "1"; break;
 			case 6: 
 				$quarantine_level = "3"; break;
 			case 9: 

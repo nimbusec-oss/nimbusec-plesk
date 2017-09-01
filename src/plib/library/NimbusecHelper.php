@@ -169,8 +169,6 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $quarantined = $this->getQuarantined($domain["name"]);
         $quarantined_cnt = count($quarantined);
 
-        pm_Log::err("in quarantine for {$domain['name']}: {$quarantined_cnt}");
-
         // map quaratined to paths for easier retrieval
         $paths = array_map(function($quarantine) { return $quarantine["old"]; }, $quarantined);
 

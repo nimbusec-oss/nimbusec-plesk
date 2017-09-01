@@ -486,7 +486,7 @@ DATA;
                             </div>
                             <div style='margin-left: -246px; display: inline-block;'>
 
-                                <form id='falsePositive' method='post' action='" . $helper->url('false-positive', 'issues') . "'>
+                                <form id='falsePositive' method='post' action='" . $helper->url('false-positive', 'dashboard') . "'>
                                     <input name='action' value='falsePositive' type='hidden'/>
                                     <input name='domain' value='{$domain}' type='hidden'/>
                                     <input name='resultId' value='{$issue['id']}' type='hidden'/>
@@ -509,7 +509,7 @@ DATA;
                             </div>
                             <div style='margin-left: -256px; margin-top: 2px;display: inline-block;'>
 
-                                <form id='moveToQuarantine' method='post' action='" . $helper->url('quarantine', 'issues') . "'>
+                                <form id='moveToQuarantine' method='post' action='" . $helper->url('quarantine', 'dashboard') . "'>
                                     <input name='action' value='moveToQuarantine' type='hidden'>
                                     <input name='domain' value='{$domain}' type='hidden'>
                                     <input name='file' value='{$issue['resource']}' type='hidden'>

@@ -1,7 +1,16 @@
-**Paid Subscription Required**
+This extension monitors your website 24/7 and informs you immediately if it is hacked or tampered with - before your visitors are jeopardized and any damage can be done. It detects the following threats:
 
-Nimbusec detects malware, defacements and blacklisting. With its extensive API and multi-user framework Nimbusec is fully integrated into your Plesk infrastructure and can even be offered as value added security service. Attractive re-selling programs for web hosters are available.
+- Malware
+- Backdoors and web shells
+- Defacement
+- Blacklisting
+- SSL certificate problems
+- Overdue CMS updates
 
-Nimbusec's SPAM Shell, 0-Day root shell and CMS version detection capability protect your IP reputation, decrease unwanted traffic and reduce server load. As a hosting provider you can support your customers with pro-active help and use Nimbusec to remove malware infections fast. As a European product Nimbusec takes privacy seriously. Business data never leaves monitored servers and all functions are available without remote access rights.
+**Note:** To start using this extension, you require API credentials (API Key and API Secret). To receive them:
 
-Please note, that for using this Plugin with Nimbusec, you require API credentials (API Key and API Secret) and a subscription of Nimbusec Website Security Monitor starting at 2€ per domain and month. These can be requested by e-mail from support@nimbusec.com. Find out more at (https://nimbusec.com/en/)
+1. Contact sales@nimbusec.com.
+2. Receive Nimbusec Website Security Monitor subscription. The subscription can be
+    - Free.
+    - Paid, tailored to your requirements.
+3. Receive API credentials.

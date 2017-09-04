@@ -111,7 +111,7 @@ $messages = [
 	"settings.controller.invalid_bundle" => "Invalid bundle chosen.",
 	"settings.controller.registered" => "Successfully registered domains with %s",
 	"settings.controller.unregistered" => "Successfully unregistered domains from %s",
-	"settings.controller.invalid_interval" => "Internal interval given",
+	"settings.controller.invalid_interval" => "Invalid interval given",
 	"settings.controller.schedule.updated" => "Agent Schedule settings successfully updated",
 
 	/**************** dashboard ****************/

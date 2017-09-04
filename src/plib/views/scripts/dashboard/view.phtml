@@ -51,12 +51,6 @@
                                 </span>
                             </a>
                         </div>
-                        
-                        <div style="display: inline-block;">
-                            <a id="issue-link">
-                                <?= pm_Locale::lmsg("dashboard.view.select_issues"); ?>
-                            </a>
-                        </div>
                     </div>
 
                 </div>
@@ -572,18 +566,6 @@
 
                 // apply to all
                 document.querySelectorAll("[id='issue-" + domain + "']").forEach(function(issue) { 
-                    issue.checked = !checked; 
-                });
-            }
-
-            // selecting and (un)checking all issues 
-            if (toggle.id === "issue-link") {
-
-                // select the checked state of the first issue
-                var checked = document.querySelector("input[id^='issue-']").checked;
-
-                // apply to all 
-                document.querySelectorAll("input[id^='issue-']").forEach(function (issue) { 
                     issue.checked = !checked; 
                 });
             }

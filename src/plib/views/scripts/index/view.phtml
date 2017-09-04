@@ -1,0 +1,106 @@
+<?= $this->renderTabs($this->tabs); ?>
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    <?= pm_Locale::lmsg("index.view.title"); ?>
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?= pm_Locale::lmsg("index.view.description"); ?>
+
+            <div class="btns-box">
+                <div class="box-area">
+                    <div class="form-row">
+
+                        <div class="field-name">
+                            <span class="btn action">
+
+                                <button id="button" name="login">
+                                    <?= pm_Locale::lmsg("index.view.login"); ?>
+                                </button>
+                            
+                            </span>
+                        </div>
+                    
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ========================================= [ JS ] ===================================================================== -->
+
+<script>
+
+    var setLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "None";
+
+        // disable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+
+        // rotating loading spinner
+        var spinner = document.createElement("span");
+        spinner.classList.toggle("wait");
+        spinner.appendChild(document.createTextNode("Please wait"));
+
+        parent.appendChild(spinner);
+    }
+
+    var removeLoading = function (toggle) {
+        
+        // hide button
+        toggle.style.display = "";
+
+        // enable parent
+        var parent = toggle.parentNode;
+        parent.classList.toggle("disabled");
+        
+        // remove loading spinner
+        toggle.nextElementSibling.remove();
+    } 
+
+    var eventHandler = function (event) {
+
+        // get the clicked element
+        var toggle = event.target;
+
+        if (toggle.nodeName.toLowerCase() === "button") {
+            
+            // for all submit buttons
+            if (toggle.type === "submit") {
+
+                // init loading
+                setLoading(toggle);
+
+                // send request
+                new Ajax.Request("<?= $this->h->url('login', 'index') ?>", {
+                    method: "POST",
+                    sanitizeJSON: true,
+                    asynchronous: false,
+
+                    onSuccess: function (response) {
+
+                        // redirect
+                        var parsed = JSON.parse(response.responseText);
+                        window.open(parsed.link, "_blank");  
+
+                        // stop loading spinner
+                        removeLoading(toggle);
+                    }
+                });
+            }
+        }
+    };
+
+    document.addEventListener("click", eventHandler);
+
+</script>

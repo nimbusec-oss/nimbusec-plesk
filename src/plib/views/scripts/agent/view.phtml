@@ -1,0 +1,63 @@
+<?= $this->renderTabs($this->tabs); ?>
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    <?= pm_Locale::lmsg("agent.view.title"); ?>
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <div>
+                <?= pm_Locale::lmsg("agent.view.description"); ?>
+                <br>
+                <br>
+
+                <div class="box-area">
+
+                    <div class="form-row">
+                        <div class="field-name">
+                            <span><?= pm_Locale::lmsg("agent.view.installed.title"); ?>: </span>
+                        </div>
+                        <div class="field-value">
+                            <span><?= pm_Locale::lmsg("msg.installed"); ?></span>
+                        </div>
+                    </div>
+                        
+                    <div class="form-row">
+                        <div class="field-name">
+                            <span><?= pm_Locale::lmsg("agent.view.version.title"); ?>: </span>
+                        </div>
+                        <div class="field-value">
+                            <span><?= $this->agent_version; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="field-name">
+                            <span><?= pm_Locale::lmsg("agent.view.os.title"); ?>: </span>
+                        </div>
+                        <div class="field-value">
+                            <span><?= $this->agent_os; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="field-name">
+                            <span><?= pm_Locale::lmsg("agent.view.arch.title"); ?>: </span>
+                        </div>
+                        <div class="field-value">
+                            <span><?= $this->agent_arch; ?></span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <?= $this->form; ?>
+            
+        </div>
+    </div>
+</div>

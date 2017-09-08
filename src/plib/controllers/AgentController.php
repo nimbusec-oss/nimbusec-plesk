@@ -22,6 +22,9 @@ class AgentController extends pm_Controller_Action
 	{
 		$this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
 
+		// try to fetch passed parameters (e.g from forwards)
+		$this->view->response = $this->getRequest()->getParam("response");
+
 		// query store
         $agent = json_decode(pm_Settings::get("agent"), true);
 
@@ -61,13 +64,14 @@ class AgentController extends pm_Controller_Action
 		} catch (Exception $e) {
 			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
 			
-			$this->_status->addMessage("error", pm_Locale::lmsg("error.download_agent"));
-			$this->_forward("view", "agent");
+			$this->_forward("view", "agent", null, [
+				"response" => $this->createHTMLR(pm_Locale::lmsg("error.download_agent"), "error")
+			]);
 			return;
 		}
 
 		$this->_status->addMessage("info", pm_Locale::lmsg("agent.controller.updated"));
-		$this->_helper->redirector->gotoSimple("view", "agent");
+		$this->_helper->redirector("view", "agent");
 		return;
 	}
 }

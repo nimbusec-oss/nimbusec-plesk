@@ -1,3 +1,11 @@
+# 2.1
+
+* New dashboard panel showing detected issues
+* Secure quarantine area where infected files can be moved to preventing further damage
+* Automatic quarantine background mechanism which moves infected files into quarantine within a 5 minute interval 
+* Full german translation support
+
+
 # 2.0
 
 * Improved User Interface

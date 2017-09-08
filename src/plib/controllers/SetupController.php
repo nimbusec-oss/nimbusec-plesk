@@ -144,7 +144,7 @@ class SetupController extends pm_Controller_Action
 
 		// redirect to new view
 		$this->_status->addMessage("info", pm_Locale::lmsg("setup.controller.installed"));
-		$this->_helper->redirector("view", "index");
+		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
 }

@@ -35,20 +35,6 @@ class IndexController extends pm_Controller_Action
             return;
         }
 
-        $this->_forward("view");
-    }
-
-    public function viewAction()
-    {
-        $this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
-
-        if ($this->getRequest()->isPost()) {
-            $admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();
-
-            $this->_helper->json([
-				"link" => Modules_NimbusecAgentIntegration_PleskHelper::getSignedLoginURL((string) $admin->admin_email, pm_Settings::get('signaturekey'))
-            ]);
-            return;
-        }
+        $this->_forward("view", "dashboard");
     }
 }

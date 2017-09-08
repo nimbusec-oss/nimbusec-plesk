@@ -49,11 +49,6 @@ $messages = [
 
 	"agent.controller.updated" => "Successfully updated Nimbusec Agent to the newest version",
 
-	/**************** index ****************/
-	"index.view.title" => "Login to Nimbusec",
-	"index.view.description" => "Access the Nimbusec Portal directly and conveniently through Single Sign on. For more information about the usage of this plugin see <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
-	"index.view.login" => "Click here to access the Nimbusec Portal",
-
 	/**************** setup ****************/
 	"setup.view.title" => "Setup",
 	"setup.view.description" => "Enter your Nimbusec API credentials in order to download the Nimbusec Server Agent. " .

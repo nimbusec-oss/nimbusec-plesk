@@ -12,7 +12,6 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         }
 
         return [
-			["title" => "Login to Nimbusec",   "action" => "view", "controller" => "index"],
 			["title" => "Dashboard",           "action" => "view", "controller" => "dashboard"],
 			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
 			["title" => "Settings",            "action" => "view", "controller" => "settings"],
@@ -100,27 +99,8 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         }
 
 		return true;
-	}
-
-    public static function getSignedLoginURL($userName, $userSecret)
-    {
-
-		// get time with milliseconds ~true timestamp (hack because PHP has no long)
-        $time = time();
-
-        // encode with BCrypt
-        $signature = password_hash($userName . $time . $userSecret, PASSWORD_BCRYPT);
-
-        // previous PHP bcrypt version had a security bug in their implementation. To distinguish
-        // older signatures from (safe) new ones, they changed the prefix to $2y$. The nimbusec
-        // dashboard does not work with the PHP prefix, so just set the 'standard' $2a$ ;)
-        $signature = str_replace("$2y$", "$2a$", $signature);
-
-        // build the final SSO String
-        $ssoString = sprintf("%slogin/signed?user=%s&time=%d&sig=%s", pm_Settings::get("portal_url"), $userName, $time, $signature);
-        return $ssoString;
     }
-
+    
     public static function formatPermission($permissions)
     {
         // skip file type

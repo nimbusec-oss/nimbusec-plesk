@@ -39,7 +39,7 @@ class QuarantineController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_request")
+				"error" => $this->lmsg("error.invalid_request")
 			]);
 			return;
 		}
@@ -50,7 +50,7 @@ class QuarantineController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_path")
+				"error" => $this->lmsg("error.invalid_path")
 			]);
 			return;
 		}
@@ -89,7 +89,7 @@ class QuarantineController extends pm_Controller_Action
 
 		// add success message, if there are no files in quarantine
 		if (count($fetched) === 0) {
-			$response["success"] = $this->createHTMLR(pm_Locale::lmsg("quarantine.controller.no_files_found"), "info");
+			$response["success"] = $this->createHTMLR($this->lmsg("quarantine.controller.no_files_found"), "info");
 		}
 
 		$this->_helper->json($response);
@@ -102,7 +102,7 @@ class QuarantineController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_request")
+				"error" => $this->lmsg("error.invalid_request")
 			]);
 			return;
 		}
@@ -113,7 +113,7 @@ class QuarantineController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_path")
+				"error" => $this->lmsg("error.invalid_path")
 			]);
 			return;
 		}
@@ -137,7 +137,7 @@ class QuarantineController extends pm_Controller_Action
 		$success = $nimbusec->unquarantine($path);
 		if (!$success) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
 			return;
 		}
@@ -167,7 +167,7 @@ class QuarantineController extends pm_Controller_Action
 			"path" 	  => $dirname,
 			"action"  => $action,
 			"error"   => false,
-			"success" => $this->createHTMLR(sprintf(pm_Locale::lmsg("quarantine.controller.unquarantined"), $display_path), "info")
+			"success" => $this->createHTMLR(sprintf($this->lmsg("quarantine.controller.unquarantined"), $display_path), "info")
 		]);
 		return;		
 	}
@@ -178,7 +178,7 @@ class QuarantineController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine-bulk");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_request")
+				"error" => $this->lmsg("error.invalid_request")
 			]);
 			return;
 		}
@@ -190,7 +190,7 @@ class QuarantineController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($path)) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("error.invalid_path")
+				"error" => $this->lmsg("error.invalid_path")
 			]);
 			return;
 		}
@@ -199,7 +199,7 @@ class QuarantineController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($paths)) {
 			$this->_helper->json([
-				"error" => pm_Locale::lmsg("quarantine.controller.no_files")
+				"error" => $this->lmsg("quarantine.controller.no_files")
 			]);
 			return;
 		}
@@ -211,7 +211,7 @@ class QuarantineController extends pm_Controller_Action
 
 		if (count($paths) == 0) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("quarantine.controller.no_files"), "error")
+				"error" => $this->createHTMLR($this->lmsg("quarantine.controller.no_files"), "error")
 			]);
 			return;
 		}
@@ -223,7 +223,7 @@ class QuarantineController extends pm_Controller_Action
 			$success = $nimbusec->unquarantine($subpath);
 			if (!$success) {
 				$this->_helper->json([
-					"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+					"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 				]);
 				return;
 			}
@@ -254,7 +254,7 @@ class QuarantineController extends pm_Controller_Action
 			"path" 	  => $dirname,
 			"action"  => $action,
 			"error"   => false,
-			"success" => $this->createHTMLR(pm_Locale::lmsg("quarantine.controller.bulk_unquarantined"), "info")
+			"success" => $this->createHTMLR($this->lmsg("quarantine.controller.bulk_unquarantined"), "info")
 		]);
 		return;
 	}

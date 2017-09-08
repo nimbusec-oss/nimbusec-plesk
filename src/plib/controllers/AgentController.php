@@ -41,10 +41,10 @@ class AgentController extends pm_Controller_Action
 		if ($version > $agent["version"]) {
 			$this->view->agent_outdated = "true";
 			$this->view->update_version = $version;
-			$this->_status->addMessage("warning", pm_Locale::lmsg("agent.controller.outdated"));
+			$this->_status->addMessage("warning", $this->lmsg("agent.controller.outdated"));
 
 		} else {
-			$this->_status->addMessage("info", pm_Locale::lmsg("agent.controller.not_outdated"));
+			$this->_status->addMessage("info", $this->lmsg("agent.controller.not_outdated"));
 		}
 	}
 
@@ -65,12 +65,12 @@ class AgentController extends pm_Controller_Action
 			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
 			
 			$this->_forward("view", "agent", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.download_agent"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.download_agent"), "error")
 			]);
 			return;
 		}
 
-		$this->_status->addMessage("info", pm_Locale::lmsg("agent.controller.updated"));
+		$this->_status->addMessage("info", $this->lmsg("agent.controller.updated"));
 		$this->_helper->redirector("view", "agent");
 		return;
 	}

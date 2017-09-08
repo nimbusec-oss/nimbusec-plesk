@@ -8,12 +8,12 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= pm_Locale::lmsg("settings.view.unreg.title"); ?>
+                    <?= $this->lmsg("settings.view.unreg.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("settings.view.unreg.description"); ?>
+            <?= $this->lmsg("settings.view.unreg.description"); ?>
             <br>
             <br>
 
@@ -36,7 +36,7 @@
                             <span id="btn-send" class="btn action" style="margin-left: 20px;">
                             
                                 <button type="submit" name="submit" value="registerSelected">
-                                    <?= pm_Locale::lmsg("settings.view.unreg.register"); ?>
+                                    <?= $this->lmsg("settings.view.unreg.register"); ?>
                                 </button>
                             
                             </span>
@@ -48,7 +48,7 @@
                         <?php if (count($this->nonregistered_domains) == 0): ?>
                         
                             <span class="hint">
-                                <?= pm_Locale::lmsg("settings.view.unreg.no_domains"); ?>
+                                <?= $this->lmsg("settings.view.unreg.no_domains"); ?>
                             </span>
                         
                         <?php else: ?>
@@ -56,10 +56,10 @@
                                 <thead>
                                     <tr>
                                         <th>
-                                            <input name="act0" id="act0" type="checkbox" setter> <?= pm_Locale::lmsg("settings.view.unreg.domain"); ?>
+                                            <input name="act0" id="act0" type="checkbox" setter> <?= $this->lmsg("settings.view.unreg.domain"); ?>
                                         </th>
                                         <th>
-                                            <a><?= pm_Locale::lmsg("msg.directory"); ?></a>
+                                            <a><?= $this->lmsg("msg.directory"); ?></a>
                                         </th>
                                     </tr>
                                 </thead>
@@ -93,13 +93,13 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= pm_Locale::lmsg("settings.view.reg.title"); ?>
+                    <?= $this->lmsg("settings.view.reg.title"); ?>
                 </h3>
             </div>
         </div>
         
         <div class="content">
-            <?= pm_Locale::lmsg("settings.view.reg.description"); ?>
+            <?= $this->lmsg("settings.view.reg.description"); ?>
             <br>
             <br>
 
@@ -119,7 +119,7 @@
                                 <span id="btn-send" class="btn action">
                                 
                                     <button type="submit" name="submit" value="removeSelected<?= $i; ?>">
-                                        <?= pm_Locale::lmsg("settings.view.reg.unregister"); ?>
+                                        <?= $this->lmsg("settings.view.reg.unregister"); ?>
                                     </button>
                                 
                                 </span>
@@ -130,7 +130,7 @@
                             <?php if (count($bundle_element["domains"]) == 0): ?>
                             
                                 <span class="hint">
-                                    <?= pm_Locale::lmsg("settings.view.reg.no_domains"); ?>
+                                    <?= $this->lmsg("settings.view.reg.no_domains"); ?>
                                 </span>
                             
                             <?php else: ?>
@@ -138,10 +138,10 @@
                                     <thead>
                                         <tr>
                                             <th>
-                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" setter> <?= pm_Locale::lmsg("settings.view.reg.domain"); ?> 
+                                                <input name="act<?= $i; ?>" id="act<?= $i; ?>" type="checkbox" setter> <?= $this->lmsg("settings.view.reg.domain"); ?> 
                                             </th>
                                             <th>
-                                                <a><?= pm_Locale::lmsg("msg.directory"); ?></a>
+                                                <a><?= $this->lmsg("msg.directory"); ?></a>
                                             </th>
                                         </tr>
                                     </thead>
@@ -187,17 +187,17 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= pm_Locale::lmsg("settings.view.conf.title"); ?>
+                    <?= $this->lmsg("settings.view.conf.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("settings.view.conf.description"); ?>
+            <?= $this->lmsg("settings.view.conf.description"); ?>
             <br>
             <br>
             <div class="form-row">
                 <div class="field-name">
-                    <?= pm_Locale::lmsg("settings.view.conf.configuration"); ?>
+                    <?= $this->lmsg("settings.view.conf.configuration"); ?>
                 </div>
                 <div class="field-value">
                     <textarea style="margin-right: 5px; height: 400px; width: 400px" readonly><?= $this->configuration; ?></textarea>
@@ -214,12 +214,12 @@
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= pm_Locale::lmsg("settings.view.schedule.title"); ?>
+                    <?= $this->lmsg("settings.view.schedule.title"); ?>
                 </h3>
             </div>
         </div>
         <div class="content">
-            <?= pm_Locale::lmsg("settings.view.schedule.description"); ?>
+            <?= $this->lmsg("settings.view.schedule.description"); ?>
             <br>
             <br>
             
@@ -228,7 +228,7 @@
                 <!-- scheduled -->
                 <?php $agent_scheduled = pm_Settings::get("agent_scheduled"); ?>
                 <input name="status" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
-                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= pm_Locale::lmsg("settings.view.schedule.status"); ?>    
+                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= $this->lmsg("settings.view.schedule.status"); ?>    
                 <br>
                 
                 <!-- yara -->
@@ -238,26 +238,26 @@
                 <input name="yara" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
                     <?php if ($agent_arch === "32bit"): ?> disabled="disabled" <?php endif ?>
                     <?php if ($agent_yara === "true"): ?> checked="checked" <?php endif ?> /> 
-                    <?= pm_Locale::lmsg("settings.view.schedule.yara"); ?> <?php if ($agent_arch === "32bit"): ?><?= pm_Locale::lmsg("settings.view.schedule.yara_not_supported"); ?><?php endif ?>
+                    <?= $this->lmsg("settings.view.schedule.yara"); ?> <?php if ($agent_arch === "32bit"): ?><?= $this->lmsg("settings.view.schedule.yara_not_supported"); ?><?php endif ?>
 
                 <!-- interval -->
                 <div class="form-row">
                     <div class="field-name">
-                        <?= pm_Locale::lmsg("settings.view.schedule.interval"); ?>
+                        <?= $this->lmsg("settings.view.schedule.interval"); ?>
                     </div>
                     <div class="field-value">
                         <select name="interval"> 
                             <option value="0" <?php if (pm_Settings::get("agent_schedule_interval") == "0"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("settings.view.schedule.interval.once"); ?>
+                                <?= $this->lmsg("settings.view.schedule.interval.once"); ?>
                             </option>
                             <option value="12" <?php if (pm_Settings::get("agent_schedule_interval") == "12"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("settings.view.schedule.interval.twice"); ?>
+                                <?= $this->lmsg("settings.view.schedule.interval.twice"); ?>
                             </option>
                             <option value="8" <?php if (pm_Settings::get("agent_schedule_interval") == "8"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("settings.view.schedule.interval.three_times"); ?>
+                                <?= $this->lmsg("settings.view.schedule.interval.three_times"); ?>
                             </option>
                             <option value="6" <?php if (pm_Settings::get("agent_schedule_interval") == "6"): ?> selected <?php endif; ?>>
-                                <?= pm_Locale::lmsg("settings.view.schedule.interval.four_times"); ?>
+                                <?= $this->lmsg("settings.view.schedule.interval.four_times"); ?>
                             </option>
                         </select>
                     </div>
@@ -268,7 +268,7 @@
                             <div class="field-name">
                                 <span id="btn-send" class="btn action">
                                     <button type="submit" name="submit" value="schedule">
-                                        <?= pm_Locale::lmsg("settings.view.schedule.update"); ?>    
+                                        <?= $this->lmsg("settings.view.schedule.update"); ?>    
                                     </button>
                                 </span>
                             </div>

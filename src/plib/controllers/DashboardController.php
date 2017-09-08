@@ -55,7 +55,7 @@ class DashboardController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-metadata");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_request"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
 			]);
 			return;
 		}
@@ -95,7 +95,7 @@ class DashboardController extends pm_Controller_Action
 			pm_Log::err($e->getMessage());
 
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
 			return;
 		}
@@ -107,7 +107,7 @@ class DashboardController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-issue");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_request"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
 			]);
 			return;
 		}
@@ -147,7 +147,7 @@ class DashboardController extends pm_Controller_Action
 			pm_Log::err($e->getMessage());
 
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
 			return;
 		}
@@ -170,7 +170,7 @@ class DashboardController extends pm_Controller_Action
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_domain"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.invalid_domain"), "error")
 			]);
 			return;	
 		}
@@ -179,7 +179,7 @@ class DashboardController extends pm_Controller_Action
 		$validator = new Zend\Validator\Digits();
 		if (!$validator->isValid($result_id)) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_issue"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.invalid_issue"), "error")
 			]);
 			return;
 		}
@@ -188,7 +188,7 @@ class DashboardController extends pm_Controller_Action
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
             $this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.file_not_exist"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.file_not_exist"), "error")
 			]);
 			return;	
         }
@@ -199,12 +199,12 @@ class DashboardController extends pm_Controller_Action
 			$success = $nimbusec->markAsFalsePositive($domain, $result_id, $file);
 			if (!$success) {
 				$this->_forward("view", "dashboard", null, [
-					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
 
-			$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("issue.controller.false_positive", $file)));
+			$this->_status->addMessage("info", sprintf($this->lmsg("issue.controller.false_positive", $file)));
 			$this->_helper->redirector("view", "dashboard");
 			return;
 
@@ -232,7 +232,7 @@ class DashboardController extends pm_Controller_Action
 		$validator = new Zend\Validator\Hostname();
 		if (!$validator->isValid($domain)) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_domain"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.invalid_domain"), "error")
 			]);
 			return;	
 		}
@@ -241,7 +241,7 @@ class DashboardController extends pm_Controller_Action
 		$fileManager = new pm_ServerFileManager();
 		if (!$fileManager->fileExists($file)) {
             $this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.file_not_exist"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.file_not_exist"), "error")
 			]);
 			return;
         }
@@ -251,12 +251,12 @@ class DashboardController extends pm_Controller_Action
 			$nimbusec->moveToQuarantine($domain, $file);
 		} catch (Exception $e) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(sprintf(pm_Locale::lmsg("error.msg"), $e->getMessage()), "error")
+				"response" => $this->createHTMLR(sprintf($this->lmsg("error.msg"), $e->getMessage()), "error")
 			]);
 			return;
 		}
 
-		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("dashboard.controller.quarantine"), $file));
+		$this->_status->addMessage("info", sprintf($this->lmsg("dashboard.controller.quarantine"), $file));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
@@ -267,7 +267,7 @@ class DashboardController extends pm_Controller_Action
 		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "bulk-quarantine");
 		if (!$valid) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("error.invalid_request"), "error")
+				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
 			]);
 			return;
 		}
@@ -278,7 +278,7 @@ class DashboardController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($issues)) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.no_issues"), "error")
+				"error" => $this->createHTMLR($this->lmsg("dashboard.controller.no_issues"), "error")
 			]);
 			return;
 		}
@@ -286,7 +286,7 @@ class DashboardController extends pm_Controller_Action
 		$issues = json_decode($issues, true);
 		if (count($issues) === 0) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.no_issues"), "error")
+				"error" => $this->createHTMLR($this->lmsg("dashboard.controller.no_issues"), "error")
 			]);
 			return;
 		}
@@ -298,14 +298,14 @@ class DashboardController extends pm_Controller_Action
 				$nimbusec->moveToQuarantine($issue["domain"], $issue["file"]);
 			} catch (Exception $e) {
 				$this->_helper->json([
-					"error" => $this->createHTMLR(sprintf(pm_Locale::lmsg("error.msg"), $e->getMessage()), "error")
+					"error" => $this->createHTMLR(sprintf($this->lmsg("error.msg"), $e->getMessage()), "error")
 				]);
 				return;
 			}
 		}
 
 		$this->_helper->json([
-			"html" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.bulk_quarantine"), "info")
+			"html" => $this->createHTMLR($this->lmsg("dashboard.controller.bulk_quarantine"), "info")
 		]);
 		return;
 	}
@@ -325,7 +325,7 @@ class DashboardController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($states)) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.invalid_schedule"), "error")
+				"response" => $this->createHTMLR($this->lmsg("dashboard.controller.invalid_schedule"), "error")
 			]);
 			return;	
 		}
@@ -339,7 +339,7 @@ class DashboardController extends pm_Controller_Action
 		// 9 == red & yellow
 		if (!in_array($state, [1, 3, 6, 9])) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("dashboard.controller.invalid_schedule"), "error")
+				"response" => $this->createHTMLR($this->lmsg("dashboard.controller.invalid_schedule"), "error")
 			]);
 			return;
 		}
@@ -364,7 +364,7 @@ class DashboardController extends pm_Controller_Action
 			pm_Settings::set("quarantine_schedule_id", false);
 			pm_Settings::set("quarantine_level", "0");
 
-			$this->_status->addMessage("info", pm_Locale::lmsg("dashboard.controller.automatic_quarantine.disabled"));
+			$this->_status->addMessage("info", $this->lmsg("dashboard.controller.automatic_quarantine.disabled"));
 			$this->_helper->redirector("view", "dashboard");
 			return;
 		}
@@ -393,7 +393,7 @@ class DashboardController extends pm_Controller_Action
 		pm_Settings::set("quarantine_level", $quarantine_level);
 		pm_Settings::set("quarantine_state", $state);
 
-		$this->_status->addMessage("info", pm_Locale::lmsg("dashboard.controller.automatic_quarantine.enabled"));
+		$this->_status->addMessage("info", $this->lmsg("dashboard.controller.automatic_quarantine.enabled"));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}

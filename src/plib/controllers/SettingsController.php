@@ -57,7 +57,7 @@ class SettingsController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.no_domains"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.no_domains"), "error")
 			]);
 			return;	
 		}
@@ -66,7 +66,7 @@ class SettingsController extends pm_Controller_Action
 		$bundle_elements = split("__", $bundle);
 		if (count($bundle_elements) !== 2) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -80,7 +80,7 @@ class SettingsController extends pm_Controller_Action
 			pm_Log::err("Domain registration: invalid bundle id");
 
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -96,7 +96,7 @@ class SettingsController extends pm_Controller_Action
 
 			if (!$success) {
 				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
@@ -111,7 +111,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("settings.controller.registered"), $bundle_name));
+		$this->_status->addMessage("info", sprintf($this->lmsg("settings.controller.registered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -134,7 +134,7 @@ class SettingsController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($domains)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.no_domains"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.no_domains"), "error")
 			]);
 			return;	
 		}
@@ -143,7 +143,7 @@ class SettingsController extends pm_Controller_Action
 		$validator = new Zend\Validator\NotEmpty();
 		if (!$validator->isValid($bundle_name)) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_bundle"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.invalid_bundle"), "error")
 			]);
 			return;	
 		}
@@ -159,7 +159,7 @@ class SettingsController extends pm_Controller_Action
 
 			if (!$success) {
 				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR(pm_Locale::lmsg("error.unexpected"), "error")
+					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 				]);
 				return;	
 			}
@@ -174,7 +174,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", sprintf(pm_Locale::lmsg("settings.controller.unregistered"), $bundle_name));
+		$this->_status->addMessage("info", sprintf($this->lmsg("settings.controller.unregistered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -195,7 +195,7 @@ class SettingsController extends pm_Controller_Action
 		// validate interval
 		if ($interval !== "0" && $interval !== "12" && $interval !== "8" && $interval !== "6") {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("settings.controller.invalid_interval"), "error")
+				"response" => $this->createHTMLR($this->lmsg("settings.controller.invalid_interval"), "error")
 			]);
 			return;	
 		}
@@ -238,7 +238,7 @@ class SettingsController extends pm_Controller_Action
 			pm_Settings::set("agent_scheduled", $status);
 			pm_Settings::set("agent_yara", $yara);
 
-			$this->_status->addMessage("info", pm_Locale::lmsg("settings.controller.schedule.updated"));
+			$this->_status->addMessage("info", $this->lmsg("settings.controller.schedule.updated"));
 			$this->_helper->redirector("view", "settings");
 			return;
 		}
@@ -276,7 +276,7 @@ class SettingsController extends pm_Controller_Action
 		pm_Settings::set("agent_scheduled", $status);
 		pm_Settings::set("agent_yara", $yara);
 
-		$this->_status->addMessage("info", pm_Locale::lmsg("settings.controller.schedule.updated"));
+		$this->_status->addMessage("info", $this->lmsg("settings.controller.schedule.updated"));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}

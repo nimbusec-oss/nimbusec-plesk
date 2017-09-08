@@ -25,8 +25,8 @@ class SetupController extends pm_Controller_Action
 		// try to fetch passed parameters (e.g from forwards)
         $this->view->response = $this->getRequest()->getParam("response");
 
-        $this->view->api_key = pm_Settings::get("api_key", pm_Locale::lmsg("setup.controller.placeholder.api_key"));
-        $this->view->api_secret = pm_Settings::get("api_secret", pm_Locale::lmsg("setup.controller.placeholder.api_secret"));
+        $this->view->api_key = pm_Settings::get("api_key", $this->lmsg("setup.controller.placeholder.api_key"));
+        $this->view->api_secret = pm_Settings::get("api_secret", $this->lmsg("setup.controller.placeholder.api_secret"));
         $this->view->api_server = pm_Settings::get("api_url");
 
 		$this->view->extension_installed = pm_Settings::get("extension_installed");
@@ -49,7 +49,7 @@ class SetupController extends pm_Controller_Action
 		$validator = new Zend\I18n\Validator\Alnum();
 		if (!$validator->isValid($api_key) || !$validator->isValid($api_secret)) {
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.api_credentials"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.api_credentials"), "error")
 			]);
 			return;
 		}
@@ -58,7 +58,7 @@ class SetupController extends pm_Controller_Action
 		$validator = new Zend\Validator\Uri();
 		if (!$validator->isValid($api_server)) {
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.api_url"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.api_url"), "error")
 			]);
 			return;	
 		}
@@ -67,7 +67,7 @@ class SetupController extends pm_Controller_Action
 		$nimbusec = Modules_NimbusecAgentIntegration_NimbusecHelper::withCred($api_key, $api_secret, $api_server);
 		if (!$nimbusec->areValidAPICredentials()) {
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.api_credentials"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.api_credentials"), "error")
 			]);
 			return;
 		}
@@ -79,7 +79,7 @@ class SetupController extends pm_Controller_Action
 			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
 			
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.download_agent"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.download_agent"), "error")
 			]);
 			return;
 		}
@@ -97,7 +97,7 @@ class SetupController extends pm_Controller_Action
 			pm_Log::err("Upserting administrator failed: {$e->getMessage()}");
 
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.enable_sso"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.enable_sso"), "error")
 			]);
 			return;
 		}
@@ -113,7 +113,7 @@ class SetupController extends pm_Controller_Action
 			pm_Log::err("Retrieving agent token failed: {$e->getMessage()}");
 
 			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR(pm_Locale::lmsg("error.token_retrieval"), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.token_retrieval"), "error")
 			]);
 			return;
 		}
@@ -143,7 +143,7 @@ class SetupController extends pm_Controller_Action
 		pm_Settings::set("extension_installed", "true");
 
 		// redirect to new view
-		$this->_status->addMessage("info", pm_Locale::lmsg("setup.controller.installed"));
+		$this->_status->addMessage("info", $this->lmsg("setup.controller.installed"));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}

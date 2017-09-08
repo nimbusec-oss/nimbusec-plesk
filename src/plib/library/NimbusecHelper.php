@@ -437,21 +437,46 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
      * @param string $path path into which the downloaded agent should be extracted
      * @return boolean indicates whether extracting the token worked
      */
-    public function fetchAgent($path)
+    public function fetchAgent($base)
     {
         $api = new API($this->key, $this->secret, $this->server);
 
+        // evaluate platform
         $platform = pm_ProductInfo::getPlatform();
-        $os = $platform == pm_ProductInfo::PLATFORM_UNIX ? "linux" : "windows";
+        switch ($platform) {
+            case pm_ProductInfo::PLATFORM_UNIX:
+                $os = "linux"; 
+                $name = "agent"; 
+                break;
 
+            case pm_ProductInfo::PLATFORM_WINDOWS:
+                $os = "windows"; 
+                $name = "agent.exe";
+                break;
+
+            default:
+                throw new Exception("Unknown platform {$platform}");
+        }
+
+        // evaluate arch
         $arch = pm_ProductInfo::getOsArch();
-        $arch = $arch == pm_ProductInfo::ARCH_32 ? "32bit" : "64bit";
+        switch ($arch) {
+            case pm_ProductInfo::ARCH_32:
+                $arch = "32bit";
+                break;
+                
+            case pm_ProductInfo::ARCH_64:
+                $arch = "64bit";
+                break;
+
+            default:
+                throw new Exception("Unknown arch {$arch}");
+        }
 
         $format = "bin";
 		
         // look up for agents
-        $agents = $api->findServerAgents();
-        $filtered = array_filter($agents, function ($agent) use ($os, $arch, $format) {
+        $filtered = array_filter($api->findServerAgents(), function ($agent) use ($os, $arch, $format) {
             return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
         });
         $filtered = array_values($filtered);
@@ -462,15 +487,15 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
 		
         $agent = $filtered[0];
-        $agentBin = $api->findSpecificServerAgent($agent['os'], $agent['arch'], $agent['version'], $agent["format"]);
-		
+        $agentBin = $api->findSpecificServerAgent($agent["os"], $agent["arch"], $agent["version"], $agent["format"]);
+
         // save binary
-        $name = $platform == pm_ProductInfo::PLATFORM_UNIX ? "agent" : "agent.exe";
-        file_put_contents($path . $name, $agentBin);
-		
-        // give permissions
-        if ($platform == pm_ProductInfo::PLATFORM_UNIX) {
-            chmod($path . $name, 0755);
+        $path = Sabre\Uri\resolve($base, $name);
+        file_put_contents($path, $agentBin);
+
+        // give permissions for linux only
+        if (pm_ProductInfo::isUnix()) {
+            chmod($path, 0755);
         }
 
         $agent["name"] = $name;

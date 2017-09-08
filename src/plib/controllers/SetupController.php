@@ -143,7 +143,7 @@ class SetupController extends pm_Controller_Action
 		pm_Settings::set("extension_installed", "true");
 
 		// redirect to new view
-		$this->_status->addMessage("info", $this->lmsg("setup.controller.installed"));
+		$this->_status->addInfo($this->lmsg("setup.controller.installed"));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}

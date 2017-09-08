@@ -204,7 +204,7 @@ class DashboardController extends pm_Controller_Action
 				return;	
 			}
 
-			$this->_status->addMessage("info", sprintf($this->lmsg("issue.controller.false_positive", $file)));
+			$this->_status->addInfo(sprintf($this->lmsg("issue.controller.false_positive", $file)));
 			$this->_helper->redirector("view", "dashboard");
 			return;
 
@@ -256,7 +256,7 @@ class DashboardController extends pm_Controller_Action
 			return;
 		}
 
-		$this->_status->addMessage("info", sprintf($this->lmsg("dashboard.controller.quarantine"), $file));
+		$this->_status->addInfo(sprintf($this->lmsg("dashboard.controller.quarantine"), $file));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
@@ -364,7 +364,7 @@ class DashboardController extends pm_Controller_Action
 			pm_Settings::set("quarantine_schedule_id", false);
 			pm_Settings::set("quarantine_level", "0");
 
-			$this->_status->addMessage("info", $this->lmsg("dashboard.controller.automatic_quarantine.disabled"));
+			$this->_status->addInfo($this->lmsg("dashboard.controller.automatic_quarantine.disabled"));
 			$this->_helper->redirector("view", "dashboard");
 			return;
 		}
@@ -393,7 +393,7 @@ class DashboardController extends pm_Controller_Action
 		pm_Settings::set("quarantine_level", $quarantine_level);
 		pm_Settings::set("quarantine_state", $state);
 
-		$this->_status->addMessage("info", $this->lmsg("dashboard.controller.automatic_quarantine.enabled"));
+		$this->_status->addInfo($this->lmsg("dashboard.controller.automatic_quarantine.enabled"));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}

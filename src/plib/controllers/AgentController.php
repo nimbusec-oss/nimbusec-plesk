@@ -41,10 +41,10 @@ class AgentController extends pm_Controller_Action
 		if ($version > $agent["version"]) {
 			$this->view->agent_outdated = "true";
 			$this->view->update_version = $version;
-			$this->_status->addMessage("warning", $this->lmsg("agent.controller.outdated"));
+			$this->_status->addWarning($this->lmsg("agent.controller.outdated"));
 
 		} else {
-			$this->_status->addMessage("info", $this->lmsg("agent.controller.not_outdated"));
+			$this->_status->addInfo($this->lmsg("agent.controller.not_outdated"));
 		}
 	}
 
@@ -70,7 +70,7 @@ class AgentController extends pm_Controller_Action
 			return;
 		}
 
-		$this->_status->addMessage("info", $this->lmsg("agent.controller.updated"));
+		$this->_status->addInfo($this->lmsg("agent.controller.updated"));
 		$this->_helper->redirector("view", "agent");
 		return;
 	}

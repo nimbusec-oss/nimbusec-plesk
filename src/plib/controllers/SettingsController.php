@@ -111,7 +111,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", sprintf($this->lmsg("settings.controller.registered"), $bundle_name));
+		$this->_status->addInfo(sprintf($this->lmsg("settings.controller.registered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -174,7 +174,7 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		$this->_status->addMessage("info", sprintf($this->lmsg("settings.controller.unregistered"), $bundle_name));
+		$this->_status->addInfo(sprintf($this->lmsg("settings.controller.unregistered"), $bundle_name));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}
@@ -238,7 +238,7 @@ class SettingsController extends pm_Controller_Action
 			pm_Settings::set("agent_scheduled", $status);
 			pm_Settings::set("agent_yara", $yara);
 
-			$this->_status->addMessage("info", $this->lmsg("settings.controller.schedule.updated"));
+			$this->_status->addInfo($this->lmsg("settings.controller.schedule.updated"));
 			$this->_helper->redirector("view", "settings");
 			return;
 		}
@@ -276,7 +276,7 @@ class SettingsController extends pm_Controller_Action
 		pm_Settings::set("agent_scheduled", $status);
 		pm_Settings::set("agent_yara", $yara);
 
-		$this->_status->addMessage("info", $this->lmsg("settings.controller.schedule.updated"));
+		$this->_status->addInfo($this->lmsg("settings.controller.schedule.updated"));
 		$this->_helper->redirector("view", "settings");
 		return;
 	}

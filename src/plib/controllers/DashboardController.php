@@ -185,15 +185,6 @@ class DashboardController extends pm_Controller_Action
 			return;
 		}
 
-		// validate file
-		$fileManager = new pm_ServerFileManager();
-		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR($this->lmsg("error.file_not_exist"), "error")
-			]);
-			return;	
-        }
-
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		try {
 			$nimbusec->markAsFalsePositive($domain, $result_id, $file);

@@ -6,6 +6,7 @@ class IndexController extends pm_Controller_Action
     {
         parent::init();
         $this->initPleskStore();
+        $this->_accessLevel = "admin";
 
         $this->view->pageTitle = pm_Settings::get("extension_title");
 

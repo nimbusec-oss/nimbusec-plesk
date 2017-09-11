@@ -4,7 +4,8 @@ class SettingsController extends pm_Controller_Action
 {
     public function init()
     {
-        parent::init();
+		parent::init();
+		$this->_accessLevel = "admin";
 
 		$this->view->pageTitle = pm_Settings::get("extension_title");
 		

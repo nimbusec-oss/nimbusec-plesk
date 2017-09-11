@@ -576,17 +576,17 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
     public function moveToQuarantine($domain, $file)
     {
-        $fileManager = new pm_ServerFileManager();
+        $file_manager = new pm_ServerFileManager();
 
-        if (!$fileManager->fileExists($file)) {
+        if (!$file_manager->fileExists($file)) {
             throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.file"), $file));
         }
 
         // create quarantine directory
         $src = pm_Settings::get("quarantine_root");
-        if (!$fileManager->fileExists($src)) {
+        if (!$file_manager->fileExists($src)) {
             try {
-                $fileManager->mkdir($src);
+                $file_manager->mkdir($src);
             } catch (Exception $e) {
                 throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.directory"), $e->getMessage()));
             }
@@ -594,9 +594,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         // create domain dir if not already existing
         $domainDir = "{$src}/{$domain}";
-        if (!$fileManager->fileExists($domainDir)) {
+        if (!$file_manager->fileExists($domainDir)) {
             try {
-                $fileManager->mkdir($domainDir);
+                $file_manager->mkdir($domainDir);
             } catch (Exception $e) {
                 throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.directory"), $e->getMessage()));
             }
@@ -605,7 +605,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         // move the file to quarantine
         $dst = "{$src}/{$domain}/" . pathinfo($file, PATHINFO_BASENAME);
         try {
-            $fileManager->moveFile($file, $dst);
+            $file_manager->moveFile($file, $dst);
         } catch (Exception $e) {
             throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine"), $file, $dst, $e->getMessage()));
         }
@@ -646,7 +646,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             
             // revert file movement
             try {
-                $fileManager->moveFile($dst, $file);
+                $file_manager->moveFile($dst, $file);
             } catch (Exception $e) {
                 throw new Exception(sprintf(pm_Locale::lmsg("error.unquarantine"), $dst, $file, $e->getMessage()));
             }
@@ -668,12 +668,14 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
     public function markAsFalsePositive($domain, $resultId, $file)
     {
-        $success = $this->sendToShellray($file);
-        if (!$success) {
-            return false;
+        $file_manager = new pm_ServerFileManager();
+
+        if (!$file_manager->fileExists($file)) {
+            throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.file"), $file));
         }
 
-        return $this->updateResultStatus($domain, $resultId);
+        $this->sendToShellray($file);
+        $this->updateResultStatus($domain, $resultId);
     }
 
     private function updateResultStatus($domain, $resultId)
@@ -683,14 +685,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         if (count($domains) != 1) {
             pm_Log::err("found " . count($domains) . " domains for {$domain}");
-            return false;
+            throw new Exception("Invalid number of domains found by API for {$domain}");
         }
 
         $api->updateResult($domains[0]["id"], $resultId, [
 			"status" => 3
         ]);
-
-        return true;
 	}
 
 	public function unquarantine($path) 
@@ -704,7 +704,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 		$quarantine_root = pm_Settings::get("quarantine_root");
 		$quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
 
-		$fileManager = new pm_ServerFileManager();
+		$file_manager = new pm_ServerFileManager();
 
 		if (count($fragments) == 2) {
 			$domain = $fragments[1];
@@ -712,7 +712,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			$files = $quarantine[$domain];
 			foreach ($files as $file => $value) {
 				try {
-					$fileManager->moveFile($value["path"], $value["old"]);
+					$file_manager->moveFile($value["path"], $value["old"]);
 				} catch (Exception $e) {
 					pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
 					return false;
@@ -723,7 +723,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
 			// remove folder
 			unset($quarantine[$domain]);
-			$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+			$file_manager->removeDirectory("{$quarantine_root}/{$domain}");
 		}
 
 		// file
@@ -734,7 +734,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			$value = $quarantine[$domain][$file];
 			
 			try {
-				$fileManager->moveFile($value["path"], $value["old"]);
+				$file_manager->moveFile($value["path"], $value["old"]);
 			} catch (Exception $e) {
 				pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
 				return false;
@@ -744,7 +744,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
 			// clean up when no files left
 			if (count($quarantine[$domain]) == 0) {
-				$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+				$file_manager->removeDirectory("{$quarantine_root}/{$domain}");
 				unset($quarantine[$domain]);
 			}
 		}
@@ -765,7 +765,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 		$quarantine_root = pm_Settings::get("quarantine_root");
 		$quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
 
-		$fileManager = new pm_ServerFileManager();
+		$file_manager = new pm_ServerFileManager();
 
 		if (count($fragments) == 2) {
 			$domain = $fragments[1];
@@ -773,7 +773,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			$files = $quarantine[$domain];
 			foreach ($files as $file => $value) {
 				try {
-					$fileManager->removeFile($value["path"]);
+					$file_manager->removeFile($value["path"]);
 				} catch (Exception $e) {
 					pm_Log::err("Couldn't delete {$value['path']} from quarantine: {$e->getMessage()}");
 					return false;
@@ -784,7 +784,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
 			// remove folder
 			unset($quarantine[$domain]);
-			$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+			$file_manager->removeDirectory("{$quarantine_root}/{$domain}");
 		}
 
 		// file
@@ -795,7 +795,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			$value = $quarantine[$domain][$file];
 			
 			try {
-				$fileManager->removeFile($value["path"]);
+				$file_manager->removeFile($value["path"]);
 			} catch (Exception $e) {
 				pm_Log::err("Couldn't delete {$value['path']}: {$e->getMessage()}");
 				return false;
@@ -805,7 +805,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
 			// clean up when no files left
 			if (count($quarantine[$domain]) == 0) {
-				$fileManager->removeDirectory("{$quarantine_root}/{$domain}");
+				$file_manager->removeDirectory("{$quarantine_root}/{$domain}");
 				unset($quarantine[$domain]);	
 			}
 		}
@@ -848,10 +848,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         if ($header["http_code"] != 200) {
             pm_Log::err("Response from shellray.com resulted in {$header['http_code']}. Full response: " .
 				json_encode($header, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-            return false;
+            throw new Exception("Could not connect to shellray.com");
         }
 
         pm_Log::info("Content: " . substr($header["content"], $header["download_content_length"]));
-        return true;
     }
 }

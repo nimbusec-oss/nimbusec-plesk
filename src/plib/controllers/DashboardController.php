@@ -195,26 +195,18 @@ class DashboardController extends pm_Controller_Action
         }
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
-
 		try {
-			$success = $nimbusec->markAsFalsePositive($domain, $result_id, $file);
-			if (!$success) {
-				$this->_forward("view", "dashboard", null, [
-					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
-				]);
-				return;	
-			}
-
-			$this->_status->addInfo(sprintf($this->lmsg("issue.controller.false_positive", $file)));
-			$this->_helper->redirector("view", "dashboard");
-			return;
-
+			$nimbusec->markAsFalsePositive($domain, $result_id, $file);
 		} catch (Exception $e) {
 			$this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR("False positive: {$e->getMessage()}", "error")
+				"response" => $this->createHTMLR(sprintf($this->lmsg("error.msg"), $e->getMessage()), "error")
 			]);
-			return;	
+			return;
 		}
+
+		$this->_status->addInfo(sprintf($this->lmsg("issue.controller.false_positive", $file)));
+		$this->_helper->redirector("view", "dashboard");
+		return;
 	}
 
 	public function quarantineAction() 
@@ -237,15 +229,6 @@ class DashboardController extends pm_Controller_Action
 			]);
 			return;	
 		}
-
-		// validate file
-		$fileManager = new pm_ServerFileManager();
-		if (!$fileManager->fileExists($file)) {
-            $this->_forward("view", "dashboard", null, [
-				"response" => $this->createHTMLR($this->lmsg("error.file_not_exist"), "error")
-			]);
-			return;
-        }
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		try {

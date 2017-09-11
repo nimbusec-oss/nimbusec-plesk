@@ -138,9 +138,14 @@
             </div>
             
             <?php if (count($this->infected) === 0): ?>
-                <h4>
-                    <?= $this->lmsg("dashboard.view.no_issues"); ?>
-                </h4>
+                <div>
+                    <span>
+                        <h5>
+                            <?= $this->lmsg("dashboard.view.no_issues"); ?>
+                            <img style="width: 16px; height: 16px;" src="/theme/icons/16/plesk/on.png">
+                        </h5>
+                    </span>
+                </div>
             <?php else: ?>
 
                 

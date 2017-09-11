@@ -364,6 +364,7 @@ class DashboardController extends pm_Controller_Action
 		if ($state == 1) {
 			pm_Settings::set("quarantine_schedule_id", false);
 			pm_Settings::set("quarantine_level", "0");
+			pm_Settings::set("quarantine_state", $state);
 
 			$this->_status->addInfo($this->lmsg("dashboard.controller.automatic_quarantine.disabled"));
 			$this->_helper->redirector("view", "dashboard");

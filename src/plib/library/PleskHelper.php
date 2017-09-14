@@ -7,16 +7,16 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         $installed = pm_Settings::get("extension_installed");
         if ($installed !== "true") {
             return [
-				["title" => "Setup", "action" => "view", "controller" => "setup"],
+				["title" => pm_Locale::lmsg("setup.view.title"), "action" => "view", "controller" => "setup"],
             ];
         }
 
         return [
-			["title" => "Dashboard",           "action" => "view", "controller" => "dashboard"],
-			["title" => "Quarantine",          "action" => "view", "controller" => "quarantine"],
-			["title" => "Settings",            "action" => "view", "controller" => "settings"],
-			["title" => "Agent Overview",      "action" => "view", "controller" => "agent"],
-			["title" => "Setup",               "action" => "view", "controller" => "setup"],
+			["title" => pm_Locale::lmsg("dashboard.view.title"), "action" => "view", "controller" => "dashboard"],
+			["title" => pm_Locale::lmsg("quarantine.view.title"), "action" => "view", "controller" => "quarantine"],
+			["title" => pm_Locale::lmsg("settings.view.title"), "action" => "view", "controller" => "settings"],
+			["title" => pm_Locale::lmsg("agent.view.title"), "action" => "view", "controller" => "agent"],
+			["title" => pm_Locale::lmsg("setup.view.title"), "action" => "view", "controller" => "setup"],
         ];
     }
 

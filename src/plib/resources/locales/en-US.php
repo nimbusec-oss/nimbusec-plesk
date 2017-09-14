@@ -63,6 +63,8 @@ $messages = [
 	"setup.controller.installed" => "Successfully installed the Nimbusec Agent",
 
 	/**************** settings ****************/
+	"settings.view.title" => "Settings",
+
 	/* unregistered */
 	"settings.view.unreg.title" => "Unregistered Domains",
 	"settings.view.unreg.description" => "Below you can find your domains inside of Plesk which has not been registered with Nimbusec. " .
@@ -162,6 +164,7 @@ $messages = [
 	"dashboard.controller.invalid_schedule" => "Invalid schedule selected",
 
 	/**************** quarantine ****************/
+	"quarantine.view.title" => "Quarantine",
 	"quarantine.view.description" => "Here you can view all quarantined files within a directory structure. Additionally, it allows the user to view or move the files back from quarantine.",
 	"quarantine.view.no_files_found" => "<h5>No files were found in quarantine. <img style='width: 16px; height: 16px;' src='/theme/icons/16/plesk/on.png'/></h5>",
 

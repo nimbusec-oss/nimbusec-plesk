@@ -63,6 +63,8 @@ $messages = [
 	"setup.controller.installed" => "Der Nimbusec Agent wurde erfolgreich installiert.",
 
 	/**************** settings ****************/
+	"settings.view.title" => "Einstellungen",
+
 	/* unregistered */
 	"settings.view.unreg.title" => "Nicht registrierte Domains",
 	"settings.view.unreg.description" => "Unten finden Sie alle Hostdomain, welche noch nicht über Nimbusec registriert wurden. " .
@@ -160,6 +162,7 @@ $messages = [
 	"dashboard.controller.invalid_schedule" => "Ungültige Vorfallsschwere ausgewählt",
 
 	/**************** quarantine ****************/
+	"quarantine.view.title" => "Quarantäne",
 	"quarantine.view.description" => "Hier finden Sie alle in Quarantäne befindlichen Dateien. Weiters können diese Dateien hier inspiziert und aus der Quarantäne entfernt werden.",
 	"quarantine.view.no_files_found" => "<h5>Keine Dateien in Quarantäne. <img style='width: 16px; height: 16px;' src='/theme/icons/16/plesk/on.png'/></h5>",
 

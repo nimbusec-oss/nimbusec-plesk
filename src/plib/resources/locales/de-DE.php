@@ -32,6 +32,7 @@ $messages = [
 	"error.quarantine.file" => "Die Datei %s existiert nicht. Die Datei konnte nicht in Quarantäne verschoben werden.",
 	"error.quarantine.directory" => "Es konnte kein Quarantäneverzeichnis erstellt werden: %s",
 	"error.quarantine" => "Die Datei %s konnte nicht in Quarantäne an der Position %s verschoben werden: %s", 
+	"error.fp" => "Die Datei %s konnte nicht als falsch positiv markiert werden: %s",
 	"error.unquarantine" => "Die Datei %s konnte nicht aus der Quarantäne an der Position %s zurück verschoben werden: %s", 
 
 	/**************** agent ****************/

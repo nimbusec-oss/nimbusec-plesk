@@ -32,6 +32,7 @@ $messages = [
 	"error.quarantine.file" => "File %s does not exist. Failed to move it into quarantine",
 	"error.quarantine.directory" => "Failed to create a quarantine directory: %s",
 	"error.quarantine" => "Failed to move %s into quarantine at %s: %s", 
+	"error.fp" => "Cannot mark the file as false positive: %s",
 	"error.unquarantine" => "Failed to move %s back from quarantine to %s: %s", 
 
 	/**************** agent ****************/

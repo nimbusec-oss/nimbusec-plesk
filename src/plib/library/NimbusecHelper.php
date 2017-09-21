@@ -617,14 +617,13 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             $quarantine[$domain] = [];
         }
 
-        $owner = fileowner($dst) != false ? posix_getpwuid(fileowner($dst))["name"] : "unknown";
-        if ($owner == "") {
-            $owner = fileowner($dst);
-        }
-
-        $group = filegroup($dst) != false ? posix_getgrgid(filegroup($dst))["name"] : "unknown";
-        if ($group == "") {
-            $group = filegroup($dst);
+        // default information (for windows)
+        // on linux, use posix functions
+        $owner = "unknown";
+        $group = "unknown";
+        if (pm_ProductInfo::getPlatform() == pm_ProductInfo::PLATFORM_UNIX) {
+            if (fileowner($dst) != false) { $owner = posix_getpwuid(fileowner($dst))["name"]; }
+            if (filegroup($dst) != false) { $group = posix_getgrgid(filegroup($dst))["name"]; }
         }
 
         $filesize = filesize($dst) != false ? filesize($dst) : "unknown";
@@ -671,7 +670,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $file_manager = new pm_ServerFileManager();
 
         if (!$file_manager->fileExists($file)) {
-            throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine.file"), $file));
+            throw new Exception(sprintf(pm_Locale::lmsg("error.fp"), $file));
         }
 
         $this->sendToShellray($file);

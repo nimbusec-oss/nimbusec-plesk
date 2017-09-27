@@ -7,6 +7,8 @@ use Nimbusec\API as API;
  */
 class Modules_NimbusecAgentIntegration_NimbusecHelper
 {
+    use Modules_NimbusecAgentIntegration_FormatTrait;
+
     private $key = "";
     private $secret = "";
     private $server = "";
@@ -548,10 +550,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 					// path with domain as root
 					"old" 			=> pathinfo(explode($root, $value["old"])[1], PATHINFO_DIRNAME),
 					"create_date" 	=> date("M d, Y h:i A", $value["create_date"]),
-					"filesize" 		=> Modules_NimbusecAgentIntegration_PleskHelper::formatBytes($value["filesize"]),
+					"filesize" 		=> $this->formatBytes($value["filesize"]),
 					"owner" 		=> $value["owner"],
 					"group" 		=> $value["group"],
-					"permission" 	=> Modules_NimbusecAgentIntegration_PleskHelper::formatPermission($value["permission"])
+					"permission" 	=> $this->formatPermission($value["permission"])
                 ]);
             }
         }
@@ -628,8 +630,14 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $filesize = filesize($dst) != false ? filesize($dst) : "unknown";
 
-        $fileId = Modules_NimbusecAgentIntegration_PleskHelper::uuidv4();
-        $quarantine[$domain][$fileId] = [
+        try {
+            $uuid = Ramsey\Uuid\Uuid::uuid4();
+        } catch (Ramsey\Uuid\Exception\UnsatisfiedDependencyException $e) {
+            pm_Log::err($e);
+            throw new Exception("Could not create UUID");
+        }
+
+        $quarantine[$domain][$uuid] = [
 			"old" 			=> $file,
 			"path" 			=> $dst,
 			"create_date" 	=> time(),

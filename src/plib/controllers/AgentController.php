@@ -2,6 +2,8 @@
 
 class AgentController extends pm_Controller_Action
 {
+	use Modules_NimbusecAgentIntegration_RequestTrait;
+
     public function init()
     {
 		parent::init();
@@ -52,7 +54,7 @@ class AgentController extends pm_Controller_Action
 	public function updateAgentAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "submit", "updateAgent");
+		$valid = $this->isValidPostRequest($request, "submit", "updateAgent");
 		if (!$valid) {
 			$this->_forward("view", "agent");
 			return;

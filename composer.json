@@ -9,7 +9,8 @@
         "zendframework/zend-uri": "^2.5",
         "zendframework/zend-i18n": "^2.7",
         "zendframework/zend-filter": "^2.7",
-        "sabre/uri": "^1"
+        "sabre/uri": "^1",
+        "ramsey/uuid": "^3.7"
     },
     "homepage": "https://nimbusec.com",
     "license": "MIT",

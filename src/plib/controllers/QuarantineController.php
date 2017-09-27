@@ -2,6 +2,8 @@
 
 class QuarantineController extends pm_Controller_Action
 {
+	use Modules_NimbusecAgentIntegration_RequestTrait;
+
     public function init()
     {
 		parent::init();
@@ -30,14 +32,14 @@ class QuarantineController extends pm_Controller_Action
 		$this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
 
 		// try to fetch passed parameters (e.g from forwards)
-        $this->view->response = $this->getRequest()->getParam("response");
+		$this->view->response = $this->getRequest()->getParam("response");
 		$this->view->root_path = "/";
 	}
 
 	public function fetchAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch");
+		$valid = $this->isValidPostRequest($request, "action", "fetch");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->lmsg("error.invalid_request")
@@ -46,6 +48,7 @@ class QuarantineController extends pm_Controller_Action
 		}
 
 		$path = $request->getPost("path");
+		$action = $request->getPost("action");
 
 		// valdiate path
 		$validator = new Zend\Validator\NotEmpty();
@@ -100,7 +103,7 @@ class QuarantineController extends pm_Controller_Action
 	public function unquarantineAction()
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine");
+		$valid = $this->isValidPostRequest($request, "action", "unquarantine");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->lmsg("error.invalid_request")
@@ -176,7 +179,7 @@ class QuarantineController extends pm_Controller_Action
 	public function unquarantineBulkAction()
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "unquarantine-bulk");
+		$valid = $this->isValidPostRequest($request, "action", "unquarantine-bulk");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->lmsg("error.invalid_request")

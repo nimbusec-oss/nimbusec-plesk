@@ -2,6 +2,8 @@
 
 class SetupController extends pm_Controller_Action
 {
+	use Modules_NimbusecAgentIntegration_RequestTrait;
+
     public function init()
     {
 		parent::init();
@@ -36,7 +38,7 @@ class SetupController extends pm_Controller_Action
 	public function downloadAgentAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "submit", "downloadAgent");
+		$valid = $this->isValidPostRequest($request, "submit", "downloadAgent");
 		if (!$valid) {
 			$this->_forward("view", "setup");
 			return;

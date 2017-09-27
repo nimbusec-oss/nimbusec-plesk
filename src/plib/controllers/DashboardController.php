@@ -2,6 +2,8 @@
 
 class DashboardController extends pm_Controller_Action
 {
+	use Modules_NimbusecAgentIntegration_RequestTrait;
+
     public function init()
     {
 		parent::init();
@@ -53,7 +55,7 @@ class DashboardController extends pm_Controller_Action
 	public function fetchMetadataAction()
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-metadata");
+		$valid = $this->isValidPostRequest($request, "action", "fetch-metadata");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
@@ -104,8 +106,8 @@ class DashboardController extends pm_Controller_Action
 
 	public function fetchIssueAction()
 	{
-		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "fetch-issue");
+		$request = $this->getRequest();
+		$valid = $this->isValidPostRequest($request, "action", "fetch-issue");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
@@ -157,7 +159,7 @@ class DashboardController extends pm_Controller_Action
 	public function falsePositiveAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "falsePositive");
+		$valid = $this->isValidPostRequest($request, "action", "falsePositive");
 		if (!$valid) {
 			$this->_forward("view", "dashboard");
 			return;
@@ -203,7 +205,7 @@ class DashboardController extends pm_Controller_Action
 	public function quarantineAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "moveToQuarantine");
+		$valid = $this->isValidPostRequest($request, "action", "moveToQuarantine");
 		if (!$valid) {
 			$this->_forward("view", "dashboard");
 			return;
@@ -239,7 +241,7 @@ class DashboardController extends pm_Controller_Action
 	public function bulkQuarantineAction()
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "bulk-quarantine");
+		$valid = $this->isValidPostRequest($request, "action", "bulk-quarantine");
 		if (!$valid) {
 			$this->_helper->json([
 				"error" => $this->createHTMLR($this->lmsg("error.invalid_request"), "error")
@@ -288,7 +290,7 @@ class DashboardController extends pm_Controller_Action
 	public function scheduleQuarantineAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "action", "scheduleQuarantine");
+		$valid = $this->isValidPostRequest($request, "action", "scheduleQuarantine");
 		if (!$valid) {
 			$this->_forward("view", "dashboard");
 			return;

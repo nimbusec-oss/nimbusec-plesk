@@ -2,6 +2,8 @@
 
 class SettingsController extends pm_Controller_Action
 {
+	use Modules_NimbusecAgentIntegration_RequestTrait;
+
     public function init()
     {
 		parent::init();
@@ -45,7 +47,7 @@ class SettingsController extends pm_Controller_Action
 	public function registerAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "submit", "registerSelected");
+		$valid = $this->isValidPostRequest($request, "submit", "registerSelected");
 		if (!$valid) {
 			$this->_forward("view", "settings");
 			return;
@@ -120,7 +122,7 @@ class SettingsController extends pm_Controller_Action
 	public function unregisterAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "submit", "removeSelected", true);
+		$valid = $this->isValidPostRequest($request, "submit", "removeSelected", true);
 		if (!$valid) {
 			$this->_forward("view", "settings");
 			return;
@@ -183,7 +185,7 @@ class SettingsController extends pm_Controller_Action
 	public function scheduleAction() 
 	{
 		$request = $this->getRequest(); 
-		$valid = Modules_NimbusecAgentIntegration_PleskHelper::isValidPostRequest($request, "submit", "schedule");
+		$valid = $this->isValidPostRequest($request, "submit", "schedule");
 		if (!$valid) {
 			$this->_forward("view", "settings");
 			return;

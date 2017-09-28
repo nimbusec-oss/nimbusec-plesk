@@ -24,8 +24,6 @@ class IndexController extends pm_Controller_Action
         pm_Settings::set("shellray_url", "https://shellray.com/upload");
         pm_Settings::set("portal_url", "https://portal.nimbusec.com/");
         pm_Settings::set("api_url", "https://api.nimbusec.com");
-
-        pm_Settings::set("quarantine_root", pm_Context::getVarDir() . "/quarantine");
     }
 
     public function indexAction()

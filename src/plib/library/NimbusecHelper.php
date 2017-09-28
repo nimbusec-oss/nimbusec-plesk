@@ -549,6 +549,34 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
             $entries = array_filter($quarantine[$domain], function($e) { return is_array($e); });
             foreach ($entries as $id => $value) {
+
+                $owner = $value["owner"];
+                if ($owner !== "unknown") {
+                    $owner = posix_getpwuid($value["owner"])["name"];
+
+                    if ($owner === null) {
+                        $owner = $value["owner"];
+                    }
+                }
+
+                $group = $value["group"];
+                if ($group !== "unknown") {
+                    $group = posix_getgrgid($value["group"])["name"];
+                    
+                    if ($group === null) {
+                        $group = $value["group"];
+                    }
+                }
+
+                $permission = $value["permission"];
+                if ($permission !== "unknown") {
+                    $permission = $this->formatPermission($permission);
+                    
+                    if ($permission === null) {
+                        $permission = $value["permission"];
+                    }
+                }
+
                 array_push($fetched, [
 					"id"			=> $id,
 					"type" 			=> 1,
@@ -558,9 +586,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 					"old" 			=> pathinfo(explode($root, $value["old"])[1], PATHINFO_DIRNAME),
 					"create_date" 	=> date("M d, Y h:i A", $value["create_date"]),
 					"filesize" 		=> $this->formatBytes($value["filesize"]),
-					"owner" 		=> $value["owner"],
-					"group" 		=> $value["group"],
-					"permission" 	=> $this->formatPermission($value["permission"])
+					"owner" 		=> $owner,
+					"group" 		=> $group,
+					"permission" 	=> $permission
                 ]);
             }
         }
@@ -668,8 +696,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $group = "unknown";
         $permission = "unknown";
         if (pm_ProductInfo::getPlatform() == pm_ProductInfo::PLATFORM_UNIX) {
-            if (fileowner($dst) !== false) { $owner = posix_getpwuid(fileowner($dst))["name"]; }
-            if (filegroup($dst) !== false) { $group = posix_getgrgid(filegroup($dst))["name"]; }
+            if (fileowner($dst) !== false) { $owner = fileowner($dst); }
+            if (filegroup($dst) !== false) { $group = filegroup($dst); }
             if (fileperms($dst) !== false) { $permission = decoct(fileperms($dst) & 0777); }
         }
 

@@ -138,10 +138,17 @@ class QuarantineController extends pm_Controller_Action
 		}
 
 		// try out unquarantining
-		$success = $nimbusec->unquarantine($path);
-		if (!$success) {
+		try {
+			$success = $nimbusec->unquarantine($path);
+			if (!$success) {
+				$this->_helper->json([
+					"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
+				]);
+				return;
+			}
+		} catch (Exception $e) {
 			$this->_helper->json([
-				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
+				"error" => $this->createHTMLR($e->getMessage(), "error")
 			]);
 			return;
 		}
@@ -224,10 +231,17 @@ class QuarantineController extends pm_Controller_Action
 		foreach ($paths as $subpath) {
 			$subpath = $nimbusec->resolvePath($subpath);
 
-			$success = $nimbusec->unquarantine($subpath);
-			if (!$success) {
+			try {
+				$success = $nimbusec->unquarantine($subpath);
+				if (!$success) {
+					$this->_helper->json([
+						"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
+					]);
+					return;
+				}
+			} catch (Exception $e) {
 				$this->_helper->json([
-					"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
+					"error" => $this->createHTMLR($e->getMessage(), "error")
 				]);
 				return;
 			}

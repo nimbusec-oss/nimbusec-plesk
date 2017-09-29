@@ -197,7 +197,7 @@ class DashboardController extends pm_Controller_Action
 			return;
 		}
 
-		$this->_status->addInfo(sprintf($this->lmsg("issue.controller.false_positive", $file)));
+		$this->_status->addInfo(sprintf($this->lmsg("dashboard.controller.false_positive", $file)));
 		$this->_helper->redirector("view", "dashboard");
 		return;
 	}

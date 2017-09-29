@@ -631,11 +631,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             throw new Exception("Could not retrieve document root for {$domain}");
         }
 
-        // does the file exist? Trim document root prefix as file search depends on relative path
-        $file_path = substr($file, 0, strlen($doc_root));
-        if (!$file_manager->fileExists($file_path)) {
-            pm_Log::err("[public function moveToQuarantine] file not found {$file_path}");
-            throw new Exception("File does not exist in webspace of {$domain}");
+        // does the file exist?
+        if (!$file_manager->fileExists($file)) {
+            pm_Log::err("file not found {$file}");
+            throw new Exception("File {$file} does not exist in webspace of {$domain}");
         }
 
         // does the domain exist in quarantine kv-store?
@@ -744,10 +743,17 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
     public function markAsFalsePositive($domain, $resultId, $file)
     {
-        $file_manager = new pm_ServerFileManager();
+        // does the domain exist? (in host system)
+        try {
+            $plesk_domain = pm_Domain::getByName($domain);
+        } catch (pm_Exception $e) {
+            pm_Log::err($e->getMessage());
+            throw new Exception("Domain {$domain} does not exist in host environment");
+        }
+        $file_manager = new pm_FileManager($plesk_domain->getId());
 
         if (!$file_manager->fileExists($file)) {
-            throw new Exception(sprintf(pm_Locale::lmsg("error.fp"), $file));
+            throw new Exception("File {$file} does not exist in webspace of {$domain}");
         }
 
         $this->sendToShellray($file);
@@ -798,54 +804,72 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $file_manager = new pm_FileManager($plesk_domain->getId());
 
-		if (count($fragments) == 2) {
+        // domain
+		if (count($fragments) === 2) {
+            $files = array_filter($quarantine[$domain], function($e) { return is_array($e); });
 
-			$files = array_filter($quarantine[$domain], function($e) { return is_array($e); });
-			foreach ($files as $file => $value) {
-				try {
-					$file_manager->moveFile($value["path"], $value["old"]);
-				} catch (Exception $e) {
-					pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
-					return false;
-				}
-
-				unset($quarantine[$domain][$file]);
-			}
-
-			// remove folder
-            unset($quarantine[$domain]);
-            $file_manager->removeDirectory("{$doc_root}/{$quarantine[$domain]['root']}");
+            // check whether the files exist
+            foreach ($files as $file => $value) {
+                // does the file exist?
+                if (!$file_manager->fileExists($value["path"])) {
+                    pm_Log::err("file not found {$value["path"]}");
+                    throw new Exception("File {$value["path"]} does not exist in quarantine area of {$domain}");
+                }
+            }
+            
+			if (!$this->removeFromQuarantineStore($file_manager, $doc_root, $domain, $quarantine, $files)) {
+                return false;
+            }
 		}
 
 		// file
-		if (count($fragments) == 3) {
+		if (count($fragments) === 3) {
 			$file = $fragments[2];
+            $value = $quarantine[$domain][$file];
 
-			$value = $quarantine[$domain][$file];
-			
-			try {
-				$file_manager->moveFile($value["path"], $value["old"]);
-			} catch (Exception $e) {
-				pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
-				return false;
-			}
+            // does the file exist?
+            if (!$file_manager->fileExists($value["path"])) {
+                pm_Log::err("file not found {$value["path"]}");
+                throw new Exception("File {$value["path"]} does not exist in quarantine area of {$domain}");
+            }
 
-            unset($quarantine[$domain][$file]);
-            $file_manager->removeDirectory("{$doc_root}/nimbusec_quarantine_{$quarantine[$domain]['root']}/{$file}");
-
-			// clean up when no files left
-            $files = array_filter($quarantine[$domain], function($e) { return is_array($e); });
-            
-            if (count($files) === 0) {
-                $file_manager->removeDirectory("{$doc_root}/nimbusec_quarantine_{$quarantine[$domain]['root']}");
-                unset($quarantine[$domain]);
-			}
+            if (!$this->removeFromQuarantineStore($file_manager, $doc_root, $domain, $quarantine, [$file => $value])) {
+                return false;
+            }
 		}
 
         // update quarantine store
         Modules_NimbusecAgentIntegration_PleskHelper::setQuarantine($quarantine);
         return true;
-	}
+    }
+    
+    // pass quarantine by reference
+    private function removeFromQuarantineStore($file_manager, $doc_root, $domain, &$quarantine, $files) 
+    {
+        // itereate over files
+        foreach ($files as $file => $value) {
+            try {
+                $file_manager->moveFile($value["path"], $value["old"]);
+            } catch (Exception $e) {
+                pm_Log::err("Couldn't revert {$value['path']} from quarantine: {$e->getMessage()}");
+                return false;
+            }
+
+            $file_manager->removeDirectory("{$doc_root}/nimbusec_quarantine_{$quarantine[$domain]['root']}/{$file}");
+            unset($quarantine[$domain][$file]);
+        }
+
+        // filter root entry (non-array)
+        $files = array_filter($quarantine[$domain], function($e) { return is_array($e); });
+
+        // remove directory when all files were unquarantined
+        if (count($files) === 0) {
+            $file_manager->removeDirectory("{$doc_root}/nimbusec_quarantine_{$quarantine[$domain]['root']}");
+            unset($quarantine[$domain]);
+        }
+
+        return true;
+    }
 
     private function sendToShellray($file)
     {

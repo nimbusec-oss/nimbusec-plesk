@@ -331,10 +331,17 @@ DATA;
 
     private static function createQTreeViewFile($path, $files)
     {
-        $code = trim(htmlentities(file_get_contents($files[0]["path"])));
+        // in case the file wasn't found, catch the warning
+        set_error_handler([self, "onError"], E_WARNING);
+        try {
+            $source_code = trim(htmlentities(file_get_contents($files[0]["path"])));
+        } catch (ErrorException $e) {
+            $source_code = "No source code is found";
+        }
+        restore_error_handler();
         
         // return html template
-        return "<pre style='white-space: pre-wrap;'><code class='php'>{$code}</code></pre>";
+        return "<pre style='white-space: pre-wrap;'><code class='php'>{$source_code}</code></pre>";
     }
 
     public static function createFormRow($title, $value)
@@ -371,6 +378,15 @@ DATA;
 
         $left_bubble = $issue['severity'] == 1 ? $colors[1] : $colors[0];
         $right_bubble = $issue['severity'] > 1 ? $colors[2] : $colors[0];
+
+        // in case the file wasn't found, catch the warning
+        set_error_handler([self, "onError"], E_WARNING);
+        try {
+            $source_code = trim(htmlentities(file_get_contents($issue['resource'])));
+        } catch (ErrorException $e) {
+            $source_code = "No source code is found";
+        }
+        restore_error_handler();
 
         return "
         <div class='panel panel-collapsible p-promo panel-collapsed'>
@@ -577,7 +593,7 @@ DATA;
                                 <div class='panel-wrap'>
                                     <div class='panel-content'>
                                         <div class='panel-content-wrap'>
-                                            <pre style='white-space: pre-wrap;'><code class='php'>" . trim(htmlentities(file_get_contents($issue['resource']))) . "</code></pre>
+                                            <pre style='white-space: pre-wrap;'><code class='php'>{$source_code}</code></pre>
                                         </div>
                                     </div>
                                 </div>
@@ -588,5 +604,14 @@ DATA;
                 </div>
             </div>
         </div>";
+    }
+
+    public static function onError($errno, $errstr, $errfile, $errline, array $errcontext) {
+        // error was suppressed with the @-operator
+        if (0 === error_reporting()) {
+            return false;
+        }
+    
+        throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
     }
 }

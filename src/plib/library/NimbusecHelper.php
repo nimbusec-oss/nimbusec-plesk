@@ -8,6 +8,7 @@ use Nimbusec\API as API;
 class Modules_NimbusecAgentIntegration_NimbusecHelper
 {
     use Modules_NimbusecAgentIntegration_FormatTrait;
+    use Modules_NimbusecAgentIntegration_LoggingTrait;
 
     private $key = "";
     private $secret = "";
@@ -90,7 +91,13 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         // domains in Nimbusec
         $api = new API($this->key, $this->secret, $this->server);
-        $fetched = $api->findDomains();
+
+        try {
+            $fetched = $api->findDomains();
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to API");
+            throw $e;
+        }
 
         // array flip swtiches values to keys
         $nimbusec_domains = array_flip(array_map(function($domain) {
@@ -120,25 +127,30 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $api = new API($this->key, $this->secret, $this->server);
 
         $bundles = [];
-        foreach ($api->findBundles() as $bundle) {
-            $bundles[$bundle["id"]]["bundle"] = $bundle;
-            $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
-            $bundles[$bundle["id"]]["domains"] = [];
-        }
-
-        foreach ($domains as $name => $directory) {
-            $fetched = $api->findDomains("name=\"{$name}\"");
-            if (count($fetched) != 1) {
-                pm_Log::err("found more than one domain in the API for {$name}: " . count($fetched));
-                return false;
+        try {
+            foreach ($api->findBundles() as $bundle) {
+                $bundles[$bundle["id"]]["bundle"] = $bundle;
+                $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
+                $bundles[$bundle["id"]]["domains"] = [];
             }
 
-            // append
-            $domain = $fetched[0];
-            array_push($bundles[$domain["bundle"]]["domains"], [
-                "name" => $name,
-                "directory" => $directory
-            ]);
+            foreach ($domains as $name => $directory) {
+                $fetched = $api->findDomains("name=\"{$name}\"");
+                if (count($fetched) != 1) {
+                    $this->err("found more than one domain in the API for {$name}: " . count($fetched));
+                    return [];
+                }
+
+                // append
+                $domain = $fetched[0];
+                array_push($bundles[$domain["bundle"]]["domains"], [
+                    "name" => $name,
+                    "directory" => $directory
+                ]);
+            }
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to Nimbusec API");
+            throw $e;
         }
 
         return $bundles;
@@ -147,7 +159,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     public function getInfectedWebshellDomains()
     {
         $api = new API($this->key, $this->secret, $this->server);
-        $infected = $api->findInfected("event=\"webshell\" and status=\"1\"");
+
+        try {
+            $infected = $api->findInfected("event=\"webshell\" and status=\"1\"");
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to Nimbusec API");
+        }
 
         return array_map(function($infect) {
             return [
@@ -242,21 +259,39 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			"bundle" 	=> $bundle
         ];
 
-        $api->createDomain($domain);
+        try {
+            $api->createDomain($domain);
+        } catch (Exception $e) {
+            $this->errE($e, "Could not create domain {$domain}");
+            return false;
+        }
+
         return true;
     }
 
     public function unregisterDomain($domain)
     {
         $api = new API($this->key, $this->secret, $this->server);
-        $domains = $api->findDomains("name=\"$domain\"");
 
-        if (count($domains) != 1) {
-            pm_Log::err("found more than one domain in the API for {$domain}: " . count($domains));
+        try {
+            $domains = $api->findDomains("name=\"$domain\"");
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to Nimbusec API");
             return false;
         }
 
-        $api->deleteDomain($domains[0]["id"]);
+        if (count($domains) != 1) {
+            $this->err("found more than one domain in the API for {$domain}: " . count($domains));
+            return false;
+        }
+
+        try {
+            $api->deleteDomain($domains[0]["id"]);
+        } catch (Exception $e) {
+            $this->errE($e, "Could not delete domain {$domain}");
+            return false;
+        }
+
         return true;
     }
 
@@ -349,9 +384,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         // filter by quarantined files | filter out root entry
         $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
-        $quarantine = array_filter($quarantine, function($e) { return is_array($e); });
 
         foreach ($quarantine as $domain => $files) {
+            $files = array_filter($files, function($e) { return is_array($e); });
+
             // filter only quarantined domain which has been detected as issues
             if (!array_key_exists($domain, $issues)) {
                 continue;
@@ -385,7 +421,13 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $api = new API($this->key, $this->secret, $this->server);
 
-        $agents = $api->findServerAgents();
+        try {
+            $agents = $api->findServerAgents();
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to API");
+            return 0;
+        }
+
         $filtered = array_filter($agents, function ($agent) use ($os, $arch, $format) {
             return $agent["os"] == $os && $agent["arch"] == $arch && $agent["format"] == $format;
         });
@@ -512,7 +554,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $fetched = [];
         if (count($fragments) == 0) {
-            pm_Log::err("Invalid path given: {$path}");
+            $this->err("Invalid path given: {$path}");
             return [];
         }
 
@@ -543,7 +585,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $root = pm_Domain::getByName($domain)->getDocumentRoot();
             } catch (Exception $e) {
-                pm_Log::err("Domain {$domain} not found: {$e->getMessage()}");
+                $this->errE($e, "Document root of {$domain} not found");
                 return [];
             }
 
@@ -617,7 +659,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $plesk_domain = pm_Domain::getByName($domain);
         } catch (pm_Exception $e) {
-            pm_Log::err($e->getMessage());
+            $this->errE($e, "Domain {$domain} does not exist in host environment");
             throw new Exception("Domain {$domain} does not exist in host environment");
         }
 
@@ -627,13 +669,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $doc_root = $plesk_domain->getDocumentRoot();
         } catch (pm_Exception $e) {
-            pm_Log::err($e->getMessage());
+            $this->errE($e, "Could not retrieve document root for {$domain}");
             throw new Exception("Could not retrieve document root for {$domain}");
         }
 
         // does the file exist?
         if (!$file_manager->fileExists($file)) {
-            pm_Log::err("file not found {$file}");
             throw new Exception("File {$file} does not exist in webspace of {$domain}");
         }
 
@@ -643,7 +684,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $id = Ramsey\Uuid\Uuid::uuid4();
             } catch (Ramsey\Uuid\Exception\UnsatisfiedDependencyException $e) {
-                pm_Log::err($e->getMessage());
+                $this->errE($e, "Could not create UUID");
                 throw new Exception("Could not create UUID");
             }
 
@@ -652,7 +693,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             try {
                 $file_manager->mkdir($domain_dir);
             } catch (Exception $e) {
-                pm_Log::err($e->getMessage());
+                $this->errE($e, "Could not create domain quarantine directory for {$domain}");
                 throw new Exception("Could not create domain quarantine directory for {$domain}");
             }
             
@@ -667,7 +708,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $id = Ramsey\Uuid\Uuid::uuid4();
         } catch (Ramsey\Uuid\Exception\UnsatisfiedDependencyException $e) {
-            pm_Log::err($e->getMessage());
+            $this->errE($e, "Could not create UUID");
             throw new Exception("Could not create UUID");
         }
 
@@ -675,7 +716,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $file_manager->mkdir($file_dir);
         } catch (Exception $e) {
-            pm_Log::err($e->getMessage());
+            $this->errE($e, "Could not create file quarantine directory for {$domain}");
             throw new Exception("Could not create file quarantine directory for {$domain}");
         }
 
@@ -684,6 +725,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $file_manager->moveFile($file, $dst);
         } catch (Exception $e) {
+            $this->errE($e, "Could not move {$file} into quarantine");
             throw new Exception(sprintf(pm_Locale::lmsg("error.quarantine"), $file, $dst, $e->getMessage()));
         }
 
@@ -747,7 +789,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             $plesk_domain = pm_Domain::getByName($domain);
         } catch (pm_Exception $e) {
-            pm_Log::err($e->getMessage());
+            $this->errE($e, "Could not find {$domain} in host environment");
             throw new Exception("Domain {$domain} does not exist in host environment");
         }
         $file_manager = new pm_FileManager($plesk_domain->getId());
@@ -763,16 +805,26 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     private function updateResultStatus($domain, $resultId)
     {
         $api = new API($this->key, $this->secret, $this->server);
-        $domains = $api->findDomains("name=\"$domain\"");
+        try {
+            $domains = $api->findDomains("name=\"$domain\"");
+        } catch (Exception $e) {
+            $this->errE($e, "Could not connect to Nimbusec API");
+            throw $e;
+        }
 
         if (count($domains) != 1) {
-            pm_Log::err("found " . count($domains) . " domains for {$domain}");
+            $this->err("found " . count($domains) . " domains for {$domain}");
             throw new Exception("Invalid number of domains found by API for {$domain}");
         }
 
-        $api->updateResult($domains[0]["id"], $resultId, [
-			"status" => 3
-        ]);
+        try {
+            $api->updateResult($domains[0]["id"], $resultId, [
+                "status" => 3
+            ]);
+        } catch (Exception $e) {
+            $this->errE($e, "Could not update result {$resultId} of {$domains[0]['name']}");
+            throw $e;
+        }
 	}
 
 	public function unquarantine($path) 
@@ -902,11 +954,11 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $header["errorMsg"] = $errorMsg;
 
         if ($header["http_code"] != 200) {
-            pm_Log::err("Response from shellray.com resulted in {$header['http_code']}. Full response: " .
+            $this->err("Response from shellray.com resulted in {$header['http_code']}. Full response: " .
 				json_encode($header, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
             throw new Exception("Could not connect to shellray.com");
         }
 
-        pm_Log::info("Content: " . substr($header["content"], $header["download_content_length"]));
+        $this->err("Content: " . substr($header["content"], $header["download_content_length"]));
     }
 }

@@ -3,6 +3,7 @@
 class SettingsController extends pm_Controller_Action
 {
 	use Modules_NimbusecAgentIntegration_RequestTrait;
+	use Modules_NimbusecAgentIntegration_LoggingTrait;
 
     public function init()
     {
@@ -28,16 +29,15 @@ class SettingsController extends pm_Controller_Action
 		// try to fetch passed parameters (e.g from forwards)
         $this->view->response = $this->getRequest()->getParam("response");
 
-		// domain view
 		try {
-
 			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
+			// domain view
 			$this->view->registered_domains = $nimbusec->groupByBundle($nimbusec->getRegisteredPleskDomains());
 			$this->view->nonregistered_domains = $nimbusec->getNonRegisteredPleskDomains();
 
         } catch (Exception $e) {
-            $this->view->response = $this->createHTMLR($e->getMessage(), "error");
+            $this->view->response = $this->createHTMLR("Could not retrieve registered domains", "error");
         }
 
 		// config view
@@ -88,30 +88,29 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 		
-		try {
-			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-			// register domain
-			$success = true;
-			foreach ($domains as $domain) {
-				$success = $success && $nimbusec->registerDomain($domain, $bundle_id);
-			}
+		// register domain
+		$success = true;
+		foreach ($domains as $domain) {
+			$success = $success && $nimbusec->registerDomain($domain, $bundle_id);
+		}
 
-			if (!$success) {
-				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
-				]);
-				return;	
-			}
-
-			// sync domains in config
-			$nimbusec->syncDomainInAgentConfig();
-
-		} catch (Exception $e) {
+		if (!$success) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR($e->getMessage(), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
 			return;	
+		}
+
+		try {
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
+		} catch (Exception $e) {
+			$this->_forward("view", "settings", null, [
+				"response" => $this->createHTMLR("Could not synchronize Server Agent config", "error")
+			]);
+			return;
 		}
 
 		$this->_status->addInfo(sprintf($this->lmsg("settings.controller.registered"), $bundle_name));
@@ -151,30 +150,29 @@ class SettingsController extends pm_Controller_Action
 			return;	
 		}
 
-		try {
-			$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-			// unregister domains
-			$success = true;
-			foreach ($domains as $domain) {
-				$success = $success && $nimbusec->unregisterDomain($domain);
-			}
+		// unregister domains
+		$success = true;
+		foreach ($domains as $domain) {
+			$success = $success && $nimbusec->unregisterDomain($domain);
+		}
 
-			if (!$success) {
-				$this->_forward("view", "settings", null, [
-					"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
-				]);
-				return;	
-			}
-
-			// sync domains in config
-			$nimbusec->syncDomainInAgentConfig();
-
-		} catch (Exception $e) {
+		if (!$success) {
 			$this->_forward("view", "settings", null, [
-				"response" => $this->createHTMLR($e->getMessage(), "error")
+				"response" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
 			return;	
+		}
+
+		try {
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
+		} catch (Exception $e) {
+			$this->_forward("view", "settings", null, [
+				"response" => $this->createHTMLR("Could not synchronize Server Agent config", "error")
+			]);
+			return;
 		}
 
 		$this->_status->addInfo(sprintf($this->lmsg("settings.controller.unregistered"), $bundle_name));
@@ -229,7 +227,15 @@ class SettingsController extends pm_Controller_Action
 			$task = $scheduler->getTaskById($id);
 
 			if ($task !== null) {
-				$scheduler->removeTask($task);
+				try {
+					$scheduler->removeTask($task);
+				} catch (pm_Exception $e) {
+					$this->errE($e, "Could not remove scheduled task {$id}");
+					$this->_forward("view", "settings", null, [
+						"response" => $this->createHTMLR("Failed to activate Server Agent", "error")
+					]);
+					return;	
+				}
 			}
 		}
 

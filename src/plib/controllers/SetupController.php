@@ -3,6 +3,7 @@
 class SetupController extends pm_Controller_Action
 {
 	use Modules_NimbusecAgentIntegration_RequestTrait;
+	use Modules_NimbusecAgentIntegration_LoggingTrait;
 
     public function init()
     {
@@ -79,7 +80,7 @@ class SetupController extends pm_Controller_Action
 			// fetch server agent
 			$nimbusec->fetchAgent(pm_Context::getVarDir());
 		} catch (Exception $e) {
-			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
+			$this->errE($e, "Could not download Server Agent");
 			
 			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.download_agent"), "error")
@@ -97,7 +98,7 @@ class SetupController extends pm_Controller_Action
 		try {
 			$nimbusec->upsertUserWithSSO((string) $admin->admin_email, $signatureKey);
 		} catch (Exception $e) {
-			pm_Log::err("Upserting administrator failed: {$e->getMessage()}");
+			$this->errE($e, "Could not upsert administrator");
 
 			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.enable_sso"), "error")
@@ -113,7 +114,7 @@ class SetupController extends pm_Controller_Action
 		try {
 			$token = $nimbusec->getAgentCredentials("{$host['0']}-plesk");
 		} catch (Exception $e) {
-			pm_Log::err("Retrieving agent token failed: {$e->getMessage()}");
+			$this->errE($e, "Could not retrieve Agent token");
 
 			$this->_forward("view", "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.token_retrieval"), "error")
@@ -135,8 +136,15 @@ class SetupController extends pm_Controller_Action
 		$config["domains"] = new ArrayObject();
 		file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-		// sync domains in config
-		$nimbusec->syncDomainInAgentConfig();
+		try {
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
+		} catch (Exception $e) {
+			$this->_forward("view", "setup", null, [
+				"response" => $this->createHTMLR("Could not synchronize Server Agent config", "error")
+			]);
+			return;
+		}
 
 		// store api credentials
 		pm_Settings::set("api_key", $api_key);

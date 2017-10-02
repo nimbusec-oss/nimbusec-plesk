@@ -3,6 +3,7 @@
 class DashboardController extends pm_Controller_Action
 {
 	use Modules_NimbusecAgentIntegration_RequestTrait;
+	use Modules_NimbusecAgentIntegration_LoggingTrait;
 
     public function init()
     {
@@ -36,12 +37,19 @@ class DashboardController extends pm_Controller_Action
 
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
-		// get registered plesk domains
-		$domains = $nimbusec->getRegisteredPleskDomains();
-		$domain_names = array_keys($domains);
+		try {
+			// get registered plesk domains
+			$domains = $nimbusec->getRegisteredPleskDomains();
+			$domain_names = array_keys($domains);
 
-		// get infected nimbusec domain
-		$infected = $nimbusec->getInfectedWebshellDomains();
+			// get infected nimbusec domain
+			$infected = $nimbusec->getInfectedWebshellDomains();
+		} catch (Exception $e) {
+			$domain_names = [];
+			$infected = [];
+
+			$this->view->response = $this->createHTMLR("Could not retrieve infected domains", "error");
+		}
 
 		// filter by registered plesk domain
 		$infected = array_filter($infected, function($infect) use ($domain_names) {
@@ -95,8 +103,7 @@ class DashboardController extends pm_Controller_Action
 			$this->_helper->json($metadata);
 			return;
 		} catch (Exception $e) {
-			pm_Log::err($e->getMessage());
-
+			$this->errE($e, "Could not fetch metadata for {$domain['name']}");
 			$this->_helper->json([
 				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
@@ -147,8 +154,7 @@ class DashboardController extends pm_Controller_Action
 			$this->_helper->json($panel);
 			return;
 		} catch (Exception $e) {
-			pm_Log::err($e->getMessage());
-
+			$this->errE($e, "Could not fetch issues for {$domain['name']}");
 			$this->_helper->json([
 				"error" => $this->createHTMLR($this->lmsg("error.unexpected"), "error")
 			]);
@@ -191,6 +197,7 @@ class DashboardController extends pm_Controller_Action
 		try {
 			$nimbusec->markAsFalsePositive($domain, $result_id, $file);
 		} catch (Exception $e) {
+			$this->errE($e, "Could not mark {$domain} as false positive");
 			$this->_forward("view", "dashboard", null, [
 				"response" => $this->createHTMLR(sprintf($this->lmsg("error.msg"), $e->getMessage()), "error")
 			]);
@@ -332,7 +339,15 @@ class DashboardController extends pm_Controller_Action
 			$task = $scheduler->getTaskById($id);
 
 			if ($task !== null) {
-				$scheduler->removeTask($task);
+				try {
+					$scheduler->removeTask($task);
+				} catch (pm_Exception $e) {
+					$this->errE($e, "Could not remove scheduled task {$id}");
+					$this->_forward("view", "dashboard", null, [
+						"response" => $this->createHTMLR("Failed to activate automatic quarantining", "error")
+					]);
+					return;	
+				}
 			}
 		}
 

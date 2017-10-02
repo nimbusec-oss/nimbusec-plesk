@@ -3,6 +3,7 @@
 class AgentController extends pm_Controller_Action
 {
 	use Modules_NimbusecAgentIntegration_RequestTrait;
+	use Modules_NimbusecAgentIntegration_LoggingTrait;
 
     public function init()
     {
@@ -65,8 +66,8 @@ class AgentController extends pm_Controller_Action
 			// fetch server agent
 			$nimbusec->fetchAgent(pm_Context::getVarDir());
 		} catch (Exception $e) {
-			pm_Log::err("Downloading server agent failed: {$e->getMessage()}");
-			
+			$this->errE($e, "Could not download Server Agent");
+
 			$this->_forward("view", "agent", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.download_agent"), "error")
 			]);

@@ -2,6 +2,7 @@
 
 trait Modules_NimbusecAgentIntegration_RequestTrait
 {
+    // isValidPostRequest verifies a Zend_Request's validity
 	public function isValidPostRequest($request, $form_event = "action", $expected_action, $dynamic_action = false) 
     {
         // is post

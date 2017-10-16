@@ -2,6 +2,8 @@
 
 class Modules_NimbusecAgentIntegration_PleskHelper
 {
+    // getTabs returns the plugin menu tabs depending on the installation state
+    // of the extension
     public static function getTabs()
     {
         $installed = pm_Settings::get("extension_installed");
@@ -20,6 +22,8 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         ];
     }
 
+    // setQuarantine saves a given quarantine store as JSON within Plesk's 
+    // kv-database. If needed, it splits the JSON string to fulfill
     public static function setQuarantine($quarantine_store)
     {
         $encoded = json_encode($quarantine_store);
@@ -46,6 +50,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         }
     }
 
+    // getQuarantine returns the JSON encoded quarantine store string as an object
     public static function getQuarantine()
     {
         $quarantine_store = pm_Settings::get("quarantine", "");
@@ -56,7 +61,8 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         return json_decode(Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($quarantine_store), true);
     }
 
-    // fetch all stores with their references
+    // getFullQuarantineStore follows and concats each splitted quarantine store part until
+    // the whole store is complete
     private static function getFullQuarantineStore($quarantine_store) 
     {
         // are there references to other stores?
@@ -75,6 +81,8 @@ class Modules_NimbusecAgentIntegration_PleskHelper
         return $stores[0] . Modules_NimbusecAgentIntegration_PleskHelper::getFullQuarantineStore($next);
     }
 
+    // getAdministrator sends via Plesk's API an RPC call to 
+    // ask for the administrator object
     public static function getAdministrator()
     {
         $request = <<<DATA
@@ -89,7 +97,8 @@ DATA;
         return $resp->server->get->result->admin;
     }
 
-    //get hostname from plesk api
+    // getHost sends via Plesk's API an RPC class to
+    // ask for the hostname of the server 
     public static function getHost()
     {
         $request = <<<DATA
@@ -104,6 +113,7 @@ DATA;
         return $resp->server->get->result->gen_info->server_name;
     }
 
+    // getHostDomains retrieves all host domains with activated hosting
     public static function getHostDomains()
     {
         $domains = [];
@@ -123,7 +133,7 @@ DATA;
         return $domains;
     }
 
-    // get htdocs dir for given domain from plesk api
+    // getDomainDir returns the path to the document root of the given domain
     public static function getDomainDir($domain)
     {
         $fetched = pm_Domain::getByName($domain);
@@ -135,6 +145,8 @@ DATA;
         return $fetched->getDocumentRoot();
     }
 
+    // createMessage builds a HTML message with a given message and
+    // of a given level
     public static function createMessage($msg, $level)
     {
         $title = $level;
@@ -157,6 +169,8 @@ DATA;
         </div>";
     }
 
+    // createQNavigationBar builds the navigation bar for the quaratine view.
+    // How the bar looks like depends on the given path.
     public static function createQNavigationBar($path, $display_name = "")
     {
         // template variable
@@ -193,6 +207,7 @@ DATA;
         </div>";
     }
 
+    // createQOptions builds the options part (bulk options, etc..) for the quarantine view. 
 	public static function createQOptions($path, $helper) 
     {
         // return html template
@@ -214,6 +229,8 @@ DATA;
         </div>";
 	}
 
+    // createQTreeView builds the base of the tree like directory / files view
+    // of the quarantine view.
 	public static function createQTreeView($path, $files, $helper)
     {
 		if (count($files) == 0) {
@@ -245,6 +262,7 @@ DATA;
         </div>";
     }
 
+    // createQTreeViewDir builds the tree view for the directory layer
     private static function createQTreeViewDir($path, $files, $helper)
     {
         $table_body = "";
@@ -282,6 +300,7 @@ DATA;
         </tbody>";
     }
 
+    // createQTreeViewDir builds the tree view for the domain layer
     private static function createQTreeViewDomain($path, $files, $helper)
     {
         $table_body = "";
@@ -329,6 +348,8 @@ DATA;
         </tbody>";
     }
 
+    // createQTreeViewFile builds the tree view for a given file and handles
+    // the error message, if no file was found.
     private static function createQTreeViewFile($path, $files)
     {
         // in case the file wasn't found, catch the warning
@@ -344,6 +365,7 @@ DATA;
         return "<pre style='white-space: pre-wrap;'><code class='php'>{$source_code}</code></pre>";
     }
 
+    // createFormRow builds a HTML form row for a given title and a given value
     public static function createFormRow($title, $value)
     {
         return "
@@ -357,6 +379,7 @@ DATA;
         </div>";
     }
 
+    // createFormRow builds a HTML-based options selection panel
     public static function createSelectIssuesByDomain($domain)
     {
         return "
@@ -367,11 +390,14 @@ DATA;
         </div>";
     }
 
+    // createSeperator builds a sepearator element which matches Plesk's design guidelines
     public static function createSeperator()
     {
         return "<div class='btns-box'></div>";
     }
 
+    // createIssuePanel builds for a given issue the while HTML panel providing options
+    // and detailed information about the issue
     public static function createIssuePanel($domain, $issue, $helper)
     {
         $colors = ["#bbb", "#fdd835", "#f44336"];
@@ -606,6 +632,7 @@ DATA;
         </div>";
     }
 
+    // onError acts as a customized method for handling error messages in PHP
     public static function onError($errno, $errstr, $errfile, $errline, array $errcontext) {
         // error was suppressed with the @-operator
         if (0 === error_reporting()) {

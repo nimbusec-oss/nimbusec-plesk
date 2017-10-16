@@ -48,6 +48,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $this->server = $server;
     }
 
+    // areValidCredentials tests whether the API credentials are valid
+    // by trying to connect to the API
     public function areValidAPICredentials()
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -71,7 +73,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
 
-    // Syncs the registered domains within plesk with the agent config
+    // syncDomainInAgentConfig syncs the registered plesk domains with the agent config
     public function syncDomainInAgentConfig() 
     {
         $registered = $this->getRegisteredPleskDomains();
@@ -87,6 +89,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
     }
 
+    // getRegisteredPleskDomains gets the subset of plesk domains which are registered with Nimbusec
     public function getRegisteredPleskDomains()
     {
         // domains in Nimbusec
@@ -111,6 +114,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return array_intersect_key($plesk_domains, $nimbusec_domains);
     }
 
+    // getNonRegisteredPleskDomains gets the subset of plesk domains which are not registered with Nimbusec
     public function getNonRegisteredPleskDomains() 
     {
         // registered domains
@@ -122,6 +126,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return array_diff_key($plesk_domains, $registered_plesk_domains);
     }
 
+    // groupByBundle expects a list of plesk domains to which the corresponding home path is added and
+    // groups them by the ID of the bundle with which the domain was registered.
     public function groupByBundle($domains)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -156,6 +162,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $bundles;
     }
 
+    // getInfectedWebshellDomains returns a list of infected webshells
     public function getInfectedWebshellDomains()
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -174,6 +181,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }, $infected);
     }
 
+    // getIssueMetadata retrieves for a given domain
+    //      - all webshell issues filtered by already quarantined ones
+    //      - metadata like the max severity and the number of quarantined issues
+    //      - and generates a HTML row filled with all these data
     public function getIssueMetadata($domain)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -215,6 +226,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         ];
     }
 
+    // getIssuePanel generates for each of a given domain's issues an expandable issue panel
+    // where the information about the issue described more detailed 
     public function getIssuePanel($domain, $helper)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -244,6 +257,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         ];
     }
 
+    // registerDomain registers a given domain with a given bundle ID
+    // with Nimbusec
     public function registerDomain($domain, $bundle)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -269,6 +284,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
 
+    // unregisterDomain unregisters a given domain from Nimbusec
     public function unregisterDomain($domain)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -295,11 +311,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
 
-    /**
-     * create a new token for the server agent
-     * @param string $name name for the new server agent token
-     * @return array array/object with data of the created token
-     */
+    // getAgentCredentials creates a new token for the server agent
     public function getAgentCredentials($name)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -317,6 +329,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
     }
 
+    // appendDomainIds looks up the corresponding ID to the given domain name and appends it
     // only in use by quarantine.php
     public function appendDomainIds($domain_names)
     {
@@ -358,6 +371,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }, $fetched));
     }
 
+    // getWebshellIssuesByDomain retrieves all issues for a list of given domains 
+    // and groups it by domain
+    // 
     // only in use by quarantine.php
     public function getWebshellIssuesByDomain($domain_names)
     {
@@ -379,6 +395,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $issues;
     }
 
+    // filterByQuarantined takes the issues list retrieved by getWebshellIssuesByDomain and 
+    // filters out only those issue which are not quarantined
+    // 
     // only in use by quarantine.php
     public function filterByQuarantined($issues) 
     {
@@ -417,6 +436,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $issues;
     }
 
+    // getNewestAgentVersion retrieves the numerical value of the newest Nimbusec Server Agent version
+    // matching a given os, arch and format (file extension)
     public function getNewestAgentVersion($os, $arch, $format = "bin")
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -440,11 +461,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return 0;
     }
 
-    /**
-     * Upserts a given user and set the signature key for him which enables SSO functionality
-     * @param string $mail The mail of the user
-     * @return void
-     */
+    // upsertUserWithSSO upserts a given user with a mail and appends a given signaturekey to the customer
     public function upsertUserWithSSO($mail, $signatureKey)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -466,22 +483,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         ];
         $api->createUser($user);
     }
-
-    public function resolvePath($path)
-    {
-        $subpaths = array_filter(explode("/", $path));
-        if (!in_array("quarantine", $subpaths)) {
-            array_splice($subpaths, 0, 0, ["quarantine"]);
-        }
-
-        return implode("/", $subpaths);
-    }
-	
-    /**
-     * download the agent from the API and unpack it into the given directory
-     * @param string $path path into which the downloaded agent should be extracted
-     * @return boolean indicates whether extracting the token worked
-     */
+    	
+    // fetchAgent fetches the newest Nimbusec Server Agents version and saves it
+    // to a given base path
     public function fetchAgent($base)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -547,6 +551,20 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
     }
 
+    // resolvePath makes a naive approach to normalize a given path
+    // mostly by replacing a "/" with a "quarantine/" part
+    public function resolvePath($path)
+    {
+        $subpaths = array_filter(explode("/", $path));
+        if (!in_array("quarantine", $subpaths)) {
+            array_splice($subpaths, 0, 0, ["quarantine"]);
+        }
+
+        return implode("/", $subpaths);
+    }
+
+    // fetchQuarantine retrieves and builds for a given path
+    // the corresponding quarantine object as a JSON
     public function fetchQuarantine($path)
     {
         $fragments = array_filter(explode("/", $path));
@@ -653,6 +671,9 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return $fetched;
     }
 
+    // moveToQuarantine moves for a given domain a given file 
+    // into a seperate Nimbusec quarantine space within the domain's webspace 
+    // and saves a new quarantine object within the quarantine store
     public function moveToQuarantine($domain, $file)
     {
         // does the domain exist? (in host system)
@@ -772,6 +793,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
     }
 
+    // getQuarantined retrieves the quarantine object for a given domain
     public function getQuarantined($domain_name)
     {
         $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
@@ -783,6 +805,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return array_filter($quarantine[$domain_name], function($e) { return is_array($e); });
     }
 
+    // markAsFalsePositive updates for a given issue of a domain the result status as
+    // false positive and uploads the concerned file to shellray
     public function markAsFalsePositive($domain, $resultId, $file)
     {
         // does the domain exist? (in host system)
@@ -802,6 +826,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         $this->updateResultStatus($domain, $resultId);
     }
 
+    // updateResultStatus updates the status of a given issue for a domain as false positive
     private function updateResultStatus($domain, $resultId)
     {
         $api = new API($this->key, $this->secret, $this->server);
@@ -827,6 +852,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         }
 	}
 
+    // unquarantine removes for a given path the corresponding object from the quarantine
 	public function unquarantine($path) 
     {
 		$fragments = array_filter(explode("/", $path));
@@ -895,7 +921,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
     
-    // pass quarantine by reference
+    // Removes a given file out of quarantine and clean up created quarantine space folder, entries in 
+    // quarantine store, etc. if empty
+    // 
+    // pass quarantine store by reference
     private function removeFromQuarantineStore($file_manager, $doc_root, $domain, &$quarantine, $files) 
     {
         // itereate over files
@@ -923,6 +952,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         return true;
     }
 
+    // sendToShellray builds a HTTP request via curl and uploads a given file 
+    // to the Shellray
     private function sendToShellray($file)
     {
         $handler = curl_init(pm_Settings::get("shellray_url"));

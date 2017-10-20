@@ -566,13 +566,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     // fetchQuarantine retrieves and builds for a given path
     // the corresponding quarantine object as a JSON
     public function fetchQuarantine($path)
-    {
+    {   
         $fragments = array_filter(explode("/", $path));
         $quarantine = Modules_NimbusecAgentIntegration_PleskHelper::getQuarantine();
 
         $fetched = [];
         if (count($fragments) == 0) {
-            $this->err("Invalid path given: {$path}");
             return [];
         }
 
@@ -597,6 +596,11 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         // domain
         if (count($fragments) == 2) {
             $domain = $fragments[1];
+
+            // if no domain is found
+            if ($quarantine[$domain] == null) {
+                return [];
+            }
 
             // fetch root directory of domain
             $root = "/";

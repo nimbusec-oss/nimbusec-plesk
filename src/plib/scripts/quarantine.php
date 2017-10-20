@@ -43,8 +43,7 @@ foreach ($filtered as $name => $domain) {
         try {
             $nimbusec->moveToQuarantine($name, $issue["resource"]);
         } catch(Exception $e) {
-            pm_Log::err("Automatic quarantining: something went wrong while trying to quarantine {$name}: {$e->getMessage()}");
-            exit(1);
+            pm_Log::err("[Automatic quarantining]: something went wrong while trying to quarantine " . json_encode($issue, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . ": {$e->getMessage()}");
         }
 
         $quarantine_counter++;

@@ -242,7 +242,10 @@ DATA;
 
         // file view
         if ($type == 2) {
-            return self::createQTreeViewFile($path, $files);
+            $fragments = array_filter(explode("/", $path));
+            $domain = $fragments[1];
+
+            return self::createQTreeViewFile($path, $domain, $files);
         }
         
         // build tree view
@@ -350,17 +353,16 @@ DATA;
 
     // createQTreeViewFile builds the tree view for a given file and handles
     // the error message, if no file was found.
-    private static function createQTreeViewFile($path, $files)
+    private static function createQTreeViewFile($path, $domain, $files)
     {
-        // in case the file wasn't found, catch the warning
-        set_error_handler([self, "onError"], E_WARNING);
+        $source_code = "No source code is found";
         try {
-            $source_code = trim(htmlentities(file_get_contents($files[0]["path"])));
-        } catch (ErrorException $e) {
-            $source_code = "No source code is found";
-        }
-        restore_error_handler();
-        
+            $file_manager = new pm_FileManager(pm_Domain::getByName($domain)->getId());
+            if ($file_manager->fileExists($files[0]['path'])) {
+                $source_code = trim(htmlentities($file_manager->fileGetContents($files[0]['path'])));
+            }
+        } catch (pm_Exception $e) {}
+
         // return html template
         return "<pre style='white-space: pre-wrap;'><code class='php'>{$source_code}</code></pre>";
     }
@@ -405,14 +407,13 @@ DATA;
         $left_bubble = $issue['severity'] == 1 ? $colors[1] : $colors[0];
         $right_bubble = $issue['severity'] > 1 ? $colors[2] : $colors[0];
 
-        // in case the file wasn't found, catch the warning
-        set_error_handler([self, "onError"], E_WARNING);
+        $source_code = "No source code is found";
         try {
-            $source_code = trim(htmlentities(file_get_contents($issue['resource'])));
-        } catch (ErrorException $e) {
-            $source_code = "No source code is found";
-        }
-        restore_error_handler();
+            $file_manager = new pm_FileManager(pm_Domain::getByName($domain)->getId());
+            if ($file_manager->fileExists($issue['resource'])) {
+                $source_code = trim(htmlentities($file_manager->fileGetContents($issue['resource'])));
+            }
+        } catch (pm_Exception $e) {}
 
         return "
         <div class='panel panel-collapsible p-promo panel-collapsed'>

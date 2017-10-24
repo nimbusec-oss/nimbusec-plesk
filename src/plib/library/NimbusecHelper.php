@@ -614,31 +614,30 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             $entries = array_filter($quarantine[$domain], function($e) { return is_array($e); });
             foreach ($entries as $id => $value) {
 
-                $owner = $value["owner"];
-                if ($owner !== "unknown") {
-                    $owner = posix_getpwuid($value["owner"])["name"];
-
-                    if ($owner === null) {
-                        $owner = $value["owner"];
-                    }
-                }
-
-                $group = $value["group"];
-                if ($group !== "unknown") {
-                    $group = posix_getgrgid($value["group"])["name"];
+                // file properties may be known only on linux
+                if (pm_ProductInfo::getPlatform() == pm_ProductInfo::PLATFORM_UNIX) {
                     
-                    if ($group === null) {
-                        $group = $value["group"];
+                    $owner = $value["owner"];
+                    if ($owner !== "unknown") {
+                        if (posix_getpwuid($owner)) {
+                            $owner = posix_getpwuid($owner)["name"];
+                        }
                     }
-                }
 
-                $permission = $value["permission"];
-                if ($permission !== "unknown") {
-                    $permission = $this->formatPermission($permission);
-                    
-                    if ($permission === null) {
-                        $permission = $value["permission"];
+                    $group = $value["group"];
+                    if ($group !== "unknown") {
+                        if (posix_getgrgid($group)) {
+                            $group = posix_getgrgid($group)["name"];
+                        }
                     }
+
+                    $permission = $value["permission"];
+                    if ($permission !== "unknown") {
+                        if ($this->formatPermission($permission)) {
+                            $permission = $this->formatPermission($permission);
+                        }
+                    }
+
                 }
 
                 array_push($fetched, [
@@ -690,13 +689,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $file_manager = new pm_FileManager($plesk_domain->getId());
 
-        // get domain document root
-        try {
-            $doc_root = $plesk_domain->getDocumentRoot();
-        } catch (pm_Exception $e) {
-            $this->errE($e, "Could not retrieve document root for {$domain}");
-            throw new Exception("Could not retrieve document root for {$domain}");
-        }
+        // get domain home path
+        $doc_root = $plesk_domain->getHomePath();
 
         // does the file exist?
         if (!$file_manager->fileExists($file)) {
@@ -757,7 +751,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         // gather all information to write into kv-store
 
         // default information (for windows)
-        // on linux, use posix functions
+        // on linux, use fs functions
         $owner = "unknown";
         $group = "unknown";
         $permission = "unknown";
@@ -876,14 +870,8 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             throw new Exception("Domain {$domain} does not exist in host environment");
         }
 
-        // get domain document root
-        try {
-            $doc_root = $plesk_domain->getDocumentRoot();
-        } catch (pm_Exception $e) {
-            pm_Log::err($e->getMessage());
-            throw new Exception("Could not retrieve document root for {$domain}");
-        }
-
+        // get domain home path
+        $doc_root = $plesk_domain->getHomePath();
         $file_manager = new pm_FileManager($plesk_domain->getId());
 
         // domain

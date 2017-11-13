@@ -466,6 +466,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $api = new API($this->key, $this->secret, $this->server);
 
+        // check user by plesk admin mail
         $users = $api->findUsers("login=\"{$mail}\"");
         if (count($users) > 0) {
             $user = $users[0];
@@ -475,6 +476,27 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             return;
         }
 
+        // check user by plesk admin mail with prefix <mail>+plesk@mail.com
+        if (substr_count($mail, "@") > 1) {
+            throw new Exception("Invalid mail. Has more @ signs in mail than allowed (1).");
+        }
+
+        $mail_fragements = explode("@", $mail);
+        if (count($mail_fragements) != 2) {
+            throw new Exception("Invalid splitting. Has more @ signs in mail than allowed (1).");
+        }
+        $mail = "{$mail_fragements[0]}-plesk@{$mail_fragements[1]}";
+
+        $users = $api->findUsers("login=\"{$mail}\"");
+        if (count($users) > 0) {
+            $user = $users[0];
+            $user["signatureKey"] = $signatureKey;
+
+            $api->updateUser($user["id"], $user);
+            return;
+        }
+
+        // otherwise, create new user with plesk prefix
         $user = [
 			"login" 		=> $mail,
 			"mail" 			=> $mail,

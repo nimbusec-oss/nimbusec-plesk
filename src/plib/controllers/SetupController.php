@@ -88,27 +88,6 @@ class SetupController extends pm_Controller_Action
 			return;
 		}
 
-		// upsert admin and define signaturekey
-		$host = Modules_NimbusecAgentIntegration_PleskHelper::getHost();
-		$admin = Modules_NimbusecAgentIntegration_PleskHelper::getAdministrator();
-
-		// generate signature key
-		$signatureKey = md5(uniqid(rand(), true));
-
-		try {
-			$nimbusec->upsertUserWithSSO((string) $admin->admin_email, $signatureKey);
-		} catch (Exception $e) {
-			$this->errE($e, "Could not upsert administrator");
-
-			$this->_forward("view", "setup", null, [
-				"response" => $this->createHTMLR($this->lmsg("error.enable_sso"), "error")
-			]);
-			return;
-		}
-
-		// store signature key
-		pm_Settings::set("signaturekey", $signatureKey);
-
 		// retrieving agent token
 		$token = [];
 		try {

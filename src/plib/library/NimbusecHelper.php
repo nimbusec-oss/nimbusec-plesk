@@ -460,51 +460,6 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         return 0;
     }
-
-    // upsertUserWithSSO upserts a given user with a mail and appends a given signaturekey to the customer
-    public function upsertUserWithSSO($mail, $signatureKey)
-    {
-        $api = new API($this->key, $this->secret, $this->server);
-
-        // check user by plesk admin mail
-        $users = $api->findUsers("login=\"{$mail}\"");
-        if (count($users) > 0) {
-            $user = $users[0];
-            $user["signatureKey"] = $signatureKey;
-
-            $api->updateUser($user["id"], $user);
-            return;
-        }
-
-        // check user by plesk admin mail with prefix <mail>+plesk@mail.com
-        if (substr_count($mail, "@") > 1) {
-            throw new Exception("Invalid mail. Has more @ signs in mail than allowed (1).");
-        }
-
-        $mail_fragements = explode("@", $mail);
-        if (count($mail_fragements) != 2) {
-            throw new Exception("Invalid splitting. Has more @ signs in mail than allowed (1).");
-        }
-        $mail = "{$mail_fragements[0]}-plesk@{$mail_fragements[1]}";
-
-        $users = $api->findUsers("login=\"{$mail}\"");
-        if (count($users) > 0) {
-            $user = $users[0];
-            $user["signatureKey"] = $signatureKey;
-
-            $api->updateUser($user["id"], $user);
-            return;
-        }
-
-        // otherwise, create new user with plesk prefix
-        $user = [
-			"login" 		=> $mail,
-			"mail" 			=> $mail,
-			"role" 			=> "admin",
-			"signatureKey" 	=> $signatureKey
-        ];
-        $api->createUser($user);
-    }
     	
     // fetchAgent fetches the newest Nimbusec Server Agents version and saves it
     // to a given base path

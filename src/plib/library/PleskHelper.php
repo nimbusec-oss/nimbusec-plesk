@@ -442,7 +442,7 @@ DATA;
                                         </span>
                                         <span class='button-loading' style='display: none;'>
                                             <span style='margin-right: 5px;'>
-                                                Please Wait <i class='fa fa-spinner fa-fw fa-spin'></i>
+                                                Please Wait <img style='margin-left: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>
                                             </span>
                                         </span>
                                     </a>
@@ -464,7 +464,8 @@ DATA;
                                         </span>
                                         <span class='button-loading' style='display: none;'>
                                             <span style='margin-right: 5px;'>
-                                                Please Wait <i class='fa fa-spinner fa-fw fa-spin'></i></span>
+                                                Please Wait <img style='margin-left: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>
+                                            </span>
                                         </span>
                                     </a>
                                 </form>

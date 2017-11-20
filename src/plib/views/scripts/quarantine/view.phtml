@@ -61,10 +61,6 @@
         }
 
         container.innerHTML = response.html;
-        container.querySelectorAll("code").forEach(function(code) {
-            hljs.highlightBlock(code);
-        });
-
         setHandler();
     }
 

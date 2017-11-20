@@ -46,7 +46,7 @@
                                 </span>
                                 <span class="button-loading" style="display: none;">
                                     <span style="margin-right: 5px;">
-                                        Please Wait <i class="fa fa-spinner fa-fw fa-spin"></i>
+                                        Please Wait <img style="margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;" src="/theme/icons/16/plesk/indicator.gif">
                                     </span>
                                 </span>
                             </a>
@@ -196,7 +196,7 @@
                                             <span class="subtitle" style="margin-left: 5px;">
                                                 <span class="panel-heading-loading" style="display: none; font-size: 13px;">
                                                     <span style="margin-right: 5px;">
-                                                        (Please Wait <i class="fa fa-spinner fa-fw fa-spin"></i>)
+                                                        (Please Wait <img style="margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;" src="/theme/icons/16/plesk/indicator.gif">)
                                                     </span>
                                                 </span>
                                                 <span id="additional" style="font-size: 13px;">
@@ -695,10 +695,6 @@
 
                 response.issues.forEach(function(issue) {
                     panel_content.innerHTML += issue;
-                });
-
-                panel_content.querySelectorAll("code").forEach(function(code) {
-                    hljs.highlightBlock(code);
                 });
             }
 

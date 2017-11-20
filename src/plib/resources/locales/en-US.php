@@ -134,7 +134,7 @@ $messages = [
 	"dashboard.view.issues" => "Issues",
 	"dashboard.view.issues.description" => "Below you can find the found issues for all domain which are registered and scanned with Nimbusec. All these Issues are " .
 										   "brought and uploaded by the Nimbusec Server Agent.",
-	"dashboard.view.issues.loading" => "(Please wait, issues will be loaded ... <i class=\"fa fa-spinner fa-fw fa-spin\"></i>)",										   
+	"dashboard.view.issues.loading" => "(Please wait, issues will be loaded ... <img style='margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>)",										   
 
 	"dashboard.view.sort" => "Sort issues: ",
 	"dashboard.view.sort.severity" => "by severity",

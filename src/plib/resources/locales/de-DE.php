@@ -132,7 +132,7 @@ $messages = [
 
 	"dashboard.view.issues" => "Vorfälle",
 	"dashboard.view.issues.description" => "Unter finden Sie alle Vorfälle von Domains welche mit Nimbusec gescannt wurden.",
-	"dashboard.view.issues.loading" => "(Bitte warten, Vorfälle werden geladen ... <i class=\"fa fa-spinner fa-fw fa-spin\"></i>)",										   
+	"dashboard.view.issues.loading" => "(Bitte warten, Vorfälle werden geladen ... <img style='margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>)",										   
 
 	"dashboard.view.sort" => "Sortieren Sie die Vorfällen: ",
 	"dashboard.view.sort.severity" => "nach der Schwere des Vorfalls",

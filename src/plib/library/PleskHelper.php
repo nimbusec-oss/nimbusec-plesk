@@ -13,6 +13,15 @@ class Modules_NimbusecAgentIntegration_PleskHelper
             ];
         }
 
+        if (!pm_Productinfo::isUnix()) {
+            return [
+                ["title" => pm_Locale::lmsg("dashboard.view.title"), "action" => "view", "controller" => "dashboard"],
+                ["title" => pm_Locale::lmsg("settings.view.title"), "action" => "view", "controller" => "settings"],
+                ["title" => pm_Locale::lmsg("agent.view.title"), "action" => "view", "controller" => "agent"],
+                ["title" => pm_Locale::lmsg("setup.view.title"), "action" => "view", "controller" => "setup"],
+            ];    
+        }
+
         return [
 			["title" => pm_Locale::lmsg("dashboard.view.title"), "action" => "view", "controller" => "dashboard"],
 			["title" => pm_Locale::lmsg("quarantine.view.title"), "action" => "view", "controller" => "quarantine"],
@@ -415,7 +424,7 @@ DATA;
             }
         } catch (pm_Exception $e) {}
 
-        return "
+        $panel = "
         <div class='panel panel-collapsible p-promo panel-collapsed'>
             <div class='panel-wrap'>
 
@@ -448,35 +457,46 @@ DATA;
                                     </a>
                                 </form>
 
-                            </div>
-                            <div style='margin-left: -256px; margin-top: 2px;display: inline-block;'>
+                            </div>";
 
-                                <form id='moveToQuarantine' method='post' action='" . $helper->url('quarantine', 'dashboard') . "'>
-                                    <input name='action' value='moveToQuarantine' type='hidden'>
-                                    <input name='domain' value='{$domain}' type='hidden'>
-                                    <input name='file' value='{$issue['resource']}' type='hidden'>
-                                    <a onclick='sendForm(this);'>
-                                        <i class='mdi mdi-bug'></i>
-                                        <span class='button-text'>    
-                                            <span>
-                                                " . pm_Locale::lmsg('dashboard.view.quarantine') . "
-                                            </span>
-                                        </span>
-                                        <span class='button-loading' style='display: none;'>
-                                            <span style='margin-right: 5px;'>
-                                                Please Wait <img style='margin-left: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>
-                                            </span>
-                                        </span>
-                                    </a>
-                                </form>
+        if (pm_Productinfo::isUnix()) {
+            $panel .= "
+            <div style='margin-left: -256px; margin-top: 2px;display: inline-block;'>
 
-                            </div>
+                <form id='moveToQuarantine' method='post' action='" . $helper->url('quarantine', 'dashboard') . "'>
+                    <input name='action' value='moveToQuarantine' type='hidden'>
+                    <input name='domain' value='{$domain}' type='hidden'>
+                    <input name='file' value='{$issue['resource']}' type='hidden'>
+                    <a onclick='sendForm(this);'>
+                        <i class='mdi mdi-bug'></i>
+                        <span class='button-text'>    
+                            <span>
+                                " . pm_Locale::lmsg('dashboard.view.quarantine') . "
+                            </span>
+                        </span>
+                        <span class='button-loading' style='display: none;'>
+                            <span style='margin-right: 5px;'>
+                                Please Wait <img style='margin-left: 5px; width: 16px; height: 16px;' src='/theme/icons/16/plesk/indicator.gif'>
+                            </span>
+                        </span>
+                    </a>
+                </form>
 
+            </div>";
+        }
+
+        $panel .= "
                         </span>
 
                         <div class='panel-heading-name'>
-                            <span style='margin-right: 5px'>
-                                <input type='checkbox' id='issue-{$domain}'/>
+                            <span style='margin-right: 5px'>";
+        if (pm_Productinfo::isUnix()) {
+            $panel .= "
+                <input type='checkbox' id='issue-{$domain}'/>
+            ";
+        }
+
+        $panel .= " 
                                 <i class='mdi mdi-checkbox-blank-circle' style='color: {$left_bubble}'></i>
                                 <i class='mdi mdi-checkbox-blank-circle' style='color: {$right_bubble}'></i>
                             </span>
@@ -632,6 +652,8 @@ DATA;
                 </div>
             </div>
         </div>";
+
+        return $panel;
     }
 
     // onError acts as a customized method for handling error messages in PHP

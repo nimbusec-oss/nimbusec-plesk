@@ -114,7 +114,7 @@ $messages = [
 
 	/**************** dashboard ****************/
 	"dashboard.view.title" => "Dashboard",
-	"dashboard.view.description" => "The Nimbusec Dashboard shows all detected issues and assists in quarantining infected files.",
+	"dashboard.view.description" => "The Nimbusec Dashboard shows all detected issues and assists in processing infected files.",
 
 	"dashboard.view.bulk_actions" => "Bulk actions",
 	"dashboard.view.mass_quarantine" => "Manual mass quarantine",

@@ -17,113 +17,115 @@
                 <?= $this->lmsg("dashboard.view.description"); ?>
             </div>
 
-            <div class="title">
-                <div class="title-area">
-                    <h3>
-                        <?= $this->lmsg("dashboard.view.mass_quarantine"); ?>
-                    </h3>
+            <?php if (pm_Productinfo::isUnix()): ?>
+                <div class="title">
+                    <div class="title-area">
+                        <h3>
+                            <?= $this->lmsg("dashboard.view.mass_quarantine"); ?>
+                        </h3>
+                    </div>
                 </div>
-            </div>
-            <div class="content" style="margin-bottom: 15px;">
-                <div style="margin-bottom: 15px;">
-                    <?= $this->lmsg("dashboard.view.mass_quarantine.description"); ?>
+                <div class="content" style="margin-bottom: 15px;">
+                    <div style="margin-bottom: 15px;">
+                        <?= $this->lmsg("dashboard.view.mass_quarantine.description"); ?>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="field-name">
+                            <?= $this->lmsg("dashboard.view.mass_quarantine"); ?>
+                        </div>
+                    
+                        <div class="field-value">
+                            
+                            <div style="display: inline-block; margin-right: 15px;">
+                                <a id="bulk-quarantine" style="color: #353535;">
+                                    <i class="mdi mdi-bug"></i>
+                                    <span class="button-text">    
+                                        <span>
+                                            <?= $this->lmsg("dashboard.view.quarantine"); ?>
+                                        </span>
+                                    </span>
+                                    <span class="button-loading" style="display: none;">
+                                        <span style="margin-right: 5px;">
+                                            Please Wait <img style="margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;" src="/theme/icons/16/plesk/indicator.gif">
+                                        </span>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="field-name">
-                        <?= $this->lmsg("dashboard.view.mass_quarantine"); ?>
+                <div class="title">
+                    <div class="title-area">
+                        <h3>
+                            <?= $this->lmsg("dashboard.view.automatic_quarantine.title"); ?>
+                        </h3>
                     </div>
-                
-                    <div class="field-value">
-                        
-                        <div style="display: inline-block; margin-right: 15px;">
-                            <a id="bulk-quarantine" style="color: #353535;">
-                                <i class="mdi mdi-bug"></i>
-                                <span class="button-text">    
+                </div>
+                <div class="content" style="margin-bottom: 15px;">
+                    <div style="margin-bottom: 15px;">
+                    </div>
+
+                    <div class="msg-box msg-warning">
+                        <div class="msg-content">
+                            <span>
+                                <div>
+                                    <?= $this->lmsg("dashboard.view.disclaimer"); ?>
+                                </div>
+                                <div id="confirmation">
+
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="field-name">
+                            <?= $this->lmsg("dashboard.view.automatic_quarantine"); ?>
+                        </div>
+
+                        <div class="field-value">
+                            <form method="post" action="<?= $this->h->url('schedule-quarantine', 'dashboard'); ?>">
+                                <input name="action" value="scheduleQuarantine" type="hidden"/>
+                                <span style="margin-right: 2px;">
                                     <span>
-                                        <?= $this->lmsg("dashboard.view.quarantine"); ?>
+                                        <?= $this->lmsg("msg.issues.none"); ?>
+                                    </span>
+                                    <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
+                                    <span style="color: #303030;">|</span>
+                                </span>
+                                <span style="margin-right: 2px;">
+                                    <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
+                                    <span>
+                                        <?= $this->lmsg("msg.issues.yellow"); ?>
+                                    </span>
+                                    <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, ["3", "9"])): ?> checked="checked" <?php endif; ?>/>
+                                    <span style="color: #303030;">|</span>
+                                </span>
+                                <span style="margin-right: 2px;">
+                                    <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
+                                    <span>
+                                        <?= $this->lmsg("msg.issues.red") ?>
+                                    </span>
+                                    <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, ["6", "9"])): ?> checked="checked" <?php endif; ?>/>
+                                </span>
+                                <span id="btn-send" class="btn action" style="margin-left: 5px;">
+                                    <span class="submit-button" sender>
+                                        <?= $this->lmsg("dashboard.view.apply"); ?>
                                     </span>
                                 </span>
-                                <span class="button-loading" style="display: none;">
-                                    <span style="margin-right: 5px;">
-                                        Please Wait <img style="margin-left: 5px; margin-right: 5px; width: 16px; height: 16px;" src="/theme/icons/16/plesk/indicator.gif">
-                                    </span>
+                                <span class="hint">
+                                    <?= $this->lmsg("dashboard.view.automatic_quarantine.hint"); ?>
                                 </span>
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="title">
-                <div class="title-area">
-                    <h3>
-                        <?= $this->lmsg("dashboard.view.automatic_quarantine.title"); ?>
-                    </h3>
-                </div>
-            </div>
-            <div class="content" style="margin-bottom: 15px;">
-                <div style="margin-bottom: 15px;">
-                </div>
-
-                <div class="msg-box msg-warning">
-                    <div class="msg-content">
-                        <span>
-                            <div>
-                                <?= $this->lmsg("dashboard.view.disclaimer"); ?>
                             </div>
-                            <div id="confirmation">
-
-                            </div>
-                        </span>
+                        </form>
                     </div>
                 </div>
-
-                <div class="form-row">
-
-                    <div class="field-name">
-                        <?= $this->lmsg("dashboard.view.automatic_quarantine"); ?>
-                    </div>
-
-                    <div class="field-value">
-                        <form method="post" action="<?= $this->h->url('schedule-quarantine', 'dashboard'); ?>">
-                            <input name="action" value="scheduleQuarantine" type="hidden"/>
-                            <span style="margin-right: 2px;">
-                                <span>
-                                    <?= $this->lmsg("msg.issues.none"); ?>
-                                </span>
-                                <input type="checkbox" name="quarantine-state[]" value="1" <?php if ($this->quarantine_state == "1"): ?> checked="checked" <?php endif; ?>/>
-                                <span style="color: #303030;">|</span>
-                            </span>
-                            <span style="margin-right: 2px;">
-                                <i class="mdi mdi-checkbox-blank-circle" style="color: #fdd835"></i>
-                                <span>
-                                    <?= $this->lmsg("msg.issues.yellow"); ?>
-                                </span>
-                                <input type="checkbox" name="quarantine-state[]" value="3" <?php if (in_array($this->quarantine_state, ["3", "9"])): ?> checked="checked" <?php endif; ?>/>
-                                <span style="color: #303030;">|</span>
-                            </span>
-                            <span style="margin-right: 2px;">
-                                <i class="mdi mdi-checkbox-blank-circle" style="color: #f44336"></i>
-                                <span>
-                                    <?= $this->lmsg("msg.issues.red") ?>
-                                </span>
-                                <input type="checkbox" name="quarantine-state[]" value="6" <?php if (in_array($this->quarantine_state, ["6", "9"])): ?> checked="checked" <?php endif; ?>/>
-                            </span>
-                            <span id="btn-send" class="btn action" style="margin-left: 5px;">
-                                <span class="submit-button" sender>
-                                    <?= $this->lmsg("dashboard.view.apply"); ?>
-                                </span>
-                            </span>
-                            <span class="hint">
-                                <?= $this->lmsg("dashboard.view.automatic_quarantine.hint"); ?>
-                            </span>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
+            <?php endif; ?>
+                
             <div class="title">
                 <div class="title-area">
                     <h3>
@@ -158,18 +160,20 @@
                             <?= $this->lmsg("dashboard.view.sort.severity"); ?>
                         </a>
                     </span>
-                    <span style="margin-right: 5px;">|</span>
-                    <span style="margin-right: 5px;">
-                        <a id="sort-issues-noissues">
-                            <?= $this->lmsg("dashboard.view.sort.no_issues"); ?>
-                        </a>
-                    </span>
-                    <span style="margin-right: 5px;">|</span>
-                    <span style="margin-right: 5px;">
-                        <a id="sort-issues-quarantined">
-                            <?= $this->lmsg("dashboard.view.sort.no_quarantined"); ?>
-                        </a>
-                    </span>
+                    <?php if (pm_Productinfo::isUnix()): ?>
+                        <span style="margin-right: 5px;">|</span>
+                        <span style="margin-right: 5px;">
+                            <a id="sort-issues-noissues">
+                                <?= $this->lmsg("dashboard.view.sort.no_issues"); ?>
+                            </a>
+                        </span>
+                        <span style="margin-right: 5px;">|</span>
+                        <span style="margin-right: 5px;">
+                            <a id="sort-issues-quarantined">
+                                <?= $this->lmsg("dashboard.view.sort.no_quarantined"); ?>
+                            </a>
+                        </span>
+                    <?php endif; ?>
                 </div>
 
                 <div id="domains-panel">

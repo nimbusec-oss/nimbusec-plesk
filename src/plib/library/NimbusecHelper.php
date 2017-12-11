@@ -214,9 +214,12 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
         $metadata_panel = 
             Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues:", $issues_cnt) .
-            Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues in Quarantine:", $quarantined_cnt) .
-            Modules_NimbusecAgentIntegration_PleskHelper::createSelectIssuesByDomain($domain["name"]). 
-            Modules_NimbusecAgentIntegration_PleskHelper::createSeperator();
+            Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues in Quarantine:", $quarantined_cnt);
+
+        if (pm_Productinfo::isUnix()) {
+           $metadata_panel .= Modules_NimbusecAgentIntegration_PleskHelper::createSelectIssuesByDomain($domain["name"]);
+        }
+        $metadata_panel .= Modules_NimbusecAgentIntegration_PleskHelper::createSeperator();
 
         return [
             "issues_cnt"        => $issues_cnt,

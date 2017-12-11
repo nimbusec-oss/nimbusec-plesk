@@ -114,7 +114,7 @@ $messages = [
 
 	/**************** dashboard ****************/
 	"dashboard.view.title" => "Dashboard",
-	"dashboard.view.description" => "Das Nimbusec Dashboard zeigt alle erkannten Vorfälle und hilft, diese in Quarantäne zu geben.",
+	"dashboard.view.description" => "Das Nimbusec Dashboard zeigt alle erkannten Vorfälle und hilft, diese zu verarbeiten.",
 
 	"dashboard.view.bulk_actions" => "Massenaktionen",
 	"dashboard.view.mass_quarantine" => "Manuelle Massenquarantäne",

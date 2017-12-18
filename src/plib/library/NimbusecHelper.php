@@ -216,7 +216,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
             Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues:", $issues_cnt) .
             Modules_NimbusecAgentIntegration_PleskHelper::createFormRow("Number of Issues in Quarantine:", $quarantined_cnt);
 
-        if (pm_Productinfo::isUnix()) {
+        if (pm_ProductInfo::isUnix()) {
            $metadata_panel .= Modules_NimbusecAgentIntegration_PleskHelper::createSelectIssuesByDomain($domain["name"]);
         }
         $metadata_panel .= Modules_NimbusecAgentIntegration_PleskHelper::createSeperator();

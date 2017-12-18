@@ -17,7 +17,7 @@
                 <?= $this->lmsg("dashboard.view.description"); ?>
             </div>
 
-            <?php if (pm_Productinfo::isUnix()): ?>
+            <?php if (pm_ProductInfo::isUnix()): ?>
                 <div class="title">
                     <div class="title-area">
                         <h3>
@@ -160,7 +160,7 @@
                             <?= $this->lmsg("dashboard.view.sort.severity"); ?>
                         </a>
                     </span>
-                    <?php if (pm_Productinfo::isUnix()): ?>
+                    <?php if (pm_ProductInfo::isUnix()): ?>
                         <span style="margin-right: 5px;">|</span>
                         <span style="margin-right: 5px;">
                             <a id="sort-issues-noissues">

@@ -13,7 +13,7 @@ class Modules_NimbusecAgentIntegration_PleskHelper
             ];
         }
 
-        if (!pm_Productinfo::isUnix()) {
+        if (!pm_ProductInfo::isUnix()) {
             return [
                 ["title" => pm_Locale::lmsg("dashboard.view.title"), "action" => "view", "controller" => "dashboard"],
                 ["title" => pm_Locale::lmsg("settings.view.title"), "action" => "view", "controller" => "settings"],
@@ -459,7 +459,7 @@ DATA;
 
                             </div>";
 
-        if (pm_Productinfo::isUnix()) {
+        if (pm_ProductInfo::isUnix()) {
             $panel .= "
             <div style='margin-left: -256px; margin-top: 2px;display: inline-block;'>
 
@@ -490,7 +490,7 @@ DATA;
 
                         <div class='panel-heading-name'>
                             <span style='margin-right: 5px'>";
-        if (pm_Productinfo::isUnix()) {
+        if (pm_ProductInfo::isUnix()) {
             $panel .= "
                 <input type='checkbox' id='issue-{$domain}'/>
             ";

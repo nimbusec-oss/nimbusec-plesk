@@ -91,6 +91,7 @@ class SetupController extends pm_Controller_Action
 		// retrieving agent token
 		$token = [];
 		try {
+			$host = Modules_NimbusecAgentIntegration_PleskHelper::getHost();
 			$token = $nimbusec->getAgentCredentials("{$host['0']}-plesk");
 		} catch (Exception $e) {
 			$this->errE($e, "Could not retrieve Agent token");

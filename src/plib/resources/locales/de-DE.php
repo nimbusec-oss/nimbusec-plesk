@@ -35,6 +35,10 @@ $messages = [
 	"error.fp" => "Die Datei %s konnte nicht als falsch positiv markiert werden: %s",
 	"error.unquarantine" => "Die Datei %s konnte nicht aus der Quarantäne an der Position %s zurück verschoben werden: %s", 
 
+	/**************** index ****************/
+	"licence.view.title" => "Lizenz kaufen",
+	"licence.view.description" => "Kaufen Sie eine Nimbusec Plesk Lizenz",
+
 	/**************** agent ****************/
 	"agent.view.title" => "Agent Übersicht",
 	"agent.view.description" => "Halten Sie den Nimbusec Agent up-to-date indem Sie regelmäßig nach einer neuen Version Ausschau halten und diese auch runterladen. Dies gewährleistet eine effiziente und fehlerfreie Malwareerkennung.",

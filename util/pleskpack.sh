@@ -32,7 +32,7 @@ fi
 
 # check destination
 if [[ ! $destination ]]; then
-    destination="$HOME/tmp"
+    destination="/tmp"
 fi
 destination=$(realpath $destination)
 

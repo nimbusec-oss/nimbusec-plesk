@@ -2,6 +2,8 @@
 
 class IndexController extends pm_Controller_Action
 {
+    use Modules_NimbusecAgentIntegration_LoggingTrait;
+
     public function init()
     {
         parent::init();
@@ -16,6 +18,7 @@ class IndexController extends pm_Controller_Action
 
     private function initPleskStore()
     {
+        pm_Settings::set("extension_id", "nimbusec-agent-integration");
         pm_Settings::set("extension_title", "Nimbusec Webshell Detection");
 
         pm_Settings::set("agent_config", pm_Context::getVarDir() . "/agent.conf");
@@ -28,6 +31,24 @@ class IndexController extends pm_Controller_Action
 
     public function indexAction()
     {
+        $productName = "ext-" . pm_Settings::get("extension_id");
+        $licences = pm_License::getAdditionalKeysList($productName);
+        if (count($licences) == 0) {
+            $this->_forward("view", "index");
+            return;
+        }
+
+        $licence = reset($licences);
+        $credentials = json_decode($licence["key-body"], true);
+        if ($credentials === null) {
+            $this->err("Unable to deserialize licence key-body: " . json_last_error_msg() != false ? json_last_error_msg() : "No error");
+            $this->_forward("view", "index");
+            return;
+        }
+
+        pm_Settings::set("api_key", $credentials["ClientID"]);
+        pm_Settings::set("api_secret", $credentials["ClientSecret"]);
+
         $installed = pm_Settings::get("extension_installed");
         if ($installed !== "true") {
             $this->_forward("view", "setup");
@@ -35,5 +56,14 @@ class IndexController extends pm_Controller_Action
         }
 
         $this->_forward("view", "dashboard");
+    }
+
+    public function viewAction()
+    {
+        $this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
+        $this->view->buy_url = pm_Context::getBuyUrl();
+
+        // try to fetch passed parameters (e.g from forwards)
+        $this->view->response = $this->getRequest()->getParam("response");
     }
 }

@@ -8,6 +8,8 @@
   <release>0</release>
   <vendor>nimbusec</vendor>
   <url>https://nimbusec.com</url>
+  <help_url>https://kb.nimbusec.com/Integrations/Plesk</help_url>
+  <buy_url>https://go.plesk.com/buy-plesk-ext/nimbusec-agent-integration</buy_url>
   <support_url>https://kb.nimbusec.com/Integrations/Plesk</support_url>
   <plesk_min_version>17.0</plesk_min_version>
 </module>

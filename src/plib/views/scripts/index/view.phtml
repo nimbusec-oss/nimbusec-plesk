@@ -23,6 +23,17 @@
                         </span>
                     </a>
                 </li>
+                <li class="tools-item">
+                    <a class="tool-block" href="<?= $this->h->url('view', 'setup'); ?>">
+                        <span class="tool-icon">
+                            <img src="/theme/icons/32/plesk/install.png"/>
+                        </span>
+                        <span class="tool-name"><?= $this->lmsg("licence.view.credentials"); ?></span>
+                        <span class="tool-info">
+                            <?= $this->lmsg("licence.view.credentials.description"); ?>
+                        </span>
+                    </a>
+                </li>
             </ul>
 
             <div>
@@ -37,7 +48,8 @@
                 As a hosting provider you can support your customers
                 with pro-active help and use Nimbusec to remove malware infections fast. 
                 <br/>
-                Please note, that if you already possess API credentials, you can switch to the setup panel and begin the installation.
+                Please note, that if you already own API credentials, you can switch to the <a href="<?= $this->h->url('view', 'setup'); ?>">setup panel</a> 
+                and begin the installation.
                 <br/><br/>
                 Find out more at <a href="https://nimbusec.com/en/" target="_blank">https://nimbusec.com/en/</a>
             </div>

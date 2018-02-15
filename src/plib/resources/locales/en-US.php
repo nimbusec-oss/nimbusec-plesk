@@ -38,6 +38,8 @@ $messages = [
 	/**************** index ****************/
 	"licence.view.title" => "Get a Licence",
 	"licence.view.description" => "Purchase a licence for Plesk",
+	"licence.view.credentials" => "Enter API credentials",
+	"licence.view.credentials.description" => "If you own Nimbusec API credentials, begin the installation",
 
 	/**************** agent ****************/
 	"agent.view.title" => "Agent Overview",
@@ -58,14 +60,21 @@ $messages = [
 	"setup.view.title" => "Setup",
 	"setup.view.description" => "Enter your Nimbusec API credentials in order to download the Nimbusec Server Agent. " .
 								"Leave the API Server field unchanged for preserving the stability of the extension. " .
-								"<br>For more information about getting API credentials, please contact us at <a href=\"mailto:plesk@nimbusec.com\">plesk@nimbusec.com</a>." .
-								"<br>The Plesk extension documentation can be found at <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
+								"<br>If you need support, please contact <a href=\"mailto:plesk@nimbusec.com\">plesk@nimbusec.com</a>. " .
+								"The Plesk extension documentation can be found at <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
 	"setup.view.download_agent" => "Download the Nimbusec Server Agent",
 
 	"setup.controller.placeholder.api_key" => "Your Nimbusec API Key",
 	"setup.controller.placeholder.api_secret" => "Your Nimbusec API Secret",
 
 	"setup.controller.installed" => "Successfully installed the Nimbusec Agent",
+
+	"setup.licence.information" => "We detected a Nimbusec Plesk licence. Please review the information below and begin the installation of the Nimbusec Server Agent",
+	"setup.licence.description" => "Below, you can find the credentials retrieved from your Nimbusec Plesk licence. " .
+									"Please verify them in order to ensure a correct installation process. " .
+									"<br>If the credentials are correct, you can start downloading the Nimbusec Server Agent. " .
+									"Otherwise, please correct them by editing the necessary fields. " .
+									"<br><br>The Plesk extension documentation can be found at <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
 
 	/**************** settings ****************/
 	"settings.view.title" => "Settings",

@@ -36,12 +36,29 @@ class SetupController extends pm_Controller_Action
 		$this->view->extension_installed = pm_Settings::get("extension_installed");
 	}
 
+	public function licenceAction()
+	{
+		$this->view->tabs = Modules_NimbusecAgentIntegration_PleskHelper::getTabs();
+
+		// try to fetch passed parameters (e.g from forwards)
+		$this->view->response = $this->getRequest()->getParam("response");
+		
+		$this->view->api_key = pm_Settings::get("api_key", $this->lmsg("setup.controller.placeholder.api_key"));
+        $this->view->api_secret = pm_Settings::get("api_secret", $this->lmsg("setup.controller.placeholder.api_secret"));
+        $this->view->api_server = pm_Settings::get("api_url");
+	}
+
 	public function downloadAgentAction() 
 	{
+		$setup_action = "view";
+		if (pm_Settings::get("has_licence") === "true") {
+			$setup_action = "licence";
+		}
+
 		$request = $this->getRequest(); 
 		$valid = $this->isValidPostRequest($request, "submit", "downloadAgent");
 		if (!$valid) {
-			$this->_forward("view", "setup");
+			$this->_forward($setup_action, "setup");
 			return;
 		}
 
@@ -52,7 +69,7 @@ class SetupController extends pm_Controller_Action
 		// validate credentials (zend i18n has extended validators)
 		$validator = new Zend\I18n\Validator\Alnum();
 		if (!$validator->isValid($api_key) || !$validator->isValid($api_secret)) {
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.api_credentials"), "error")
 			]);
 			return;
@@ -61,7 +78,7 @@ class SetupController extends pm_Controller_Action
 		// validate url
 		$validator = new Zend\Validator\Uri();
 		if (!$validator->isValid($api_server)) {
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.api_url"), "error")
 			]);
 			return;	
@@ -70,7 +87,7 @@ class SetupController extends pm_Controller_Action
 		// test credentials
 		$nimbusec = Modules_NimbusecAgentIntegration_NimbusecHelper::withCred($api_key, $api_secret, $api_server);
 		if (!$nimbusec->areValidAPICredentials()) {
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.api_credentials"), "error")
 			]);
 			return;
@@ -82,7 +99,7 @@ class SetupController extends pm_Controller_Action
 		} catch (Exception $e) {
 			$this->errE($e, "Could not download Server Agent");
 			
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.download_agent"), "error")
 			]);
 			return;
@@ -96,7 +113,7 @@ class SetupController extends pm_Controller_Action
 		} catch (Exception $e) {
 			$this->errE($e, "Could not retrieve Agent token");
 
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR($this->lmsg("error.token_retrieval"), "error")
 			]);
 			return;
@@ -120,7 +137,7 @@ class SetupController extends pm_Controller_Action
 			// sync domains in config
 			$nimbusec->syncDomainInAgentConfig();
 		} catch (Exception $e) {
-			$this->_forward("view", "setup", null, [
+			$this->_forward($setup_action, "setup", null, [
 				"response" => $this->createHTMLR("Could not synchronize Server Agent config", "error")
 			]);
 			return;

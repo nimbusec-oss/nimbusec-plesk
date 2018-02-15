@@ -6,11 +6,15 @@ class Modules_NimbusecAgentIntegration_PleskHelper
     // of the extension
     public static function getTabs()
     {
-        $installed = pm_Settings::get("extension_installed");
-        if ($installed !== "true") {
+        if (pm_Settings::get("has_licence") !== "true") {
             return [
-                ["title" => pm_Locale::lmsg("licence.view.title"), "action" => "view", "controller" => "index"],
-				["title" => pm_Locale::lmsg("setup.view.title"), "action" => "view", "controller" => "setup"],
+                ["title" => pm_Locale::lmsg("licence.view.title"), "action" => "view", "controller" => "index"]
+            ];
+        }
+
+        if (pm_Settings::get("extension_installed") !== "true") {
+            return [
+                ["title" => pm_Locale::lmsg("setup.view.title"), "action" => "licence", "controller" => "setup"]
             ];
         }
 

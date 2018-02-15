@@ -37,7 +37,10 @@ $messages = [
 
 	/**************** index ****************/
 	"licence.view.title" => "Lizenz kaufen",
-	"licence.view.description" => "Kaufen Sie eine Nimbusec Plesk Lizenz",
+	"licence.view.description" => "Kaufen Sie eine Nimbusec Plesk Lizenz",	
+	"licence.view.credentials" => "Geben Sie Ihre Zugangsdaten ein",
+	"licence.view.credentials.description" => "Wenn Sie bereits Nimbusec API Zugangsdaten besitzen, dann können Sie die Installation starten",
+
 
 	/**************** agent ****************/
 	"agent.view.title" => "Agent Übersicht",
@@ -66,6 +69,15 @@ $messages = [
 	"setup.controller.placeholder.api_secret" => "Ihr Nimbusec API Secret",
 
 	"setup.controller.installed" => "Der Nimbusec Agent wurde erfolgreich installiert.",
+
+	"setup.licence.information" => "Wir haben eine Nimbusec Plesk Lizenz auf ihrem System gefunden. Überprüfen Sie die untenstehenden Information und starten Sie
+									die Installation des Nimbusec Server Agents",
+	"setup.licence.description" => "Sie finden unten die entnommenen Zugansdaten aus Ihrer Nimbusec Plesk Lizenz. " .
+									"Bitte überprüfen Sie diese auf ihre Korrektheit. " .
+									"<br>Wenn die Zugangsdaten korrekt sind, können Sie die Installation starten. " .
+									"Sollten die Zugangsdaten nicht korrekt sein, können Sie diese bearbeiten. " .
+									"<br><br>Die offizielle Dokumentation zur Nimbusec Plesk Extension finden Sie hier: <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
+
 
 	/**************** settings ****************/
 	"settings.view.title" => "Einstellungen",

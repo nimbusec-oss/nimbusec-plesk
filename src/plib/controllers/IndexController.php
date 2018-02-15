@@ -16,6 +16,12 @@ class IndexController extends pm_Controller_Action
         $this->view->h = $this->_helper;
     }
 
+    // shortcut for calling the PleskHelper Module
+	private function createHTMLR($msg, $level) 
+	{
+		return Modules_NimbusecAgentIntegration_PleskHelper::createMessage($msg, $level);
+	}
+
     private function initPleskStore()
     {
         pm_Settings::set("extension_id", "nimbusec-agent-integration");
@@ -31,13 +37,21 @@ class IndexController extends pm_Controller_Action
 
     public function indexAction()
     {
+        // check if a plesk licence exist
         $productName = "ext-" . pm_Settings::get("extension_id");
         $licences = pm_License::getAdditionalKeysList($productName);
         if (count($licences) == 0) {
+
+            // set by default to empty
+            pm_Settings::set("api_key", null);
+            pm_Settings::set("api_secret", null);
+            pm_Settings::set("has_licence", "false");
+
             $this->_forward("view", "index");
             return;
         }
 
+        // retrieve information from licence
         $licence = reset($licences);
         $credentials = json_decode($licence["key-body"], true);
         if ($credentials === null) {
@@ -46,12 +60,16 @@ class IndexController extends pm_Controller_Action
             return;
         }
 
-        pm_Settings::set("api_key", $credentials["ClientID"]);
-        pm_Settings::set("api_secret", $credentials["ClientSecret"]);
+        pm_Settings::set("has_licence", "true");
 
         $installed = pm_Settings::get("extension_installed");
         if ($installed !== "true") {
-            $this->_forward("view", "setup");
+            pm_Settings::set("api_key", $credentials["ClientID"]);
+            pm_Settings::set("api_secret", $credentials["ClientSecret"]);
+
+            $this->_forward("licence", "setup", null, [
+				"response" => $this->createHTMLR($this->lmsg("setup.licence.information"), "info")
+			]);
             return;
         }
 

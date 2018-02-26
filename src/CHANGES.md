@@ -1,3 +1,8 @@
+# 2.2
+
+* Adaptation to licencing workflow
+* Minor bug fixes
+
 # 2.1
 
 * New dashboard panel showing detected issues

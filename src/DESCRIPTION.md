@@ -1,16 +1,22 @@
-This extension monitors your website 24/7 and informs you immediately if it is hacked or tampered with - before your visitors are jeopardized and any damage can be done. It detects the following threats:
+This extension monitors your websites 24/7 and shows all incidents in a dashboard when it is hacked. It detects the following threats:
 
-- Malware
 - Backdoors and web shells
-- Defacement
-- Blacklisting
-- SSL certificate problems
 - Overdue CMS updates
+- Malware
+- Defacement (only with _Nimbusec Website Security Basic_)
+- Blacklisting (only with _Nimbusec Website Security Basic_)
+- SSL certificate problems (only with _Nimbusec Website Security Basic_)
 
-**Note:** To start using this extension, you require API credentials (API Key and API Secret). To receive them:
+**Note:** To enable monitoring, you need 
 
-1. Contact sales@nimbusec.com.
-2. Receive Nimbusec Website Security Monitor subscription. The subscription can be
-    - Free.
-    - Paid, tailored to your requirements.
-3. Receive API credentials.
+- a license from the Plesk markteplace
+- **or** API credentials from a previous purchased Nimbusec subscription
+
+
+**You got the license from the marketplace:**
+
+After purchasing a license, the required API key and secret will be automatically pre filled on the first screen. It is recommended that you write down the keys at this point. But you can do that as well later from the setup tab.
+
+**You already have a license from the past:**
+
+If you already have valid API credentials from previous purchases, you can set them on the first screen after the update.

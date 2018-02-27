@@ -53,7 +53,7 @@ class SettingsController extends pm_Controller_Action
 			return;
 		}
 		
-		$domains = $request->getPost("active0");
+		$domains = $request->getPost("active");
 		$bundle = $request->getPost("bundle");
 
 		// validate given domains
@@ -66,7 +66,7 @@ class SettingsController extends pm_Controller_Action
 		}
 		
 		// validate bundle
-		$bundle_elements = split("__", $bundle);
+		$bundle_elements = explode("__", $bundle);
 		if (count($bundle_elements) !== 2) {
 			$this->_forward("view", "settings", null, [
 				"response" => $this->createHTMLR($this->lmsg("settings.controller.invalid_bundle"), "error")
@@ -129,7 +129,7 @@ class SettingsController extends pm_Controller_Action
 
 		$index = substr($request->getPost("submit"), -1);
 	
-		$domains = $request->getPost("active{$index}");	
+		$domains = $request->getPost("deactive{$index}");	
 		$bundle_name = $request->getPost("bundle");
 
 		// validate given domains

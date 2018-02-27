@@ -31,7 +31,7 @@ class SetupController extends pm_Controller_Action
 
         $this->view->api_key = pm_Settings::get("api_key", $this->lmsg("setup.controller.placeholder.api_key"));
         $this->view->api_secret = pm_Settings::get("api_secret", $this->lmsg("setup.controller.placeholder.api_secret"));
-        $this->view->api_server = pm_Settings::get("api_url");
+        $this->view->api_server = pm_Settings::get("api_server", pm_Settings::get("api_url"));
 
 		$this->view->extension_installed = pm_Settings::get("extension_installed");
 	}

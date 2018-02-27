@@ -136,7 +136,6 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         try {
             foreach ($api->findBundles() as $bundle) {
                 $bundles[$bundle["id"]]["bundle"] = $bundle;
-                $bundles[$bundle["id"]]["bundle"]["display"] = sprintf("%s (used %d / %d)", $bundle["name"], $bundle["active"], $bundle["contingent"]);
                 $bundles[$bundle["id"]]["domains"] = [];
             }
 

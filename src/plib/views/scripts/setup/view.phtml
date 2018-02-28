@@ -34,8 +34,16 @@
                         <span class="required">*</span>
                     </div>
                     <div class="field-value">
-                        <input type="text" name="api_secret" value="<?= $this->e->escapeHtml($this->api_secret); ?>" 
+                        <input id="api_secret" type="password" name="api_secret" value="<?= $this->e->escapeHtml($this->api_secret); ?>" 
                             <?php if ($this->extension_installed === "true"): ?> readonly="true" <?php endif; ?>/>
+                        <span id="show_secret" style="background: #ededed; border: solid 1px #afbac1; margin-left: 5px; cursor: default;">
+                            <span style="margin-left: 3px;">
+                                <img id="show_secret_icon" src="/theme/icons/16/plesk/preview.png"/>
+                            </span>
+                            <span style="color: #188dd9; margin-right: 3px;">
+                                View
+                            </span>
+                        </span>
                     </div>
                 </div>
 
@@ -96,7 +104,22 @@
         spinner.appendChild(document.createTextNode("Please wait"));
 
         parent.appendChild(spinner);
-    } 
+    };
+
+    var viewButtonHoveringChangeColors = function() {
+        return {
+            "#ededed": "#f9f9f9",
+            "#f9f9f9": "#ededed"
+        };
+    };
+
+    var rgbToHex = function(backgroundColorString) {
+        var rgb = backgroundColorString.match(/\d+/g);
+        var r   = parseInt(rgb[0], 10);
+        var g   = parseInt(rgb[1], 10);
+        var b   = parseInt(rgb[2], 10);
+        return "#" + r.toString(16) + g.toString(16) + b.toString(16);
+    };
 
     var eventHandler = function (event) {
 
@@ -112,8 +135,58 @@
                 setLoading(toggle);
             }
         }
+
+        // check id directly
+        if (toggle.id === "show_secret" || document.getElementById("show_secret").contains(toggle)) {
+            var api_secret = document.getElementById("api_secret");
+            
+            if (api_secret.type === "password") {
+                api_secret.type = "text";
+            } else {
+                api_secret.type = "password"
+            }
+
+            var show_secret_span = document.getElementById("show_secret");
+            show_secret_span.style.background = viewButtonHoveringChangeColors()[rgbToHex(show_secret_span.style.background)];
+        }
+    };
+
+    var viewButtonMouseOverColors = function () {
+        return {
+            "#ededed": "#f9f9f9",
+            "#e0e0e0": "#ededed"
+        };
+    };
+
+    var onMouseOverHandler = function (event) {
+        var toggle = event.target;
+        
+        // check id directly
+        if (toggle.id === "show_secret" || document.getElementById("show_secret").contains(toggle)) {
+            var show_secret_span = document.getElementById("show_secret");
+            show_secret_span.style.background = viewButtonMouseOverColors()[rgbToHex(show_secret_span.style.background)];
+        }
+    };
+
+    var viewButtonMouseOutColors = function () {
+        return {
+            "#f9f9f9": "#ededed",
+            "#ededed": "#e0e0e0"
+        };
+    };
+
+    var onMouseOutHandler = function (event) {
+        var toggle = event.target;
+        
+        // check id directly
+        if (toggle.id === "show_secret" || document.getElementById("show_secret").contains(toggle)) {
+            var show_secret_span = document.getElementById("show_secret");
+            show_secret_span.style.background = viewButtonMouseOutColors()[rgbToHex(show_secret_span.style.background)];
+        }
     };
 
     document.addEventListener("click", eventHandler);
+    document.addEventListener("mouseover", onMouseOverHandler);
+    document.addEventListener("mouseout", onMouseOutHandler);
 
 </script>

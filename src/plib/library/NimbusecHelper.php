@@ -141,17 +141,27 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 
             foreach ($domains as $name => $directory) {
                 $fetched = $api->findDomains("name=\"{$name}\"");
-                if (count($fetched) != 1) {
+                if (count($fetched) > 1) {
                     $this->err("found more than one domain in the API for {$name}: " . count($fetched));
                     return [];
                 }
 
-                // append
+                if (count($fetched) < 1) {
+                    $this->err("no domain found in the API for {$name}");
+                    return [];
+                }
+                
                 $domain = $fetched[0];
-                array_push($bundles[$domain["bundle"]]["domains"], [
-                    "name" => $name,
-                    "directory" => $directory
-                ]);
+                
+                // verify whether the domain was registered with a bundle
+                // which can be queried by API - very rare case; fault on server side
+                // if not found, skip the domain
+                if (array_key_exists($domain["bundle"], $bundles)) {
+                    array_push($bundles[$domain["bundle"]]["domains"], [
+                        "name" => $name,
+                        "directory" => $directory
+                    ]);
+                }
             }
         } catch (Exception $e) {
             $this->errE($e, "Could not connect to Nimbusec API");

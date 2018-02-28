@@ -37,39 +37,45 @@ class IndexController extends pm_Controller_Action
 
     public function indexAction()
     {
-        // check if a plesk licence exist
-        $productName = "ext-" . pm_Settings::get("extension_id");
-        $licences = pm_License::getAdditionalKeysList($productName);
-        if (count($licences) == 0) {
-
-            // set by default to empty
-            pm_Settings::set("api_key", null);
-            pm_Settings::set("api_secret", null);
-            pm_Settings::set("has_licence", "false");
-
-            $this->_forward("view", "index");
-            return;
-        }
-
-        // retrieve information from licence
-        $licence = reset($licences);
-        $credentials = json_decode($licence["key-body"], true);
-        if ($credentials === null) {
-            $this->err("Unable to deserialize licence key-body: " . json_last_error_msg() != false ? json_last_error_msg() : "No error");
-            $this->_forward("view", "index");
-            return;
-        }
-
-        pm_Settings::set("has_licence", "true");
-
         $installed = pm_Settings::get("extension_installed");
         if ($installed !== "true") {
+            
+            // check if a plesk licence exist
+            $productName = "ext-" . pm_Settings::get("extension_id");
+            $licences = pm_License::getAdditionalKeysList($productName);
+            if (count($licences) == 0) {
+
+                // set by default to empty
+                pm_Settings::set("api_key", null);
+                pm_Settings::set("api_secret", null);
+                pm_Settings::set("has_licence", "false");
+
+                $this->_forward("view", "index");
+                return;
+            }
+
+            // retrieve information from licence
+            $licence = reset($licences);
+            $credentials = json_decode($licence["key-body"], true);
+            if ($credentials === null) {
+                $this->err("Unable to deserialize licence key-body: " . json_last_error_msg() != false ? json_last_error_msg() : "No error");
+                $this->_forward("view", "index");
+                return;
+            }
+
+            if (!array_key_exists("ClientID", $credentials) || !array_key_exists("ClientSecret", $credentials)) {
+                $this->err("Invalid licence body. No key or secret found");
+                $this->_forward("view", "index");
+                return;                
+            }
+
+            pm_Settings::set("has_licence", "true");
             pm_Settings::set("api_key", $credentials["ClientID"]);
             pm_Settings::set("api_secret", $credentials["ClientSecret"]);
 
             $this->_forward("licence", "setup", null, [
-				"response" => $this->createHTMLR($this->lmsg("setup.licence.information"), "info")
-			]);
+                "response" => $this->createHTMLR($this->lmsg("setup.licence.information"), "info")
+            ]);
             return;
         }
 

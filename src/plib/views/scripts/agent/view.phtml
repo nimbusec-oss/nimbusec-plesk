@@ -87,6 +87,81 @@
         </div>
     </div>
 </div>
+<br>
+
+<!-- ========================================= [ SCHEDULE SETTINGS ] ===================================================================== -->
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    <?= $this->lmsg("agent.view.schedule.title"); ?>
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?= $this->lmsg("agent.view.schedule.description"); ?>
+            <br>
+            <br>
+            
+            <form method="post" id="schedule" action="<?= $this->h->url('schedule', 'agent'); ?>">
+
+                <!-- scheduled -->
+                <?php $agent_scheduled = pm_Settings::get("agent_scheduled"); ?>
+                <input name="status" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
+                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= $this->lmsg("agent.view.schedule.status"); ?>    
+                <br>
+                
+                <!-- yara -->
+                <?php $agent_arch = json_decode(pm_Settings::get("agent"), true)["arch"]; ?>
+                <?php $agent_yara = pm_Settings::get("agent_yara"); ?>
+
+                <input name="yara" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
+                    <?php if ($agent_arch === "32bit"): ?> disabled="disabled" <?php endif ?>
+                    <?php if ($agent_yara === "true"): ?> checked="checked" <?php endif ?> /> 
+                    <?= $this->lmsg("agent.view.schedule.yara"); ?> <?php if ($agent_arch === "32bit"): ?><?= $this->lmsg("agent.view.schedule.yara_not_supported"); ?><?php endif ?>
+
+                <!-- interval -->
+                <div class="form-row">
+                    <div class="field-name">
+                        <?= $this->lmsg("agent.view.schedule.interval"); ?>
+                    </div>
+                    <div class="field-value">
+                        <select name="interval"> 
+                            <option value="0" <?php if (pm_Settings::get("agent_schedule_interval") == "0"): ?> selected <?php endif; ?>>
+                                <?= $this->lmsg("agent.view.schedule.interval.once"); ?>
+                            </option>
+                            <option value="12" <?php if (pm_Settings::get("agent_schedule_interval") == "12"): ?> selected <?php endif; ?>>
+                                <?= $this->lmsg("agent.view.schedule.interval.twice"); ?>
+                            </option>
+                            <option value="8" <?php if (pm_Settings::get("agent_schedule_interval") == "8"): ?> selected <?php endif; ?>>
+                                <?= $this->lmsg("agent.view.schedule.interval.three_times"); ?>
+                            </option>
+                            <option value="6" <?php if (pm_Settings::get("agent_schedule_interval") == "6"): ?> selected <?php endif; ?>>
+                                <?= $this->lmsg("agent.view.schedule.interval.four_times"); ?>
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btns-box">
+                    <div class="box-area">
+                        <div class="form-row">
+                            <div class="field-name">
+                                <span id="btn-send" class="btn action">
+                                    <button type="submit" name="submit" value="schedule">
+                                        <?= $this->lmsg("agent.view.schedule.update"); ?>    
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<br>
 
 <!-- ========================================= [ AGENT CONFIGURATION ] ===================================================================== -->
 

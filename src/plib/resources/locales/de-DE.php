@@ -58,6 +58,22 @@ $messages = [
 	"agent.view.arch.32bit" => "32 bit",
 	"agent.view.arch.64bit" => "64 bit",
 
+	/* schedule settings */
+	"agent.view.schedule.title" => "Agent Scaneinstellungen",
+	"agent.view.schedule.description" => "Innerhalb dieser Einstellungen können Sie den Hintergrundscan des Nimbusec Server Agent aktivieren (oder deaktivieren) und diesen zum Ausführen in bestimmten Intervallen festlegen." .
+											"<br>Bitte beachten Sie, dass der Hintergrundscan nicht beginnt, bis ein Interval gesetzt wurde.",
+	"agent.view.schedule.status" => "Hintergrundscan aktiv",
+	"agent.view.schedule.update" => "Scaneinstellungen speichern",
+
+	"agent.view.schedule.yara" => "Statische Malware Signaturen einschalten", 
+	"agent.view.schedule.yara_not_supported" => "(nicht unterstützt mit 32bit)",
+
+	"agent.view.schedule.interval" => "Agent Scan Interval",
+	"agent.view.schedule.interval.once" => "1x am Tag um 13:30",
+	"agent.view.schedule.interval.twice" => "2x am Tag um 13:30 and 1:30",
+	"agent.view.schedule.interval.three_times" => "3x am Tag um 1:30, 9:30 and 17:30",
+	"agent.view.schedule.interval.four_times" => "4x am Tag um 1:30, 7:30, 13:30 and 19:30",	
+
 	/* agent conf */
 	"agent.view.conf.title" => "Agent Konfiguration",
 	"agent.view.conf.description" => "Unten sehen Sie die Konfiguration des Nimbusec Agent (agent.conf)",
@@ -66,8 +82,10 @@ $messages = [
 	"agent.controller.outdated" => "Ihr derzeitiger Nimbusec Agent ist veraltet. Bitte führen Sie ein Update so schnell wie möglich durch.",
 	"agent.controller.not_outdated" => "Sie haben die neueste Version des Nimbusec Agent installiert.",
 	"agent.controller.update" => "Laden Sie die Version %s herunter",
-
 	"agent.controller.updated" => "Der neueste Version des Nimbusec Agent wurde erfolgreich heruntergeladen.",
+
+	"agent.controller.invalid_interval" => "Ungültiges Interval ausgewählt",
+	"agent.controller.schedule.updated" => "Agent Scaneinstellungen wurden erfolgreich gespeichert",
 
 	/**************** setup ****************/
 	"setup.view.title" => "Installation",
@@ -111,29 +129,11 @@ $messages = [
 	"settings.view.reg.no_domains" => "Keine Domains gefunden.",
 	"settings.view.reg.domain" => "Registrierte Domains",
 
-	/* schedule settings */
-	"settings.view.schedule.title" => "Agent Scaneinstellungen",
-	"settings.view.schedule.description" => "Innerhalb dieser Einstellungen können Sie den Hintergrundscan des Nimbusec Server Agent aktivieren (oder deaktivieren) und diesen zum Ausführen in bestimmten Intervallen festlegen." .
-											"<br>Bitte beachten Sie, dass der Hintergrundscan nicht beginnt, bis ein Interval gesetzt wurde.",
-	"settings.view.schedule.status" => "Hintergrundscan aktiv",
-	"settings.view.schedule.update" => "Scaneinstellungen speichern",
-
-	"settings.view.schedule.yara" => "Statische Malware Signaturen einschalten", 
-	"settings.view.schedule.yara_not_supported" => "(nicht unterstützt mit 32bit)",
-
-	"settings.view.schedule.interval" => "Agent Scan Interval",
-	"settings.view.schedule.interval.once" => "1x am Tag um 13:30",
-	"settings.view.schedule.interval.twice" => "2x am Tag um 13:30 and 1:30",
-	"settings.view.schedule.interval.three_times" => "3x am Tag um 1:30, 9:30 and 17:30",
-	"settings.view.schedule.interval.four_times" => "4x am Tag um 1:30, 7:30, 13:30 and 19:30",
-
 	/* controller */
 	"settings.controller.no_domains" => "Es wurden keine Domains ausgewählt.",
 	"settings.controller.invalid_bundle" => "Ungültiges Bundles ausgewählt.",
 	"settings.controller.registered" => "Die Domain(s) wurden erfolgreich mit %s registriert",
 	"settings.controller.unregistered" => "Die Domain(s) wurden erfolgreich von %s entfernt",
-	"settings.controller.invalid_interval" => "Ungültiges Interval ausgewählt",
-	"settings.controller.schedule.updated" => "Agent Scaneinstellungen wurden erfolgreich gespeichert",
 
 	/**************** dashboard ****************/
 	"dashboard.view.title" => "Dashboard",

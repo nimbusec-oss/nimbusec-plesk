@@ -43,13 +43,25 @@ $messages = [
 
 
 	/**************** agent ****************/
-	"agent.view.title" => "Agent Übersicht",
+	"agent.view.title" => "Agent Einstellungen",
+	"agent.view.subtitle" => "Informationen über den Agent",
 	"agent.view.description" => "Halten Sie den Nimbusec Agent up-to-date indem Sie regelmäßig nach einer neuen Version Ausschau halten und diese auch runterladen. Dies gewährleistet eine effiziente und fehlerfreie Malwareerkennung.",
 	"agent.view.installed.title" => "Agent Status",
-	"agent.view.installed.value" => "installed",
+	"agent.view.installed.value" => "installiert",
 	"agent.view.version.title" => "Agent Version",
 	"agent.view.os.title" => "Agent Zielbetriebssystem",
 	"agent.view.arch.title" => "Agent Zielarchitektur",
+
+	"agent.view.os.windows" => "Windows",
+	"agent.view.os.linux" => "Linux",
+	"agent.view.os.macosx" => "Mac OSX",
+	"agent.view.arch.32bit" => "32 bit",
+	"agent.view.arch.64bit" => "64 bit",
+
+	/* agent conf */
+	"agent.view.conf.title" => "Agent Konfiguration",
+	"agent.view.conf.description" => "Unten sehen Sie die Konfiguration des Nimbusec Agent (agent.conf)",
+	"agent.view.conf.clipboard" => "In die Zwischenablage kopieren",
 	
 	"agent.controller.outdated" => "Ihr derzeitiger Nimbusec Agent ist veraltet. Bitte führen Sie ein Update so schnell wie möglich durch.",
 	"agent.controller.not_outdated" => "Sie haben die neueste Version des Nimbusec Agent installiert.",
@@ -80,7 +92,7 @@ $messages = [
 
 
 	/**************** settings ****************/
-	"settings.view.title" => "Einstellungen",
+	"settings.view.title" => "Domain Einstellungen",
 
 	/* unregistered */
 	"settings.view.unreg.title" => "Nicht registrierte Domains",
@@ -98,11 +110,6 @@ $messages = [
 	"settings.view.reg.unregister" => "Ausgewählte Domains entfernen",
 	"settings.view.reg.no_domains" => "Keine Domains gefunden.",
 	"settings.view.reg.domain" => "Registrierte Domains",
-
-	/* agent conf */
-	"settings.view.conf.title" => "Agent Konfiguration",
-	"settings.view.conf.description" => "Unten sehen Sie die derzeitige Konfiguration des Nimbusec Agent",
-	"settings.view.conf.configuration" => "Konfiguration (agent.conf)",
 
 	/* schedule settings */
 	"settings.view.schedule.title" => "Agent Scaneinstellungen",

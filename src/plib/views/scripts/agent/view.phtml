@@ -1,12 +1,14 @@
 <?= $this->response; ?>
 <?= $this->renderTabs($this->tabs); ?>
 
+<!-- ========================================= [ AGENT INFORMATION ] ===================================================================== -->
+
 <div class="form-box">
     <div class="box-area">
         <div class="title">
             <div class="title-area">
                 <h3>
-                    <?= $this->lmsg("agent.view.title"); ?>
+                    <?= $this->lmsg("agent.view.subtitle"); ?>
                 </h3>
             </div>
         </div>
@@ -20,7 +22,7 @@
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span><?= $this->lmsg("agent.view.installed.title"); ?>: </span>
+                            <span><?= $this->lmsg("agent.view.installed.title"); ?> </span>
                         </div>
                         <div class="field-value">
                             <span><?= $this->lmsg("msg.installed"); ?></span>
@@ -29,7 +31,7 @@
                         
                     <div class="form-row">
                         <div class="field-name">
-                            <span><?= $this->lmsg("agent.view.version.title"); ?>: </span>
+                            <span><?= $this->lmsg("agent.view.version.title"); ?> </span>
                         </div>
                         <div class="field-value">
                             <span><?= $this->agent_version; ?></span>
@@ -38,19 +40,19 @@
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span><?= $this->lmsg("agent.view.os.title"); ?>: </span>
+                            <span><?= $this->lmsg("agent.view.os.title"); ?> </span>
                         </div>
                         <div class="field-value">
-                            <span><?= $this->agent_os; ?></span>
+                            <span><?= $this->lmsg("agent.view.os.{$this->agent_os}"); ?></span>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="field-name">
-                            <span><?= $this->lmsg("agent.view.arch.title"); ?>: </span>
+                            <span><?= $this->lmsg("agent.view.arch.title"); ?> </span>
                         </div>
                         <div class="field-value">
-                            <span><?= $this->agent_arch; ?></span>
+                            <span><?= $this->lmsg("agent.view.arch.{$this->agent_arch}"); ?></span>
                         </div>
                     </div>
 
@@ -82,6 +84,34 @@
                 <?php endif; ?>
             </div>
             
+        </div>
+    </div>
+</div>
+
+<!-- ========================================= [ AGENT CONFIGURATION ] ===================================================================== -->
+
+<div class="form-box">
+    <div class="box-area">
+        <div class="title">
+            <div class="title-area">
+                <h3>
+                    <?= $this->lmsg("agent.view.conf.title"); ?>
+                </h3>
+            </div>
+        </div>
+        <div class="content">
+            <?= $this->lmsg("agent.view.conf.description"); ?>
+            <br>
+            <br>
+            <div class="form-row">
+                <textarea id="agentConfiguration" style="margin-right: 5px; height: 355px; width: 455px" readonly><?= $this->configuration; ?></textarea>
+                <div class="objects-toolbar" style="width: auto;">
+                    <a id="configClipboard" class="s-btn sb-upgrade" style="vertical-align: top;">Copy to clipboard</a>
+                </div>
+                <span style="vertical-align: top;">
+                    <span id="configClipboardMessage" style="padding: 5px"></span>
+                </span>
+            </div>
         </div>
     </div>
 </div>
@@ -119,6 +149,26 @@
 
                 // init loading
                 setLoading(toggle);
+            }
+        }
+
+        if (toggle.nodeName.toLowerCase() === "a") {
+
+            if (toggle.id === "configClipboard") {
+                document.getElementById("agentConfiguration").select();
+                var successful = document.execCommand("copy");
+
+                var clipboardMessage = document.getElementById("configClipboardMessage");
+                clipboardMessage.textContent = "";
+                clipboardMessage.style.color = "#000000";
+                
+                if (successful) {
+                    clipboardMessage.textContent = "successfully copied to clipboard";
+                    clipboardMessage.style.color = "green";
+                } else {
+                    clipboardMessage.textContent = "could not copy to clipboard";
+                    clipboardMessage.style.color = "red";
+                }
             }
         }
     };

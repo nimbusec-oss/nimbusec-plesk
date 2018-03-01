@@ -42,13 +42,25 @@ $messages = [
 	"licence.view.credentials.description" => "If you own Nimbusec API credentials, begin the installation",
 
 	/**************** agent ****************/
-	"agent.view.title" => "Agent Overview",
-	"agent.view.description" => "Keep the Nimbusec Agent up-to-date by downloading the newest version every now and then. This will guarantee a reliable and flawless malware detection.",
-	"agent.view.installed.title" => "Current agent status",
+	"agent.view.title" => "Agent Settings",
+	"agent.view.subtitle" => "Agent Information",
+	"agent.view.description" => "Keep the Nimbusec Agent up-to-date by downloading the newest version regularly. This will guarantee a reliable and flawless malware detection.",
+	"agent.view.installed.title" => "Agent status",
 	"agent.view.installed.value" => "installed",
-	"agent.view.version.title" => "Current agent version",
-	"agent.view.os.title" => "Current agent operating system",
-	"agent.view.arch.title" => "Current agent architecture",
+	"agent.view.version.title" => "Agent version",
+	"agent.view.os.title" => "Agent operating system",
+	"agent.view.arch.title" => "Agent architecture",
+
+	"agent.view.os.windows" => "Windows",
+	"agent.view.os.linux" => "Linux",
+	"agent.view.os.macosx" => "Mac OSX",
+	"agent.view.arch.32bit" => "32 bit",
+	"agent.view.arch.64bit" => "64 bit",
+
+	/* agent conf */
+	"agent.view.conf.title" => "Agent Configuration",
+	"agent.view.conf.description" => "Below you can see the configuration file for the Nimbusec Agent (agent.conf)",
+	"agent.view.conf.clipboard" => "Copy to clipboard",
 	
 	"agent.controller.outdated" => "Your current Nimbusec Agent is outdated. Please download the newest update as soon as possible",
 	"agent.controller.not_outdated" => "You have the newest version of the Nimbusec Agent installed",
@@ -77,7 +89,7 @@ $messages = [
 									"<br><br>The Plesk extension documentation can be found at <a href=\"https://kb.nimbusec.com/Integrations/Plesk\" target=\"_blank\">https://kb.nimbusec.com/Integrations/Plesk</a>.",
 
 	/**************** settings ****************/
-	"settings.view.title" => "Settings",
+	"settings.view.title" => "Domain Settings",
 
 	/* unregistered */
 	"settings.view.unreg.title" => "Unregistered Domains",
@@ -95,11 +107,6 @@ $messages = [
 	"settings.view.reg.unregister" => "Unregister the selected domains",
 	"settings.view.reg.no_domains" => "No domains found registered with this bundle.",
 	"settings.view.reg.domain" => "Registered domains",
-
-	/* agent conf */
-	"settings.view.conf.title" => "Agent Configuration",
-	"settings.view.conf.description" => "Below you can see the current configuration file for the Nimbusec Agent",
-	"settings.view.conf.configuration" => "Configuration (agent.conf)",
 
 	/* schedule settings */
 	"settings.view.schedule.title" => "Agent Schedule Settings",

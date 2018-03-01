@@ -50,6 +50,9 @@ class AgentController extends pm_Controller_Action
 		} else {
 			$this->_status->addInfo($this->lmsg("agent.controller.not_outdated"));
 		}
+
+		// config view
+		$this->view->configuration = file_get_contents(pm_Settings::get("agent_config"));
 	}
 
 	public function updateAgentAction() 

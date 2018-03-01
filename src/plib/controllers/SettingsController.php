@@ -39,9 +39,6 @@ class SettingsController extends pm_Controller_Action
         } catch (Exception $e) {
             $this->view->response = $this->createHTMLR("Could not retrieve registered domains", "error");
         }
-
-		// config view
-		$this->view->configuration = file_get_contents(pm_Settings::get("agent_config"));
 	}
 
 	public function registerAction() 

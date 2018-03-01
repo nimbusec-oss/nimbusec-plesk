@@ -27,6 +27,7 @@ class IndexController extends pm_Controller_Action
         pm_Settings::set("extension_id", "nimbusec-agent-integration");
         pm_Settings::set("extension_title", "Nimbusec Webhosting Security");
 
+        pm_Settings::set("agent_dir", pm_Context::getVarDir());
         pm_Settings::set("agent_config", pm_Context::getVarDir() . "/agent.conf");
         pm_Settings::set("agent_log", pm_Context::getVarDir() . "/agent.log");
 

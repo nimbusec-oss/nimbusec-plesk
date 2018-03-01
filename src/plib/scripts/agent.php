@@ -9,11 +9,11 @@
 set_time_limit(0);
 pm_Context::init("nimbusec-agent-integration");
 
-$varDir = pm_Context::getVarDir();
+$agentDir = pm_Settings::get("agent_dir");
 $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
 $config_path = pm_Settings::get("agent_config");
-$cmd = "{$varDir}/{$agent} -config {$config_path}";
+$cmd = "{$agentDir}/{$agent} -config {$config_path}";
 
 if (pm_Settings::get("agent_yara") === "true") {
     $cmd .= " -yara";

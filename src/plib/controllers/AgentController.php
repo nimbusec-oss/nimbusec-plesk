@@ -67,7 +67,7 @@ class AgentController extends pm_Controller_Action
 		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 		try {
 			// fetch server agent
-			$nimbusec->fetchAgent(pm_Context::getVarDir());
+			$nimbusec->fetchAgent(pm_Settings::get("agent_dir"));
 		} catch (Exception $e) {
 			$this->errE($e, "Could not download Server Agent");
 

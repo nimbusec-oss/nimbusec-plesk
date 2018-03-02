@@ -61,7 +61,7 @@ $messages = [
 	"agent.view.schedule.title" => "Agent Schedule Settings",
 	"agent.view.schedule.description" => "Within these settings, you can configure the Nimbusec Agent for a specific schedule as well as enabling or disabling the agent at all." .
 											"<br>Please note that the Nimbusec Agent will not start until a schedule is set.",
-	"agent.view.schedule.status" => "Scheduled (please check or uncheck to enable or disable the agent execution)",
+	"agent.view.schedule.status" => "Scheduled and running",
 	"agent.view.schedule.update" => "Update schedule settings",
 
 	"agent.view.schedule.yara" => "Activate static malware signatures", 

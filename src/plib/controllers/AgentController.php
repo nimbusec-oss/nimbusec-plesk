@@ -12,6 +12,8 @@ class AgentController extends pm_Controller_Action
 
 		$this->view->pageTitle = pm_Settings::get("extension_title");
 		
+		$this->view->headLink()->appendStylesheet(pm_Context::getBaseUrl() . "/css/customslider.css");
+
 		$this->view->e = new Zend\Escaper\Escaper();
 		$this->view->h = $this->_helper;
     }

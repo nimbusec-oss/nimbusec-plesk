@@ -108,19 +108,48 @@
             <form method="post" id="schedule" action="<?= $this->h->url('schedule', 'agent'); ?>">
 
                 <!-- scheduled -->
-                <?php $agent_scheduled = pm_Settings::get("agent_scheduled"); ?>
-                <input name="status" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
-                    <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?> /> <?= $this->lmsg("agent.view.schedule.status"); ?>    
-                <br>
+                <div class="form-row">
+                    <div class="field-name">
+                        <?= $this->lmsg("agent.view.schedule.status"); ?>
+                    </div>
+
+                    <?php $agent_scheduled = pm_Settings::get("agent_scheduled"); ?>                
+                    <div class="field-value">
+                        <label class="customswitch">
+                            <input name="status" type="checkbox" value="true" <?php if ($agent_scheduled === "true"): ?> checked="checked" <?php endif; ?>>
+                            <span class="customslider round">
+                            </span>
+                        </label>
+                    </div>
+                </div>
                 
                 <!-- yara -->
-                <?php $agent_arch = json_decode(pm_Settings::get("agent"), true)["arch"]; ?>
-                <?php $agent_yara = pm_Settings::get("agent_yara"); ?>
+                <div class="form-row">
+                    <?php $agent_arch = json_decode(pm_Settings::get("agent"), true)["arch"]; ?>
+                    <?php $agent_yara = pm_Settings::get("agent_yara"); ?>
 
-                <input name="yara" value="true" type="checkbox" style="margin-right: 5px; margin-bottom: 10px;"
-                    <?php if ($agent_arch === "32bit"): ?> disabled="disabled" <?php endif ?>
-                    <?php if ($agent_yara === "true"): ?> checked="checked" <?php endif ?> /> 
-                    <?= $this->lmsg("agent.view.schedule.yara"); ?> <?php if ($agent_arch === "32bit"): ?><?= $this->lmsg("agent.view.schedule.yara_not_supported"); ?><?php endif ?>
+                    <div class="field-name">
+                        <span>
+                            <?= $this->lmsg("agent.view.schedule.yara"); ?>
+                        </span>
+                        <?php if ($agent_arch === "32bit"): ?>
+                            <span>
+                                <?= $this->lmsg("agent.view.schedule.yara_not_supported"); ?>
+                            </span>
+                        <?php endif ?>
+                    </div>
+
+                    <div class="field-value">
+                        <label class="customswitch">
+                            <input name="yara" type="checkbox" value="true" 
+                                <?php if ($agent_arch === "32bit"): ?> disabled="disabled" <?php endif ?>
+                                <?php if ($agent_yara === "true"): ?> checked="checked" <?php endif ?>/>
+                            <span class="customslider round">
+                            </span>
+                        </label> 
+                    </div>
+                </div>
+                <br/>
 
                 <!-- interval -->
                 <div class="form-row">

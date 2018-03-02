@@ -25,6 +25,10 @@ function sync () {
 
 	# views
 	docker cp ../src/plib/views/scripts/ $current:/opt/psa/admin/plib/modules/nimbusec-agent-integration/views/
+
+	# resources
+	docker cp ../src/htdocs/css/ $current:/opt/psa/admin/htdocs/modules/nimbusec-agent-integration/
+	docker cp ../src/htdocs/fonts/ $current:/opt/psa/admin/htdocs/modules/nimbusec-agent-integration/
 }
 
 export -f sync

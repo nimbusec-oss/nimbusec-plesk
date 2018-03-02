@@ -85,7 +85,9 @@ $messages = [
 
 	"agent.controller.invalid_interval" => "Invalid interval given",
 	"agent.controller.schedule.updated" => "Agent Schedule settings successfully updated",
-	"agent.controller.schedule.default" => "Nimbusec Agent has been scheduled to run 1x a day at 13:30. See <a href=\"%s\">%s</a> for further information and options.",
+	"agent.controller.schedule.default" => "Nimbusec Agent has been scheduled to run 1x a day at 13:30. See <a href=\"%s\">%s</a> for further information and options",
+	"agent.controller.schedule.notrunning" => "The Nimbusec Agent is not running. Please check the switch \"Schedule Nimbusec Agent\" and choose a scanning interval in order to activate the Nimbusec Agent",
+	"agent.controller.schedule.notrunning.dashboard" => "The Nimbusec Agent is not running. Please check the <a href=\"%s\">%s</a> to activate it",
 
 	/**************** setup ****************/
 	"setup.view.title" => "Setup",
@@ -132,6 +134,7 @@ $messages = [
 	"settings.controller.invalid_bundle" => "Invalid bundle chosen.",
 	"settings.controller.registered" => "Successfully registered domains with %s",
 	"settings.controller.unregistered" => "Successfully unregistered domains from %s",
+	"settings.controller.no_domains.registered" => "There are no domains registered for scanning. Please check the <a href=\"%s\">%s</a> and register domains there",
 
 	/**************** dashboard ****************/
 	"dashboard.view.title" => "Dashboard",

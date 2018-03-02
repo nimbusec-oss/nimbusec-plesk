@@ -53,6 +53,12 @@ class AgentController extends pm_Controller_Action
 			$this->_status->addInfo($this->lmsg("agent.controller.not_outdated"));
 		}
 
+		// check whether the nimbusec agent is running
+		$is_running = $nimbusec->isAgentRunning();
+		if (!$is_running) {
+			$this->_status->addWarning($this->lmsg("agent.controller.schedule.notrunning"));
+		}
+
 		// config view
 		$this->view->configuration = file_get_contents(pm_Settings::get("agent_config"));
 	}

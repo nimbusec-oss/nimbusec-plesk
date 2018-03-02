@@ -540,6 +540,21 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
     }
 
+    public function isAgentRunning()
+    {
+        $scheduler = pm_Scheduler::getInstance();
+        $script = pm_Settings::get("agent_script");
+
+        $tasks = $scheduler->listTasks();
+        foreach ($tasks as $task) {
+            if ($task->getCmd() === $script) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getCurrentAgentTask()
     {
         $scheduler = pm_Scheduler::getInstance();

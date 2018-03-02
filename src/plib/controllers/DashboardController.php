@@ -54,6 +54,44 @@ class DashboardController extends pm_Controller_Action
 
 		$this->view->infected = $infected;
 		$this->view->quarantine_state = pm_Settings::get("quarantine_state", "1");
+
+		// check whether the agent is running
+		$is_running = $nimbusec->isAgentRunning();
+		if (!$is_running) {
+
+			$agentNotification = $this->createHTMLR(
+				sprintf(
+					$this->lmsg("agent.controller.schedule.notrunning.dashboard"), 
+					$this->_helper->url('view', 'agent'),
+					$this->lmsg("agent.view.title")
+				), "warning"
+			);
+
+			if ($this->view->response === null) {
+				$this->view->response = $agentNotification;
+			}
+		}
+
+		// check whether there are domains registered with nimbusec
+		$registered_domains = $nimbusec->groupByBundle($nimbusec->getRegisteredPleskDomains());
+		$domains = [];
+		foreach ($registered_domains as $bundle_id => $value) {
+			$domains = array_merge($domains, array_map(function($element) { return $element["name"]; }, $value["domains"]));
+		}
+
+		if (count($domains) === 0) {
+			$domainNotification = $this->createHTMLR(
+				sprintf(
+					$this->lmsg("settings.controller.no_domains.registered"), 
+					$this->_helper->url('view', 'settings'),
+					$this->lmsg("settings.view.title")
+				), "warning"
+			);
+
+			if ($this->view->response === null) {
+				$this->view->response = $domainNotification;
+			}
+		}
 	}
 
 	public function fetchMetadataAction()

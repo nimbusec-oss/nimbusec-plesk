@@ -540,6 +540,50 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
         pm_Settings::set("agent", json_encode($agent, JSON_UNESCAPED_SLASHES));
     }
 
+    public function getCurrentAgentTask()
+    {
+        $scheduler = pm_Scheduler::getInstance();
+        $script = pm_Settings::get("agent_script");
+
+        $tasks = $scheduler->listTasks();
+        foreach ($tasks as $task) {
+            if ($task->getCmd() === $script) {
+                return $task;
+            }
+        }
+
+        return null;
+    }
+
+    public function scheduleAgent($status, $cron) 
+    {
+        $scheduler = pm_Scheduler::getInstance();
+
+        // stop scheduling
+        if ($status === "false") {
+            $task = $this->getCurrentAgentTask();
+    
+            if ($task !== null) {
+                $scheduler->removeTask($task);
+            }
+            return;
+        }
+
+        // schedule agent
+        $task = new pm_Scheduler_Task();
+
+        $fetched = $this->getCurrentAgentTask();
+        if ($fetched !== null) {
+            $task = $fetched;
+        }
+
+        $task->setCmd(pm_Settings::get("agent_script"));
+        $task->setSchedule($cron);
+
+        $scheduler->putTask($task);
+        return $task;
+    }
+
     // resolvePath makes a naive approach to normalize a given path
     // mostly by replacing a "/" with a "quarantine/" part
     public function resolvePath($path)

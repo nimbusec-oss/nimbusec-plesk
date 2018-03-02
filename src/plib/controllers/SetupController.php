@@ -150,9 +150,45 @@ class SetupController extends pm_Controller_Action
 
 		pm_Settings::set("extension_installed", "true");
 
+		// schedule nimbusec agent
+		$cron = [
+			"minute" 	=> "30",
+			"hour" 		=> "13",
+			"dom" 		=> "*",
+			"month" 	=> "*",
+			"dow" 		=> "*",
+		];
+
+		$status = "true";
+		$yara = "false";
+		try {
+			// preventive: remove agent task
+			$nimbusec->scheduleAgent("false", null);
+
+			// schedule agent
+			$task = $nimbusec->scheduleAgent($status, $cron);
+		} catch (pm_Exception $e) {
+			$this->errE($e, "Could not schedule agent task");
+			$this->_forward($setup_action, "setup", null, [
+				"response" => $this->createHTMLR("Failed to activate Server Agent", "error")
+			]);
+			return;	
+		}
+
+		pm_Settings::set("agent_schedule_interval", "0");
+		pm_Settings::set("agent_scheduled", $status);
+		pm_Settings::set("agent_yara", $yara);
+ 
 		// redirect to new view
 		$this->_status->addInfo($this->lmsg("setup.controller.installed"));
-		$this->_helper->redirector("view", "dashboard");
+
+		$agentNotification = $this->createHTMLR(sprintf($this->lmsg("agent.controller.schedule.default"), 
+			$this->_helper->url('view', 'agent'), 
+			$this->lmsg("agent.view.title")), "info");
+
+		$this->_helper->redirector("view", "dashboard", null, [
+			"response" => $agentNotification
+		]);
 		return;
 	}
 }

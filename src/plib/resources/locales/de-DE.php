@@ -86,6 +86,7 @@ $messages = [
 
 	"agent.controller.invalid_interval" => "Ungültiges Interval ausgewählt",
 	"agent.controller.schedule.updated" => "Agent Scaneinstellungen wurden erfolgreich gespeichert",
+	"agent.controller.schedule.default" => "Der Nimbusec Agent wurde aktiviert. Er läuft einmal am Tag um 13:30. Für weitere Information und Einstellung wechseln Sie zu den <a href=\"%s\">%s</a>",
 
 	/**************** setup ****************/
 	"setup.view.title" => "Installation",

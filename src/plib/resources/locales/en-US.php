@@ -61,7 +61,7 @@ $messages = [
 	"agent.view.schedule.title" => "Agent Schedule Settings",
 	"agent.view.schedule.description" => "Within these settings, you can configure the Nimbusec Agent for a specific schedule as well as enabling or disabling the agent at all." .
 											"<br>Please note that the Nimbusec Agent will not start until a schedule is set.",
-	"agent.view.schedule.status" => "Scheduled and running",
+	"agent.view.schedule.status" => "Schedule Nimbusec Agent",
 	"agent.view.schedule.update" => "Update schedule settings",
 
 	"agent.view.schedule.yara" => "Activate static malware signatures", 
@@ -85,6 +85,7 @@ $messages = [
 
 	"agent.controller.invalid_interval" => "Invalid interval given",
 	"agent.controller.schedule.updated" => "Agent Schedule settings successfully updated",
+	"agent.controller.schedule.default" => "Nimbusec Agent has been scheduled to run 1x a day at 13:30. See <a href=\"%s\">%s</a> for further information and options.",
 
 	/**************** setup ****************/
 	"setup.view.title" => "Setup",

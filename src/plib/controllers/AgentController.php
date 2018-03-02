@@ -98,7 +98,8 @@ class AgentController extends pm_Controller_Action
 		$yara = $request->getPost("yara");
 
 		// validate interval
-		if ($interval !== "0" && $interval !== "12" && $interval !== "8" && $interval !== "6") {
+		$intervals = ["0", "6", "8", "12"];
+		if (!in_array($interval, $intervals)) {
 			$this->_forward("view", "agent", null, [
 				"response" => $this->createHTMLR($this->lmsg("agent.controller.invalid_interval"), "error")
 			]);
@@ -120,36 +121,23 @@ class AgentController extends pm_Controller_Action
 			$yara = "false";
 		}
 
-		// get plesk scheduler
-		$scheduler = pm_Scheduler::getInstance();
-
-		// prevention: remove the task if existing
-		$id = pm_Settings::get("agent_schedule_id");
-		$validator = new Zend\I18n\Validator\Alnum();
-
-		if ($validator->isValid($id)) {
-			$task = $scheduler->getTaskById($id);
-
-			if ($task !== null) {
-				try {
-					$scheduler->removeTask($task);
-				} catch (pm_Exception $e) {
-					$this->errE($e, "Could not remove scheduled task {$id}");
-					$this->_forward("view", "agent", null, [
-						"response" => $this->createHTMLR("Failed to activate Server Agent", "error")
-					]);
-					return;	
-				}
-			}
-		}
+		$nimbusec = new Modules_NimbusecAgentIntegration_NimbusecHelper();
 
 		// stop agent
 		if ($status === "false") {
-			pm_Settings::set("agent_schedule_id", false);
-			pm_Settings::set("agent_schedule_interval", "0");
+			try {
+				$nimbusec->scheduleAgent($status, null);
+			} catch (pm_Exception $e) {
+				$this->errE($e, "Could not remove scheduled agent task");
+				$this->_forward("view", "agent", null, [
+					"response" => $this->createHTMLR("Failed to deactivate Server Agent", "error")
+				]);
+				return;	
+			}
 
+			pm_Settings::set("agent_schedule_interval", "0");
 			pm_Settings::set("agent_scheduled", $status);
-			pm_Settings::set("agent_yara", $yara);
+            pm_Settings::set("agent_yara", $yara);
 
 			$this->_status->addInfo($this->lmsg("agent.controller.schedule.updated"));
 			$this->_helper->redirector("view", "agent");
@@ -176,14 +164,20 @@ class AgentController extends pm_Controller_Action
 				$cron["hour"] = "1,7,13,19"; break;
 		}
 
-		// schedule agent
-		$task = new pm_Scheduler_Task();
-		$task->setCmd("agent.php");
-		$task->setSchedule($cron);
+		try {
+			// preventive: remove agent task
+			$nimbusec->scheduleAgent("false", null);
 
-		$scheduler->putTask($task);
+			// schedule agent
+			$task = $nimbusec->scheduleAgent($status, $cron);
+		} catch (pm_Exception $e) {
+			$this->errE($e, "Could not schedule agent task");
+			$this->_forward("view", "agent", null, [
+				"response" => $this->createHTMLR("Failed to activate Server Agent", "error")
+			]);
+			return;	
+		}
 
-		pm_Settings::set("agent_schedule_id", $task->getId());
 		pm_Settings::set("agent_schedule_interval", $interval);
 
 		pm_Settings::set("agent_scheduled", $status);

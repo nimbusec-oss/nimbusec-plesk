@@ -38,7 +38,22 @@ class SettingsController extends pm_Controller_Action
 
         } catch (Exception $e) {
             $this->view->response = $this->createHTMLR("Could not retrieve registered domains", "error");
-        }
+		}
+		
+		// provisional - sync registered domains with agent conf every time the customer
+		// is at the agent tab. This is a rather bad solution, as the synchronization should
+		// not be dependent on whether the customer clicks on a random tab. Instead, the synchronization
+		// should be conducted by a cron job script running in background; like the agent/quarantine.php
+		try {
+			// sync domains in config
+			$nimbusec->syncDomainInAgentConfig();
+		} catch (Exception $e) {
+			$this->_forward("view", "dashboard", null, [
+				"response" => $this->createHTMLR("Could not synchronize Server Agent config", "error")
+			]);
+			return;
+		}
+
 	}
 
 	public function registerAction() 

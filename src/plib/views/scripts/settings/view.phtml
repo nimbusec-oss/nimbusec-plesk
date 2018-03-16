@@ -278,21 +278,25 @@
         contingentLeft.style.display = "";
         contingentLeft.style.color = "black";
 
+        var registerButton = document.getElementById("register");
         if (getContingentLeft() < 0) {
             contingentLeft.textContent = "Bundle limit of " + currentContingent + " exceeded by " + (-1 * getContingentLeft());
             contingentLeft.style.color = "red";
 
             // disable register button
-            var registerButton = document.getElementById("register");
-            registerButton.disabled = true;
-            registerButton.parentElement.classList.add("disabled");
+            if (registerButton != null) {
+                registerButton.disabled = true;
+                registerButton.parentElement.classList.add("disabled");
+            }
         } 
             
         if (getContingentLeft() >= 0) {
+            
             // enable register button
-            var registerButton = document.getElementById("register");
-            registerButton.disabled = false;
-            registerButton.parentElement.classList.remove("disabled");
+            if (registerButton != null) {
+                registerButton.disabled = false;
+                registerButton.parentElement.classList.remove("disabled");
+            }
         }
     }
 

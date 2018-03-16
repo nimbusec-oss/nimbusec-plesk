@@ -366,7 +366,7 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
 			    "not all domain in Plesk were found by the API. exceptions are [%s]",
 							join(", ", $difference)
 			));
-            return;
+            return [];
         }
 
         // sort both array to prevent wrong associations

@@ -86,7 +86,7 @@ $messages = [
 
 	"agent.controller.invalid_interval" => "Ungültiges Interval ausgewählt",
 	"agent.controller.schedule.updated" => "Agent Scaneinstellungen wurden erfolgreich gespeichert",
-	"agent.controller.schedule.default" => "Der Nimbusec Agent wurde aktiviert. Er läuft einmal am Tag um 13:30. Für weitere Information und Einstellung wechseln Sie zu den <a href=\"%s\">%s</a>",
+	"agent.controller.schedule.default" => "Der Nimbusec Agent wurde aktiviert. Er läuft einmal am Tag um 13:30. Für weitere Information und Einstellung wechseln Sie zu den '%s'",
 	"agent.controller.schedule.notrunning" => "Der Nimbusec Agent ist nicht aktiviert. Checken Sie die Option \"Hintergrundscan aktiv\" und wählen Sie ein geeignetes Scaninterval, um den Agent zu aktivieren",
 	"agent.controller.schedule.notrunning.dashboard" => "Der Nimbusec Agent ist nicht aktiviert. Wechseln Sie zu den <a href=\"%s\">%s</a> um ihn zu aktivieren",
 

@@ -181,14 +181,8 @@ class SetupController extends pm_Controller_Action
  
 		// redirect to new view
 		$this->_status->addInfo($this->lmsg("setup.controller.installed"));
-
-		$agentNotification = $this->createHTMLR(sprintf($this->lmsg("agent.controller.schedule.default"), 
-			$this->_helper->url('view', 'agent'), 
-			$this->lmsg("agent.view.title")), "info");
-
-		$this->_helper->redirector("view", "dashboard", null, [
-			"response" => $agentNotification
-		]);
+		$this->_status->addInfo(sprintf($this->lmsg("agent.controller.schedule.default"), $this->lmsg("agent.view.title")));
+		$this->_helper->redirector("view", "dashboard");
 		return;
 	}
 }

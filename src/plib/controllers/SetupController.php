@@ -125,7 +125,7 @@ class SetupController extends pm_Controller_Action
 		pm_Settings::set("agent_tokenid", $token["id"]);
 
 		// write agent config
-		$config = json_decode(file_get_contents(pm_Settings::get("agent_config")), true);
+		$config = json_decode(file_get_contents(pm_Settings::get("agent_config_default")), true);
 		
 		$config["key"] = pm_Settings::get("agent_key");
 		$config["secret"] = pm_Settings::get("agent_secret");

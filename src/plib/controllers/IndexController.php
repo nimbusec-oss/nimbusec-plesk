@@ -28,13 +28,10 @@ class IndexController extends pm_Controller_Action
         pm_Settings::set("extension_title", "Nimbusec Webhosting Security");
 
         pm_Settings::set("agent_dir", pm_Context::getVarDir());
+        pm_Settings::set("agent_config_default", pm_Context::getVarDir() . "/default.conf");
         pm_Settings::set("agent_config", pm_Context::getVarDir() . "/agent.conf");
         pm_Settings::set("agent_log", pm_Context::getVarDir() . "/agent.log");
-        pm_Settings::set("agent_script", "agent.php");
-        
-        // for backwards compatibility
-        // TODO: remove in future
-        pm_Settings::set("agent_script_old", "run.php");
+        pm_Settings::set("agent_script", "run.php");
 
         pm_Settings::set("shellray_url", "https://shellray.com/upload");
         pm_Settings::set("portal_url", "https://portal.nimbusec.com/");

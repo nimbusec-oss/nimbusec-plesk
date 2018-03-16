@@ -9,7 +9,7 @@
 set_time_limit(0);
 pm_Context::init("nimbusec-agent-integration");
 
-$agentDir = pm_Settings::get("agent_dir");
+$agentDir = pm_Settings::get("agent_dir", pm_Context::getVarDir());
 $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
 $config_path = pm_Settings::get("agent_config");

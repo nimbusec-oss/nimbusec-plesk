@@ -544,11 +544,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $scheduler = pm_Scheduler::getInstance();
         $script = pm_Settings::get("agent_script");
-        $old_script = pm_Settings::get("agent_script_old");
 
         $tasks = $scheduler->listTasks();
         foreach ($tasks as $task) {
-            if ($task->getCmd() === $script || $task->getCmd() === $old_script) {
+            if ($task->getCmd() === $script) {
                 return true;
             }
         }
@@ -560,11 +559,10 @@ class Modules_NimbusecAgentIntegration_NimbusecHelper
     {
         $scheduler = pm_Scheduler::getInstance();
         $script = pm_Settings::get("agent_script");
-        $old_script = pm_Settings::get("agent_script_old");
 
         $tasks = $scheduler->listTasks();
         foreach ($tasks as $task) {
-            if ($task->getCmd() === $script || $task->getCmd() === $old_script) {
+            if ($task->getCmd() === $script) {
                 return $task;
             }
         }

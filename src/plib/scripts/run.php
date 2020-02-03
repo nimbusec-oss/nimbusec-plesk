@@ -13,13 +13,13 @@ $agentDir = pm_Settings::get("agent_dir", pm_Context::getVarDir());
 $agent = json_decode(pm_Settings::get("agent"), true)["name"];
 
 $config_path = pm_Settings::get("agent_config");
-$cmd = "{$agentDir}/{$agent} -config {$config_path}";
+$cmd = "\"{$agentDir}/{$agent}\" -config \"{$config_path}\"";
 
 if (pm_Settings::get("agent_yara") === "true") {
     $cmd .= " -yara";
 }
 
 $log_path = pm_Settings::get("agent_log");
-$cmd .= " > {$log_path} 2>&1";
+$cmd .= " > \"{$log_path}\" 2>&1 ";
 
 system($cmd);

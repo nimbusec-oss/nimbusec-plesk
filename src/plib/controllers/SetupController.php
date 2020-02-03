@@ -131,6 +131,8 @@ class SetupController extends pm_Controller_Action
 		$config["secret"] = pm_Settings::get("agent_secret");
 		$config["apiserver"] = $api_server;
 		$config["domains"] = new ArrayObject();
+		$config["tmpfile"] = pm_Context::getVarDir() . "/nimbusagent-hashes.txt";
+
 		file_put_contents(pm_Settings::get("agent_config"), json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
 		try {

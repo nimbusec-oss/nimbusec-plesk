@@ -1,3 +1,7 @@
+# 2.4
+
+* Handle multiple licences
+
 # 2.3
 
 * Minor bug fixes

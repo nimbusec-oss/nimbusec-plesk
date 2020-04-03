@@ -57,8 +57,15 @@ class IndexController extends pm_Controller_Action
                 return;
             }
 
+            // find most recent licence
+            $recentLicence = reset($licences);
+            foreach ($licences as $licence) {
+                if (new DateTime($licence["expiration-date"]) > new DateTime($recentLicence["expiration-date"])) {
+                    $recentLicence = $licence;
+                }
+            }
+
             // retrieve information from licence
-            $licence = reset($licences);
             $credentials = json_decode($licence["key-body"], true);
             if ($credentials === null) {
                 $this->err("Unable to deserialize licence key-body: " . json_last_error_msg() != false ? json_last_error_msg() : "No error");

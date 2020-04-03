@@ -1,3 +1,7 @@
+# 2.3
+
+* Minor bug fixes
+
 # 2.2
 
 * Adaptation to licencing workflow
